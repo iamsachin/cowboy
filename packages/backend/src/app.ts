@@ -1,9 +1,15 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import healthRoutes from './routes/health.js';
+import ingestionPlugin from './ingestion/index.js';
+import type { IngestionPluginOptions } from './ingestion/index.js';
 import { registerCors } from './plugins/cors.js';
 import { registerStatic } from './plugins/static.js';
 
-export async function buildApp(): Promise<FastifyInstance> {
+export interface AppOptions {
+  ingestion?: IngestionPluginOptions;
+}
+
+export async function buildApp(opts?: AppOptions): Promise<FastifyInstance> {
   const app = Fastify({ logger: true });
 
   // Register CORS in development
@@ -13,6 +19,7 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Register routes under /api prefix
   await app.register(healthRoutes, { prefix: '/api' });
+  await app.register(ingestionPlugin, { prefix: '/api', ...opts?.ingestion });
 
   // Register static file serving in production
   if (process.env.NODE_ENV === 'production') {

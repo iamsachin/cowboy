@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "concurrently -n backend,frontend -c blue,green \"pnpm --filter @cowboy/backend dev\" \"pnpm --filter @cowboy/frontend dev\"",
-    "build": "pnpm --filter @cowboy/shared build && pnpm --filter @cowboy/frontend build && pnpm --filter @cowboy/backend build",
+    "build": "pnpm --filter @cowboy/frontend build && pnpm --filter @cowboy/backend build",
     "test": "vitest",
     "db:generate": "pnpm --filter @cowboy/backend db:generate",
     "db:migrate": "pnpm --filter @cowboy/backend db:migrate"

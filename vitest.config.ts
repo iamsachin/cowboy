@@ -10,6 +10,13 @@ export default defineConfig({
           include: ['tests/**/*.test.ts'],
         },
       },
+      {
+        extends: './packages/frontend/vitest.config.ts',
+        test: {
+          name: 'frontend',
+          root: './packages/frontend',
+        },
+      },
     ],
   },
 });

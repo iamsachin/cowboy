@@ -1,0 +1,9 @@
+{
+  "name": "@cowboy/frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'Frontend placeholder - will be configured in Plan 01-02'",
+    "build": "echo 'Frontend placeholder - will be configured in Plan 01-02'"
+  }
+}

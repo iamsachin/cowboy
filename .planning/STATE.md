@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: Completed 02-02 JSONL parser and normalizer
-last_updated: "2026-03-03T23:05:33Z"
-last_activity: 2026-03-04 -- Completed 02-02 JSONL parser with chunk reconstruction and normalizer for unified schema
+stopped_at: Completed 02-03 Ingestion plugin with full pipeline and integration tests
+last_updated: "2026-03-03T23:12:05Z"
+last_activity: 2026-03-04 -- Completed Phase 2 (Claude Code Ingestion) -- all 3 plans delivered
 progress:
   total_phases: 9
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 4
-  percent: 70
+  completed_plans: 5
+  percent: 80
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-04)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing -- every conversation, tool call, token, and plan across all agents in one place.
-**Current focus:** Phase 2 in progress: Claude Code Ingestion (Plan 2 of 3 complete)
+**Current focus:** Phase 2 complete: Claude Code Ingestion (all 3 plans delivered). Ready for Phase 3.
 
 ## Current Position
 
-Phase: 2 of 9 (Claude Code Ingestion)
-Plan: 2 of 3 in current phase
-Status: Plan 02-02 Complete, continuing to 02-03
-Last activity: 2026-03-04 -- Completed 02-02 JSONL parser and normalizer with streaming chunk reconstruction
+Phase: 2 of 9 (Claude Code Ingestion) -- COMPLETE
+Plan: 3 of 3 in current phase (all complete)
+Status: Phase 02 Complete, ready for Phase 03
+Last activity: 2026-03-04 -- Completed 02-03 Ingestion plugin with full pipeline and integration tests
 
-Progress: [#######░░░] 70%
+Progress: [########░░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 5min
-- Total execution time: 19min
+- Total plans completed: 5
+- Average duration: 4min
+- Total execution time: 22min
 
 **By Phase:**
 
@@ -47,9 +47,10 @@ Progress: [#######░░░] 70%
 | Phase 01 P02 | 8min | 3 tasks | 23 files |
 | Phase 02 P01 | 3min | 2 tasks | 11 files |
 | Phase 02 P02 | 4min | 2 tasks | 4 files |
+| Phase 02 P03 | 3min | 2 tasks | 5 files |
 
 **Recent Trend:**
-- Last 5 plans: 4min, 8min, 3min, 4min
+- Last 5 plans: 4min, 8min, 3min, 4min, 3min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -77,6 +78,11 @@ Recent decisions affecting current work:
 - [Phase 02]: Streaming text blocks concatenated without separator; thinking blocks newline-separated
 - [Phase 02]: Token usage from final chunk only (non-null stop_reason) to avoid stale counters
 - [Phase 02]: Tool results matched by tool_use_id via flat lookup map across all user messages
+- [Phase 02]: Ingestion plugin uses closure state for IngestionStatus, not module globals
+- [Phase 02]: POST /ingest fires-and-forgets runIngestion, returns immediately with 200
+- [Phase 02]: Auto-ingest uses onReady + setImmediate for non-blocking boot-time ingestion
+- [Phase 02]: buildApp accepts AppOptions for test isolation of basePath and autoIngest
+- [Phase 02]: Per-file transactions with onConflictDoNothing for atomic dedup per JSONL file
 
 ### Pending Todos
 
@@ -84,11 +90,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 2 needs inspection of live Claude Code JSONL files before finalizing parser (research gap)
 - Phase 6 needs hands-on validation of Cursor vscdb schema against installed version (research gap)
 
 ## Session Continuity
 
-Last session: 2026-03-03T23:05:33Z
-Stopped at: Completed 02-02-PLAN.md
-Resume file: .planning/phases/02-claude-code-ingestion/02-02-SUMMARY.md
+Last session: 2026-03-03T23:12:05Z
+Stopped at: Completed 02-03-PLAN.md (Phase 02 complete)
+Resume file: .planning/phases/02-claude-code-ingestion/02-03-SUMMARY.md

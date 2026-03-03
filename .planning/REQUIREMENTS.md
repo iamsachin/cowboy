@@ -13,7 +13,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **INGEST-02**: System parses Cursor state.vscdb SQLite database for conversation data
 - [x] **INGEST-03**: System normalizes both agent formats into a unified schema (conversations, messages, tool_calls, token_usage)
 - [ ] **INGEST-04**: System watches log directories for new/modified files in real-time via chokidar
-- [ ] **INGEST-05**: System stores all normalized data in SQLite with deterministic deduplication
+- [x] **INGEST-05**: System stores all normalized data in SQLite with deterministic deduplication
 - [x] **INGEST-06**: System parses all available historical data with no retention limit
 
 ### Token & Cost Analytics
@@ -111,7 +111,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-03 | Phase 1: Project Foundation | Complete |
 | INGEST-01 | Phase 2: Claude Code Ingestion | Complete |
 | INGEST-03 | Phase 2: Claude Code Ingestion | Complete |
-| INGEST-05 | Phase 2: Claude Code Ingestion | Pending |
+| INGEST-05 | Phase 2: Claude Code Ingestion | Complete |
 | INGEST-06 | Phase 2: Claude Code Ingestion | Complete |
 | DASH-01 | Phase 3: API + Core Dashboard | Pending |
 | DASH-02 | Phase 3: API + Core Dashboard | Pending |

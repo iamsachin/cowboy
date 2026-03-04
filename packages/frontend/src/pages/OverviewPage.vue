@@ -59,6 +59,9 @@
         <CostChart :data="timeseries" />
         <ConversationsChart :data="timeseries" />
       </div>
+
+      <!-- Conversation Table -->
+      <ConversationTable />
     </template>
   </div>
 </template>
@@ -71,6 +74,7 @@ import DateRangeFilter from '../components/DateRangeFilter.vue';
 import TokenChart from '../components/TokenChart.vue';
 import CostChart from '../components/CostChart.vue';
 import ConversationsChart from '../components/ConversationsChart.vue';
+import ConversationTable from '../components/ConversationTable.vue';
 import { useDateRange } from '../composables/useDateRange';
 import { useAnalytics } from '../composables/useAnalytics';
 

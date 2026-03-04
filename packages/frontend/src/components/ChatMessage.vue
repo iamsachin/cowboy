@@ -13,7 +13,7 @@
     >
       <template v-if="message.content != null">
         <template v-for="(block, idx) in parsedContent" :key="idx">
-          <p v-if="block.type === 'text'" class="whitespace-pre-wrap">{{ block.content }}</p>
+          <p v-if="block.type === 'text'" class="whitespace-pre-wrap" :class="message.role === 'assistant' ? 'text-sm text-base-content/70' : ''">{{ block.content }}</p>
           <CodeBlock
             v-else
             :code="block.content"
@@ -21,7 +21,6 @@
           />
         </template>
       </template>
-      <p v-else class="italic opacity-50">No content</p>
     </div>
   </div>
 </template>

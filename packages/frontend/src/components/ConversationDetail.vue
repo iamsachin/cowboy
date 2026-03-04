@@ -18,6 +18,7 @@ import { computed } from 'vue';
 import type { MessageRow, ToolCallRow } from '@cowboy/shared';
 import ChatMessage from './ChatMessage.vue';
 import ToolCallCard from './ToolCallCard.vue';
+import { stripXmlTags } from '../utils/content-sanitizer';
 
 interface TimelineItem {
   type: 'message' | 'toolCall';
@@ -30,6 +31,12 @@ const props = defineProps<{
   messages: MessageRow[];
   toolCalls: ToolCallRow[];
 }>();
+
+function isEmptyMessage(item: TimelineItem): boolean {
+  if (item.type !== 'message') return false;
+  const msg = item.item as MessageRow;
+  return msg.content === null || stripXmlTags(msg.content).length === 0;
+}
 
 const timeline = computed<TimelineItem[]>(() => {
   const messageItems: TimelineItem[] = props.messages.map((m) => ({
@@ -46,8 +53,8 @@ const timeline = computed<TimelineItem[]>(() => {
     createdAt: tc.createdAt,
   }));
 
-  return [...messageItems, ...toolCallItems].sort(
-    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-  );
+  return [...messageItems, ...toolCallItems]
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    .filter((item) => !isEmptyMessage(item));
 });
 </script>

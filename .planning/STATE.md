@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-04)
 Phase: 9 of 9 (Settings & Remote Sync)
 Plan: 3 of 3 in current phase
 Status: 09-03 COMPLETE -- Frontend Settings page with useSettings composable
-Last activity: 2026-03-05 - Completed quick task 5: Show thinking text as collapsible section
+Last activity: 2026-03-05 - Completed quick task 6: Fix conversation title derivation XML-skip
 
 Progress: [██████████] 100%
 
@@ -185,9 +185,10 @@ None.
 | 3 | Strip raw XML tags from conversation detail UI | 2026-03-04 | 6b2c8e0 | [3-improve-conversation-detail-ui-strip-raw](./quick/3-improve-conversation-detail-ui-strip-raw/) |
 | 4 | Hide empty messages and style assistant text | 2026-03-04 | 0470b02 | [4-hide-empty-user-messages-and-style-assis](./quick/4-hide-empty-user-messages-and-style-assis/) |
 | 5 | Show thinking text as collapsible section | 2026-03-05 | 922e015 | [5-show-thinking-text-as-collapsible-sectio](./quick/5-show-thinking-text-as-collapsible-sectio/) |
+| 6 | Fix conversation title derivation to skip XML system messages | 2026-03-05 | 2fa0292 | [6-fix-conversation-title-derivation-skip-s](./quick/6-fix-conversation-title-derivation-skip-s/) |
 
 ## Session Continuity
 
-Last session: 2026-03-04T19:00:38Z
-Stopped at: Completed quick task 5 -- Show thinking text as collapsible section
+Last session: 2026-03-04T19:13:29Z
+Stopped at: Completed quick task 6 -- Fix conversation title derivation XML-skip
 Resume file: N/A -- Project milestone v1.0 complete

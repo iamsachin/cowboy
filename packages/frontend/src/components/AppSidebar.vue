@@ -44,11 +44,17 @@
         </router-link>
       </li>
     </ul>
+
+    <!-- Connection Status Footer -->
+    <div class="border-t border-base-300 mt-auto">
+      <ConnectionStatus :collapsed="collapsed" />
+    </div>
   </aside>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import ConnectionStatus from './ConnectionStatus.vue';
 import {
   LayoutDashboard,
   MessageSquare,

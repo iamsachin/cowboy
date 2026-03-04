@@ -1,7 +1,8 @@
-import { ref, watch } from 'vue';
+import { ref, watch, onScopeDispose } from 'vue';
 import { autoGranularity } from '@cowboy/shared';
 import type { OverviewStats, TimeSeriesPoint } from '@cowboy/shared';
 import { useDateRange } from './useDateRange';
+import { useWebSocket } from './useWebSocket';
 
 export function useAnalytics() {
   const { dateRange } = useDateRange();
@@ -48,6 +49,13 @@ export function useAnalytics() {
     },
     { deep: true, immediate: true }
   );
+
+  // Live refetch on WebSocket data-changed signal
+  const { onDataChanged } = useWebSocket();
+  const unsubscribe = onDataChanged(() => {
+    fetchAll();
+  });
+  onScopeDispose(unsubscribe);
 
   return {
     overview,

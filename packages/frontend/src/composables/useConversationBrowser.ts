@@ -1,6 +1,7 @@
-import { ref, watch } from 'vue';
+import { ref, watch, onScopeDispose } from 'vue';
 import type { ConversationListResponse, SearchConversationListResponse } from '@cowboy/shared';
 import { useDateRange } from './useDateRange';
+import { useWebSocket } from './useWebSocket';
 
 export type BrowserResponse = ConversationListResponse | SearchConversationListResponse;
 
@@ -98,6 +99,13 @@ export function useConversationBrowser() {
     },
     { deep: true, immediate: true }
   );
+
+  // Live refetch on WebSocket data-changed signal (preserves filter/sort/page state)
+  const { onDataChanged } = useWebSocket();
+  const unsubscribe = onDataChanged(() => {
+    fetchConversations();
+  });
+  onScopeDispose(unsubscribe);
 
   return {
     data,

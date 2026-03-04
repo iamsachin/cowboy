@@ -29,6 +29,20 @@ export const MODEL_PRICING: Record<string, ModelPricing> = {
   'claude-haiku-4-5':      { inputPerMTok: 1,    outputPerMTok: 5,    cacheReadPerMTok: 0.10,  cacheCreationPerMTok: 1.25 },
   'claude-3-5-haiku':      { inputPerMTok: 0.80, outputPerMTok: 4,    cacheReadPerMTok: 0.08,  cacheCreationPerMTok: 1.00 },
   'claude-3-haiku':        { inputPerMTok: 0.25, outputPerMTok: 1.25, cacheReadPerMTok: 0.03,  cacheCreationPerMTok: 0.30 },
+
+  // Cursor-specific Claude model aliases (Cursor uses different naming convention)
+  'claude-4.5-sonnet':     { inputPerMTok: 3,    outputPerMTok: 15,   cacheReadPerMTok: 0.30,  cacheCreationPerMTok: 3.75 },
+  'claude-4-sonnet':       { inputPerMTok: 3,    outputPerMTok: 15,   cacheReadPerMTok: 0.30,  cacheCreationPerMTok: 3.75 },
+
+  // OpenAI models (for Cursor users who use GPT models)
+  'gpt-4o':                { inputPerMTok: 2.50, outputPerMTok: 10,   cacheReadPerMTok: 1.25,  cacheCreationPerMTok: 2.50 },
+  'gpt-4o-mini':           { inputPerMTok: 0.15, outputPerMTok: 0.60, cacheReadPerMTok: 0.075, cacheCreationPerMTok: 0.15 },
+  'gpt-4-turbo':           { inputPerMTok: 10,   outputPerMTok: 30,   cacheReadPerMTok: 5,     cacheCreationPerMTok: 10 },
+  'o1':                    { inputPerMTok: 15,   outputPerMTok: 60,   cacheReadPerMTok: 7.50,  cacheCreationPerMTok: 15 },
+  'o1-mini':               { inputPerMTok: 1.10, outputPerMTok: 4.40, cacheReadPerMTok: 0.55,  cacheCreationPerMTok: 1.10 },
+  'o3':                    { inputPerMTok: 2,    outputPerMTok: 8,    cacheReadPerMTok: 1,     cacheCreationPerMTok: 2 },
+  'o3-mini':               { inputPerMTok: 1.10, outputPerMTok: 4.40, cacheReadPerMTok: 0.55,  cacheCreationPerMTok: 1.10 },
+  'o4-mini':               { inputPerMTok: 1.10, outputPerMTok: 4.40, cacheReadPerMTok: 0.55,  cacheCreationPerMTok: 1.10 },
 };
 
 /**

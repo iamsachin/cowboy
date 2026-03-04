@@ -45,6 +45,7 @@
             @click="router.push({ name: 'conversation-detail', params: { id: row.id } })"
           >
             <td class="whitespace-nowrap">{{ formatDate(row.date) }}</td>
+            <td><AgentBadge :agent="row.agent" /></td>
             <td>{{ row.project ?? '--' }}</td>
             <td>
               <div
@@ -120,13 +121,20 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useConversations } from '../composables/useConversations';
+import AgentBadge from './AgentBadge.vue';
+
+const props = defineProps<{
+  agent?: string;
+}>();
 
 const router = useRouter();
 
-const { data, loading, page, sortField, sortOrder, setSort, setPage } = useConversations();
+const agentRef = computed(() => props.agent);
+const { data, loading, page, sortField, sortOrder, setSort, setPage } = useConversations(agentRef);
 
 const columns = [
   { field: 'date', label: 'Date' },
+  { field: 'agent', label: 'Agent' },
   { field: 'project', label: 'Project' },
   { field: 'model', label: 'Model' },
   { field: 'inputTokens', label: 'Input Tokens' },

@@ -1,8 +1,8 @@
-import { ref, watch } from 'vue';
+import { ref, watch, type Ref } from 'vue';
 import type { ConversationListResponse } from '@cowboy/shared';
 import { useDateRange } from './useDateRange';
 
-export function useConversations() {
+export function useConversations(agentFilter?: Ref<string | undefined>) {
   const { dateRange } = useDateRange();
 
   const data = ref<ConversationListResponse | null>(null);
@@ -30,6 +30,9 @@ export function useConversations() {
         sort: sortField.value,
         order: sortOrder.value,
       });
+      if (agentFilter?.value) {
+        params.set('agent', agentFilter.value);
+      }
       const res = await fetch(`/api/analytics/conversations?${params}`);
       if (!res.ok) throw new Error(`Conversations fetch failed: ${res.status}`);
       data.value = await res.json();
@@ -56,9 +59,9 @@ export function useConversations() {
     fetchConversations();
   }
 
-  // Watch dateRange changes: reset page to 1 and re-fetch
+  // Watch dateRange and agentFilter changes: reset page to 1 and re-fetch
   watch(
-    () => dateRange.value,
+    [() => dateRange.value, () => agentFilter?.value],
     () => {
       page.value = 1;
       fetchConversations();

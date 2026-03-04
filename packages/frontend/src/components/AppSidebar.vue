@@ -69,8 +69,8 @@ const collapsed = ref(false);
 
 const navItems = [
   { path: '/overview', label: 'Overview', icon: LayoutDashboard, disabled: false },
-  { path: '/conversations', label: 'Conversations', icon: MessageSquare, disabled: true },
-  { path: '/agents', label: 'Agents', icon: Bot, disabled: true },
+  { path: '/conversations', label: 'Conversations', icon: MessageSquare, disabled: false },
+  { path: '/agents', label: 'Agents', icon: Bot, disabled: false },
   { path: '/analytics', label: 'Analytics', icon: BarChart3, disabled: true },
   { path: '/settings', label: 'Settings', icon: Settings, disabled: true },
 ];

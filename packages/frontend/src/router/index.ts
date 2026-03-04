@@ -16,6 +16,11 @@ const routes = [
     component: () => import('../pages/ConversationsPage.vue'),
   },
   {
+    path: '/conversations/:id',
+    name: 'conversation-detail',
+    component: () => import('../pages/ConversationDetailPage.vue'),
+  },
+  {
     path: '/agents',
     name: 'agents',
     component: () => import('../pages/AgentsPage.vue'),

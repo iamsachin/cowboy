@@ -37,7 +37,13 @@
           </tr>
 
           <!-- Data rows -->
-          <tr v-else v-for="row in data.rows" :key="row.id">
+          <tr
+            v-else
+            v-for="row in data.rows"
+            :key="row.id"
+            class="cursor-pointer hover"
+            @click="router.push({ name: 'conversation-detail', params: { id: row.id } })"
+          >
             <td class="whitespace-nowrap">{{ formatDate(row.date) }}</td>
             <td>{{ row.project ?? '--' }}</td>
             <td>
@@ -112,7 +118,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useConversations } from '../composables/useConversations';
+
+const router = useRouter();
 
 const { data, loading, page, sortField, sortOrder, setSort, setPage } = useConversations();
 

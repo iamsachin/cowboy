@@ -92,6 +92,21 @@
         </div>
       </div>
 
+      <!-- Inline plans section (collapsible) -->
+      <div v-if="conversationPlans.length > 0" class="collapse collapse-arrow bg-base-200 rounded-lg mb-6">
+        <input type="checkbox" checked />
+        <div class="collapse-title text-sm font-semibold flex items-center gap-2">
+          <ClipboardList class="w-4 h-4" />
+          Extracted Plans ({{ conversationPlans.length }})
+        </div>
+        <div class="collapse-content">
+          <div v-for="plan in conversationPlans" :key="plan.plan.id" class="mb-4">
+            <h4 class="font-medium text-sm mb-2">{{ plan.plan.title }}</h4>
+            <PlanStepList :steps="plan.steps" compact />
+          </div>
+        </div>
+      </div>
+
       <!-- Conversation timeline -->
       <ConversationDetail
         :messages="data.messages"
@@ -102,16 +117,34 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watchEffect } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
-import { ArrowLeft, AlertTriangle } from 'lucide-vue-next';
+import { ArrowLeft, AlertTriangle, ClipboardList } from 'lucide-vue-next';
+import type { PlanDetailResponse } from '@cowboy/shared';
 import { useConversationDetail } from '../composables/useConversationDetail';
 import ConversationDetail from '../components/ConversationDetail.vue';
+import PlanStepList from '../components/PlanStepList.vue';
 
 const route = useRoute();
 const id = route.params.id as string;
 
 const { data, loading, error, notFound } = useConversationDetail(id);
+
+// Fetch inline plans for this conversation
+const conversationPlans = ref<PlanDetailResponse[]>([]);
+
+async function fetchConversationPlans(): Promise<void> {
+  try {
+    const res = await fetch(`/api/plans/by-conversation/${encodeURIComponent(id)}`);
+    if (res.ok) {
+      conversationPlans.value = await res.json();
+    }
+  } catch {
+    // Silently ignore -- plans are supplementary
+  }
+}
+
+fetchConversationPlans();
 
 const totalTokens = computed(() => {
   if (!data.value) return 0;

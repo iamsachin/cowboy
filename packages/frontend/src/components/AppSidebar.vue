@@ -60,6 +60,7 @@ import {
   MessageSquare,
   Bot,
   BarChart3,
+  ClipboardList,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -72,6 +73,7 @@ const navItems = [
   { path: '/conversations', label: 'Conversations', icon: MessageSquare, disabled: false },
   { path: '/agents', label: 'Agents', icon: Bot, disabled: false },
   { path: '/analytics', label: 'Analytics', icon: BarChart3, disabled: false },
+  { path: '/plans', label: 'Plans', icon: ClipboardList, disabled: false },
   { path: '/settings', label: 'Settings', icon: Settings, disabled: true },
 ];
 </script>

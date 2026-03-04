@@ -42,22 +42,36 @@ export async function seedAnalyticsData(db: BetterSQLite3Database<typeof schema>
     // conv-3: user + assistant
     { id: 'msg-3a', conversationId: 'conv-3', role: 'user', content: 'Explain database migrations.', createdAt: '2026-01-16T09:00:00Z', model: null },
     { id: 'msg-3b', conversationId: 'conv-3', role: 'assistant', content: 'Database migrations are handled by Drizzle Kit. Run pnpm db:migrate to apply pending migrations.', createdAt: '2026-01-16T09:01:00Z', model: 'claude-haiku-4-5' },
+    // conv-4: user + assistant (needed for tool call references)
+    { id: 'msg-4a', conversationId: 'conv-4', role: 'user', content: 'Fix the build.', createdAt: '2026-01-16T15:00:00Z', model: null },
+    { id: 'msg-4b', conversationId: 'conv-4', role: 'assistant', content: 'I fixed the build issue.', createdAt: '2026-01-16T15:01:00Z', model: 'claude-haiku-4-5' },
+    // conv-5: user + assistant
+    { id: 'msg-5a', conversationId: 'conv-5', role: 'user', content: 'Run tests.', createdAt: '2026-01-17T11:00:00Z', model: null },
+    { id: 'msg-5b', conversationId: 'conv-5', role: 'assistant', content: 'All tests pass.', createdAt: '2026-01-17T11:01:00Z', model: 'unknown-model' },
   ]).run();
 
-  // Insert tool calls for conv-1
+  // Insert tool calls across conversations with varied tools, statuses, and durations
+  // Tools: Read, Write, Bash
+  // Statuses: completed (success), error (failure)
+  // Durations: varied for P95 testing
   db.insert(toolCalls).values([
-    {
-      id: 'tc-1',
-      messageId: 'msg-1b',
-      conversationId: 'conv-1',
-      name: 'Read',
-      input: { path: 'file.ts' },
-      output: { content: 'code' },
-      status: 'completed',
-      duration: 150,
-      createdAt: '2026-01-15T10:00:30Z',
-    },
+    // conv-1: Read (completed, 150ms) + Write (completed, 200ms)
+    { id: 'tc-1', messageId: 'msg-1b', conversationId: 'conv-1', name: 'Read', input: { path: 'file.ts' }, output: { content: 'code' }, status: 'completed', duration: 150, createdAt: '2026-01-15T10:00:30Z' },
+    { id: 'tc-2', messageId: 'msg-1b', conversationId: 'conv-1', name: 'Write', input: { path: 'out.ts' }, output: { success: true }, status: 'completed', duration: 200, createdAt: '2026-01-15T10:00:45Z' },
+    // conv-2: Read (completed, 80ms) + Bash (error, 5000ms) + Read (completed, 120ms)
+    { id: 'tc-3', messageId: 'msg-2b', conversationId: 'conv-2', name: 'Read', input: { path: 'pkg.json' }, output: { content: '{}' }, status: 'completed', duration: 80, createdAt: '2026-01-15T14:00:30Z' },
+    { id: 'tc-4', messageId: 'msg-2b', conversationId: 'conv-2', name: 'Bash', input: { command: 'npm build' }, output: { error: 'failed' }, status: 'error', duration: 5000, createdAt: '2026-01-15T14:00:45Z' },
+    { id: 'tc-5', messageId: 'msg-2b', conversationId: 'conv-2', name: 'Read', input: { path: 'tsconfig.json' }, output: { content: '{}' }, status: 'completed', duration: 120, createdAt: '2026-01-15T14:01:00Z' },
+    // conv-3: Bash (completed, 3000ms) + Write (error, 100ms)
+    { id: 'tc-6', messageId: 'msg-3b', conversationId: 'conv-3', name: 'Bash', input: { command: 'pnpm migrate' }, output: { stdout: 'ok' }, status: 'completed', duration: 3000, createdAt: '2026-01-16T09:00:30Z' },
+    { id: 'tc-7', messageId: 'msg-3b', conversationId: 'conv-3', name: 'Write', input: { path: 'schema.ts' }, output: { error: 'permission denied' }, status: 'error', duration: 100, createdAt: '2026-01-16T09:00:45Z' },
+    // conv-4: Read (completed, 90ms)
+    { id: 'tc-8', messageId: 'msg-4b', conversationId: 'conv-4', name: 'Read', input: { path: 'build.ts' }, output: { content: 'code' }, status: 'completed', duration: 90, createdAt: '2026-01-16T15:00:30Z' },
+    // conv-5: Bash (completed, 1500ms) + Read (completed, 200ms)
+    { id: 'tc-9', messageId: 'msg-5b', conversationId: 'conv-5', name: 'Bash', input: { command: 'vitest run' }, output: { stdout: 'pass' }, status: 'completed', duration: 1500, createdAt: '2026-01-17T11:00:30Z' },
+    { id: 'tc-10', messageId: 'msg-5b', conversationId: 'conv-5', name: 'Read', input: { path: 'test.ts' }, output: { content: 'test' }, status: 'completed', duration: 200, createdAt: '2026-01-17T11:00:45Z' },
   ]).run();
+
 }
 
 // Expected totals for all 5 conversations (2026-01-15 to 2026-01-17)

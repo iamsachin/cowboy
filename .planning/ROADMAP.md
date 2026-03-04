@@ -127,12 +127,12 @@ Plans:
   3. User can view an activity heatmap (GitHub contribution graph style) showing daily usage patterns
   4. User can view model distribution breakdown showing which models are used and how often
   5. User can view per-project analytics grouped by codebase directory
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 07-01: TBD
-- [ ] 07-02: TBD
-- [ ] 07-03: TBD
+- [ ] 07-01-PLAN.md -- Backend API: shared types for tool/heatmap/project analytics, Drizzle aggregate queries, three new REST endpoints (tool-stats, heatmap, project-stats), integration tests
+- [ ] 07-02-PLAN.md -- Cost projection: extend CostChart with dashed projection line, confidence band (Filler plugin), moving average computation, symmetric forward projection
+- [ ] 07-03-PLAN.md -- Frontend Analytics page: activity heatmap (CSS Grid), tool stats chart + table, expandable project table, useAdvancedAnalytics composable, sidebar enablement
 
 ### Phase 8: Plan Tracking
 **Goal**: User can see multi-step plans extracted from agent conversations with completion tracking and aggregate statistics

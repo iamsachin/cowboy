@@ -112,3 +112,36 @@ export interface SearchConversationListResponse {
   limit: number;
   query: string;
 }
+
+export interface ToolStatsRow {
+  name: string;
+  total: number;
+  success: number;
+  failure: number;
+  avgDuration: number | null;
+  p95Duration: number | null;
+}
+export type ToolStatsResponse = ToolStatsRow[];
+
+export interface HeatmapDay {
+  date: string;
+  count: number;
+}
+
+export interface ProjectModelEntry {
+  model: string;
+  count: number;
+}
+
+export interface ProjectStatsRow {
+  project: string;
+  conversationCount: number;
+  lastActive: string;
+  totalTokens: number;
+  totalCost: number;
+  totalInput: number;
+  totalOutput: number;
+  totalCacheRead: number;
+  totalCacheCreation: number;
+  topModels: ProjectModelEntry[];
+}

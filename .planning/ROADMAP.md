@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Project Foundation** - Scaffold the monorepo with Node.js/Fastify backend, Vue 3/DaisyUI frontend, and SQLite/Drizzle schema (completed 2026-03-03)
 - [x] **Phase 2: Claude Code Ingestion** - Parse Claude Code JSONL logs into the unified SQLite schema with deduplication
 - [x] **Phase 3: API + Core Dashboard** - REST API and overview dashboard with token analytics, cost tracking, and date filtering
-- [ ] **Phase 4: Conversation Browser** - Browse, search, and inspect full conversation history with messages and tool calls
+- [x] **Phase 4: Conversation Browser** - Browse, search, and inspect full conversation history with messages and tool calls (completed 2026-03-04)
 - [ ] **Phase 5: Real-Time Updates** - File watching with chokidar and WebSocket live updates to the dashboard
 - [ ] **Phase 6: Cursor Integration + Agent Comparison** - Parse Cursor data and deliver per-agent pages with side-by-side comparison
 - [ ] **Phase 7: Advanced Analytics** - Cost projections, tool call analytics, activity heatmap, model distribution, per-project grouping
@@ -84,9 +84,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 04-01-PLAN.md -- Backend API: extend shared types, add agent/project/search filters to conversation list, add conversation detail endpoint with messages/tool calls/token summary, integration tests
-- [ ] 04-02-PLAN.md -- Frontend conversation browser: filter bar with agent/project dropdowns and search, compact table rows with agent badges, clickable rows to detail, Overview table rows also clickable
-- [ ] 04-03-PLAN.md -- Frontend conversation detail: chat bubble layout, inline collapsible tool call cards, syntax-highlighted code blocks with highlight.js, metadata header, 404 handling
+- [x] 04-01-PLAN.md -- Backend API: extend shared types, add agent/project/search filters to conversation list, add conversation detail endpoint with messages/tool calls/token summary, integration tests
+- [x] 04-02-PLAN.md -- Frontend conversation browser: filter bar with agent/project dropdowns and search, compact table rows with agent badges, clickable rows to detail, Overview table rows also clickable
+- [x] 04-03-PLAN.md -- Frontend conversation detail: chat bubble layout, inline collapsible tool call cards, syntax-highlighted code blocks with highlight.js, metadata header, 404 handling
 
 ### Phase 5: Real-Time Updates
 **Goal**: Dashboard updates live as the user works with coding agents, with no manual refresh needed
@@ -96,11 +96,11 @@ Plans:
   1. When a new Claude Code conversation entry is written to disk, the dashboard reflects the new data within 2 seconds without page refresh
   2. WebSocket connection recovers automatically after network interruption or browser background tab suspension (visibilitychange reconnect)
   3. A visible connection status indicator shows whether the live feed is connected, reconnecting, or disconnected
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
+- [x] 05-01-PLAN.md -- Backend real-time infrastructure: chokidar file watcher plugin, @fastify/websocket broadcast plugin, ingestion callback wiring, Vite WS proxy, and integration tests
+- [ ] 05-02-PLAN.md -- Frontend WebSocket composable with reconnection/backoff, ConnectionStatus indicator in sidebar, signal-based refetch in useAnalytics and useConversationBrowser
 
 ### Phase 6: Cursor Integration + Agent Comparison
 **Goal**: Cursor conversation data appears alongside Claude Code data, and users can view per-agent breakdowns and compare agents side-by-side
@@ -172,8 +172,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 1. Project Foundation | 2/2 | Complete   | 2026-03-03 |
 | 2. Claude Code Ingestion | 3/3 | Complete | 2026-03-04 |
 | 3. API + Core Dashboard | 3/3 | Complete | 2026-03-04 |
-| 4. Conversation Browser | 0/3 | Not started | - |
-| 5. Real-Time Updates | 0/2 | Not started | - |
+| 4. Conversation Browser | 3/3 | Complete | 2026-03-04 |
+| 5. Real-Time Updates | 1/2 | In Progress | - |
 | 6. Cursor Integration + Agent Comparison | 0/2 | Not started | - |
 | 7. Advanced Analytics | 0/3 | Not started | - |
 | 8. Plan Tracking | 0/1 | Not started | - |

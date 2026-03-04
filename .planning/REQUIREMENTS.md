@@ -12,7 +12,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **INGEST-01**: System parses Claude Code JSONL conversation logs from `~/.claude/projects/`
 - [ ] **INGEST-02**: System parses Cursor state.vscdb SQLite database for conversation data
 - [x] **INGEST-03**: System normalizes both agent formats into a unified schema (conversations, messages, tool_calls, token_usage)
-- [ ] **INGEST-04**: System watches log directories for new/modified files in real-time via chokidar
+- [x] **INGEST-04**: System watches log directories for new/modified files in real-time via chokidar
 - [x] **INGEST-05**: System stores all normalized data in SQLite with deterministic deduplication
 - [x] **INGEST-06**: System parses all available historical data with no retention limit
 
@@ -62,7 +62,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Real-Time
 
-- [ ] **LIVE-01**: Dashboard updates live via WebSocket as new log data is detected
+- [x] **LIVE-01**: Dashboard updates live via WebSocket as new log data is detected
 - [ ] **LIVE-02**: WebSocket reconnects automatically when connection drops (including background tab recovery)
 
 ### Infrastructure
@@ -123,8 +123,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONV-02 | Phase 4: Conversation Browser | Complete |
 | CONV-03 | Phase 4: Conversation Browser | Complete |
 | CONV-04 | Phase 4: Conversation Browser | Complete |
-| INGEST-04 | Phase 5: Real-Time Updates | Pending |
-| LIVE-01 | Phase 5: Real-Time Updates | Pending |
+| INGEST-04 | Phase 5: Real-Time Updates | Complete |
+| LIVE-01 | Phase 5: Real-Time Updates | Complete |
 | LIVE-02 | Phase 5: Real-Time Updates | Pending |
 | INGEST-02 | Phase 6: Cursor Integration + Agent Comparison | Pending |
 | DASH-04 | Phase 6: Cursor Integration + Agent Comparison | Pending |

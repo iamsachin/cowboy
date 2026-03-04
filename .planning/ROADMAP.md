@@ -100,7 +100,7 @@ Plans:
 
 Plans:
 - [x] 05-01-PLAN.md -- Backend real-time infrastructure: chokidar file watcher plugin, @fastify/websocket broadcast plugin, ingestion callback wiring, Vite WS proxy, and integration tests
-- [ ] 05-02-PLAN.md -- Frontend WebSocket composable with reconnection/backoff, ConnectionStatus indicator in sidebar, signal-based refetch in useAnalytics and useConversationBrowser
+- [x] 05-02-PLAN.md -- Frontend WebSocket composable with reconnection/backoff, ConnectionStatus indicator in sidebar, signal-based refetch in useAnalytics and useConversationBrowser
 
 ### Phase 6: Cursor Integration + Agent Comparison
 **Goal**: Cursor conversation data appears alongside Claude Code data, and users can view per-agent breakdowns and compare agents side-by-side
@@ -111,11 +111,11 @@ Plans:
   2. User can navigate to per-agent pages (Claude Code, Cursor) showing agent-specific stats and conversations
   3. User can open a side-by-side comparison view showing token usage, cost, tool calls, and conversation counts for each agent
   4. The unified overview dashboard aggregates data from both agents correctly
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
+- [ ] 06-01-PLAN.md -- Backend Cursor ingestion pipeline (parser, normalizer, file discovery), API agent filter on overview/timeseries/model-distribution endpoints, Cursor model pricing, file watcher extension, tests
+- [ ] 06-02-PLAN.md -- Frontend Agents page with tabbed layout (Claude Code / Cursor / Compare), per-agent composables, comparison components, model distribution chart, agent badges in conversation table, sidebar enable
 
 ### Phase 7: Advanced Analytics
 **Goal**: User has deep analytical views including cost projections, tool call effectiveness, usage patterns, model distribution, and per-project breakdowns
@@ -173,7 +173,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 2. Claude Code Ingestion | 3/3 | Complete | 2026-03-04 |
 | 3. API + Core Dashboard | 3/3 | Complete | 2026-03-04 |
 | 4. Conversation Browser | 3/3 | Complete | 2026-03-04 |
-| 5. Real-Time Updates | 1/2 | In Progress | - |
+| 5. Real-Time Updates | 2/2 | Complete | 2026-03-04 |
 | 6. Cursor Integration + Agent Comparison | 0/2 | Not started | - |
 | 7. Advanced Analytics | 0/3 | Not started | - |
 | 8. Plan Tracking | 0/1 | Not started | - |

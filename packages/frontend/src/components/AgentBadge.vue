@@ -18,7 +18,7 @@ const props = defineProps<{
 const label = computed(() => AGENT_LABELS[props.agent] ?? props.agent);
 
 const badgeClass = computed(() => {
-  if (props.agent === 'claude-code') return 'badge-primary';
+  if (props.agent === 'claude-code') return 'badge-claude';
   if (props.agent === 'cursor') return 'badge-secondary';
   return 'badge-ghost';
 });

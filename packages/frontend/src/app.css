@@ -9,6 +9,12 @@
   --color-primary-content: oklch(0.98 0 0);
 }
 
+/* Claude Code badge — Anthropic orange */
+.badge-claude {
+  background-color: oklch(0.65 0.17 55);
+  color: oklch(0.15 0 0);
+}
+
 /* Override highlight.js background so the DaisyUI container provides it */
 .hljs {
   background: transparent !important;

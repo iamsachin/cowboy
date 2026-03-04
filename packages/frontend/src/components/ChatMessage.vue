@@ -1,26 +1,43 @@
 <template>
-  <div
-    class="max-w-[85%]"
-    :class="message.role === 'user' ? 'chat chat-end ml-auto' : 'chat chat-start'"
-  >
-    <div class="chat-header text-xs text-base-content/50 mb-1">
-      {{ message.role === 'user' ? 'You' : 'Assistant' }}
-      <time class="ml-1">{{ formatTime(message.createdAt) }}</time>
-    </div>
+  <div>
+    <!-- Thinking collapsible (only for assistant messages with thinking content) -->
     <div
-      class="chat-bubble whitespace-normal break-words"
-      :class="message.role === 'user' ? 'chat-bubble-primary' : ''"
+      v-if="message.role === 'assistant' && message.thinking"
+      class="collapse collapse-arrow bg-base-200 my-2 rounded-lg max-w-[85%]"
     >
-      <template v-if="message.content != null">
-        <template v-for="(block, idx) in parsedContent" :key="idx">
-          <p v-if="block.type === 'text'" class="whitespace-pre-wrap" :class="message.role === 'assistant' ? 'text-sm text-base-content/70' : ''">{{ block.content }}</p>
-          <CodeBlock
-            v-else
-            :code="block.content"
-            :language="block.language"
-          />
+      <input type="checkbox" />
+      <div class="collapse-title flex items-center gap-2 text-sm font-medium">
+        <Brain class="w-4 h-4 text-info shrink-0" />
+        <span>Thinking</span>
+      </div>
+      <div class="collapse-content">
+        <pre class="text-xs whitespace-pre-wrap break-words">{{ message.thinking }}</pre>
+      </div>
+    </div>
+    <!-- Chat bubble -->
+    <div
+      class="max-w-[85%]"
+      :class="message.role === 'user' ? 'chat chat-end ml-auto' : 'chat chat-start'"
+    >
+      <div class="chat-header text-xs text-base-content/50 mb-1">
+        {{ message.role === 'user' ? 'You' : 'Assistant' }}
+        <time class="ml-1">{{ formatTime(message.createdAt) }}</time>
+      </div>
+      <div
+        class="chat-bubble whitespace-normal break-words"
+        :class="message.role === 'user' ? 'chat-bubble-primary' : ''"
+      >
+        <template v-if="message.content != null">
+          <template v-for="(block, idx) in parsedContent" :key="idx">
+            <p v-if="block.type === 'text'" class="whitespace-pre-wrap" :class="message.role === 'assistant' ? 'text-sm text-base-content/70' : ''">{{ block.content }}</p>
+            <CodeBlock
+              v-else
+              :code="block.content"
+              :language="block.language"
+            />
+          </template>
         </template>
-      </template>
+      </div>
     </div>
   </div>
 </template>
@@ -29,6 +46,7 @@
 import { computed } from 'vue';
 import type { MessageRow } from '@cowboy/shared';
 import CodeBlock from './CodeBlock.vue';
+import { Brain } from 'lucide-vue-next';
 import { stripXmlTags } from '../utils/content-sanitizer';
 
 interface ContentBlock {

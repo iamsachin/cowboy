@@ -2,8 +2,11 @@
   <div class="card bg-base-200 rounded-box">
     <div class="card-body">
       <h2 class="card-title text-sm">Conversations Per Day</h2>
-      <div v-if="!data || data.length === 0" class="flex justify-center items-center h-48">
+      <div v-if="loading" class="flex justify-center items-center h-48">
         <span class="loading loading-spinner loading-md"></span>
+      </div>
+      <div v-else-if="!data || data.length === 0" class="flex justify-center items-center h-48">
+        <span class="text-base-content/50 text-sm">No data</span>
       </div>
       <div v-else class="h-64">
         <Bar :data="chartData" :options="chartOptions" />
@@ -27,9 +30,10 @@ import type { TimeSeriesPoint } from '@cowboy/shared';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   data: TimeSeriesPoint[];
-}>();
+  loading?: boolean;
+}>(), { loading: false });
 
 const chartData = computed(() => ({
   labels: props.data.map((p) => p.period),

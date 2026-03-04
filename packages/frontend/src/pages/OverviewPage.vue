@@ -55,9 +55,9 @@
 
       <!-- Charts Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <TokenChart :data="timeseries" />
-        <CostChart :data="timeseries" />
-        <ConversationsChart :data="timeseries" />
+        <TokenChart :data="timeseries" :loading="loading" />
+        <CostChart :data="timeseries" :loading="loading" />
+        <ConversationsChart :data="timeseries" :loading="loading" />
       </div>
 
       <!-- Conversation Table -->

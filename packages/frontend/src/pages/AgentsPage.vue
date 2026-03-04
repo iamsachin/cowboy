@@ -72,9 +72,9 @@
 
         <!-- Charts Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <TokenChart :data="agentTimeseries" />
-          <CostChart :data="agentTimeseries" />
-          <ConversationsChart :data="agentTimeseries" />
+          <TokenChart :data="agentTimeseries" :loading="agentLoading" />
+          <CostChart :data="agentTimeseries" :loading="agentLoading" />
+          <ConversationsChart :data="agentTimeseries" :loading="agentLoading" />
           <ModelDistributionChart :data="agentModelDistribution" />
         </div>
 

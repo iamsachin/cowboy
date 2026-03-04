@@ -105,12 +105,13 @@ describe('normalizeConversation', () => {
       expect(userMsg.model).toBeNull();
     });
 
-    it('concatenates text/thinking blocks for assistant message content', () => {
+    it('separates text and thinking blocks for assistant messages', () => {
       const data = normalizeConversation(streamResult, '-Users-sachin-Desktop-learn-cowboy');
       const assistMsg = data!.messages.find((m) => m.role === 'assistant')!;
-      // "Hello" + " world" text blocks + "Let me think..." thinking block
+      // "Hello" + " world" text blocks go to content; thinking block goes to thinking
       expect(assistMsg.content).toContain('Hello world');
-      expect(assistMsg.content).toContain('Let me think about what I just said.');
+      expect(assistMsg.content).not.toContain('Let me think');
+      expect(assistMsg.thinking).toBe('Let me think about what I just said.');
     });
 
     it('sets model on assistant messages', () => {

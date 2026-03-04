@@ -24,6 +24,7 @@ export interface NormalizedData {
     conversationId: string;
     role: string;
     content: string | null;
+    thinking: string | null;
     createdAt: string;
     model: string | null;
   }>;
@@ -112,6 +113,7 @@ export function normalizeConversation(
       conversationId,
       role: 'user',
       content: user.content,
+      thinking: null,
       createdAt: user.timestamp,
       model: null,
     });
@@ -119,12 +121,13 @@ export function normalizeConversation(
 
   // Assistant messages
   for (const assistant of parseResult.assistantMessages) {
-    const content = extractAssistantContent(assistant.contentBlocks);
+    const { content, thinking } = extractAssistantContent(assistant.contentBlocks);
     messages.push({
       id: generateId(conversationId, assistant.firstUuid),
       conversationId,
       role: 'assistant',
       content,
+      thinking,
       createdAt: assistant.timestamp,
       model: assistant.model,
     });
@@ -223,11 +226,12 @@ function buildToolResultLookup(
   return lookup;
 }
 
-function extractAssistantContent(blocks: ContentBlock[]): string | null {
-  // Group consecutive same-type blocks together.
+function extractAssistantContent(blocks: ContentBlock[]): { content: string | null; thinking: string | null } {
+  // Separate text blocks from thinking blocks.
   // Consecutive text blocks are concatenated without separator (streaming chunks).
-  // Different block types are separated by newlines.
-  const segments: string[] = [];
+  // Thinking blocks are joined with newlines.
+  const textSegments: string[] = [];
+  const thinkingSegments: string[] = [];
   let currentText = '';
 
   for (const block of blocks) {
@@ -235,22 +239,25 @@ function extractAssistantContent(blocks: ContentBlock[]): string | null {
       currentText += block.text;
     } else if (block.type === 'thinking') {
       if (currentText) {
-        segments.push(currentText);
+        textSegments.push(currentText);
         currentText = '';
       }
-      segments.push(block.thinking);
+      thinkingSegments.push(block.thinking);
     } else {
       // Non-text, non-thinking blocks (tool_use, tool_result) -- skip for content
       if (currentText) {
-        segments.push(currentText);
+        textSegments.push(currentText);
         currentText = '';
       }
     }
   }
 
   if (currentText) {
-    segments.push(currentText);
+    textSegments.push(currentText);
   }
 
-  return segments.length > 0 ? segments.join('\n') : null;
+  return {
+    content: textSegments.length > 0 ? textSegments.join('\n') : null,
+    thinking: thinkingSegments.length > 0 ? thinkingSegments.join('\n') : null,
+  };
 }

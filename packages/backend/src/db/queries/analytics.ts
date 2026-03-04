@@ -436,6 +436,7 @@ export function getConversationDetail(conversationId: string): ConversationDetai
       id: messages.id,
       role: messages.role,
       content: messages.content,
+      thinking: messages.thinking,
       createdAt: messages.createdAt,
       model: messages.model,
     })

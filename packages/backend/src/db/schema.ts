@@ -15,6 +15,7 @@ export const messages = sqliteTable('messages', {
   conversationId: text('conversation_id').notNull().references(() => conversations.id),
   role: text('role').notNull(),
   content: text('content'),
+  thinking: text('thinking'),
   createdAt: text('created_at').notNull(),
   model: text('model'),
 });

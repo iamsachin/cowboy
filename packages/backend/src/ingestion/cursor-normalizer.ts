@@ -69,6 +69,7 @@ export function normalizeCursorConversation(
       conversationId,
       role,
       content: bubble.text || null,
+      thinking: null,
       createdAt: bubbleTimestamp,
       model: bubbleModel,
     });

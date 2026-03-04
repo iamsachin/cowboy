@@ -58,6 +58,7 @@ export interface MessageRow {
   id: string;
   role: string;
   content: string | null;
+  thinking: string | null;
   createdAt: string;
   model: string | null;
 }

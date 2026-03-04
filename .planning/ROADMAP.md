@@ -65,12 +65,12 @@ Plans:
   3. Time-series charts show usage trends with daily, weekly, and monthly granularity
   4. User can filter all dashboard views by date range using preset buttons (today, 7d, 30d, all time) and a custom date picker
   5. Aggregate token usage and cost across all conversations are visible on the overview page
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
-- [ ] 03-03: TBD
+- [ ] 03-01-PLAN.md -- Backend analytics API: shared pricing module, Drizzle aggregate queries, three REST endpoints (overview, timeseries, conversations), and integration tests
+- [ ] 03-02-PLAN.md -- Frontend dashboard: Chart.js charts (stacked area tokens, bar cost, bar conversations), KPI cards with trends, date range filter with presets and custom picker
+- [ ] 03-03-PLAN.md -- Conversation table with per-conversation token breakdown, cost/savings display, sorting, pagination, and visual verification checkpoint
 
 ### Phase 4: Conversation Browser
 **Goal**: User can find any conversation by browsing, filtering, or searching, and drill into full conversation detail with messages, tool calls, and metadata

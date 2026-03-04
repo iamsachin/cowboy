@@ -62,3 +62,23 @@ export const planSteps = sqliteTable('plan_steps', {
   status: text('status').notNull().default('unknown'),
   createdAt: text('created_at').notNull(),
 });
+
+export const settings = sqliteTable('settings', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  // Agent configuration
+  claudeCodePath: text('claude_code_path').notNull().default(''),
+  claudeCodeEnabled: integer('claude_code_enabled', { mode: 'boolean' }).notNull().default(true),
+  cursorPath: text('cursor_path').notNull().default(''),
+  cursorEnabled: integer('cursor_enabled', { mode: 'boolean' }).notNull().default(true),
+  // Sync configuration
+  syncEnabled: integer('sync_enabled', { mode: 'boolean' }).notNull().default(false),
+  syncUrl: text('sync_url').notNull().default(''),
+  syncFrequency: integer('sync_frequency').notNull().default(900), // seconds: 300=5min, 900=15min, 3600=1hr
+  syncCategories: text('sync_categories', { mode: 'json' }).$type<string[]>().notNull().default(['conversations', 'messages', 'toolCalls', 'tokenUsage', 'plans']),
+  // Sync status tracking
+  lastSyncAt: text('last_sync_at'),
+  lastSyncError: text('last_sync_error'),
+  lastSyncSuccess: integer('last_sync_success', { mode: 'boolean' }),
+  // Incremental sync cursor
+  syncCursor: text('sync_cursor'),
+});

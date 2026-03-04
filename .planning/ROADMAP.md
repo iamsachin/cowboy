@@ -158,11 +158,12 @@ Plans:
   2. User can set a remote URL endpoint and the app POSTs collected data to it on schedule
   3. User can choose POST frequency (5 min, 15 min, 1 hour) and which data categories to include
   4. Remote sync failures retry with backoff and do not block the local dashboard
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 09-01: TBD
-- [ ] 09-02: TBD
+- [ ] 09-01-PLAN.md -- Settings schema, query layer, API routes (GET/PUT settings, path validation, test connection), and integration tests
+- [ ] 09-02-PLAN.md -- Sync scheduler plugin with incremental payload, retry with exponential backoff, file watcher restart wiring
+- [ ] 09-03-PLAN.md -- Frontend Settings page with Agent Configuration and Remote Sync sections, useSettings composable, sidebar enablement
 
 ## Progress
 
@@ -179,4 +180,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 6. Cursor Integration + Agent Comparison | 2/2 | Complete | 2026-03-04 |
 | 7. Advanced Analytics | 0/3 | Not started | - |
 | 8. Plan Tracking | 0/3 | Not started | - |
-| 9. Settings + Remote Sync | 0/2 | Not started | - |
+| 9. Settings + Remote Sync | 0/3 | Not started | - |

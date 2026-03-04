@@ -310,7 +310,7 @@ describe('normalizeCursorConversation', () => {
       expect(result!.messages[1].content).toBe('I read the file and found...');
     });
 
-    it('keeps type 2 bubbles with isCapabilityIteration=false even with empty text', () => {
+    it('keeps type 2 bubbles with no capability flag and no toolFormerData even with empty text', () => {
       const conv = makeConversation();
       const bubbles = [
         makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
@@ -318,6 +318,24 @@ describe('normalizeCursorConversation', () => {
       ];
       const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
       expect(result!.messages).toHaveLength(2); // both kept (backward compat)
+    });
+
+    it('skips type 2 bubbles with toolFormerData and no text even when isCapabilityIteration is false', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          isCapabilityIteration: false,
+          toolFormerData: { additionalData: { tool: 5 } },
+        }),
+        makeBubble({ bubbleId: 'b3', type: 2, text: 'Actual response' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.messages).toHaveLength(2); // user + assistant with text
+      expect(result!.messages[1].content).toBe('Actual response');
     });
 
     it('does not filter type 1 (user) bubbles regardless of content', () => {

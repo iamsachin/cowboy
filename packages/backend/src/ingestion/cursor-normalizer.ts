@@ -49,7 +49,10 @@ export function normalizeCursorConversation(
     // Skip tool-call-only assistant bubbles with no text content.
     // These are capability iterations (file reads, edits, etc.) that
     // should not appear as empty chat messages.
-    if (role === 'assistant' && bubble.isCapabilityIteration && !bubble.text?.trim()) {
+    // Check both isCapabilityIteration and toolFormerData since the former
+    // is often missing/false in real Cursor data while toolFormerData is reliable.
+    if (role === 'assistant' && !bubble.text?.trim() &&
+        (bubble.isCapabilityIteration || bubble.toolFormerData)) {
       continue;
     }
 

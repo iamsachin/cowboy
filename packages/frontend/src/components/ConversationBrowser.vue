@@ -83,7 +83,7 @@
             >
               <td class="whitespace-nowrap">{{ formatDate(row.date) }}</td>
               <td>
-                <span class="badge badge-sm badge-outline">{{ row.agent }}</span>
+                <AgentBadge :agent="row.agent" />
               </td>
               <td>{{ row.project ?? '--' }}</td>
               <td>
@@ -156,6 +156,7 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useConversationBrowser } from '../composables/useConversationBrowser';
+import AgentBadge from './AgentBadge.vue';
 
 const router = useRouter();
 

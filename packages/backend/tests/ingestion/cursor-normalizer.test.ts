@@ -284,6 +284,102 @@ describe('normalizeCursorConversation', () => {
     });
   });
 
+  describe('tool-call bubble filtering', () => {
+    it('skips type 2 bubbles with isCapabilityIteration=true and no text', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({ bubbleId: 'b2', type: 2, text: '', isCapabilityIteration: true, capabilityType: 1 }),
+        makeBubble({ bubbleId: 'b3', type: 2, text: 'Here is the answer', isCapabilityIteration: false }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.messages).toHaveLength(2); // user + assistant with text
+      expect(result!.messages[0].role).toBe('user');
+      expect(result!.messages[1].role).toBe('assistant');
+      expect(result!.messages[1].content).toBe('Here is the answer');
+    });
+
+    it('keeps type 2 bubbles with isCapabilityIteration=true but WITH text', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({ bubbleId: 'b2', type: 2, text: 'I read the file and found...', isCapabilityIteration: true }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.messages).toHaveLength(2);
+      expect(result!.messages[1].content).toBe('I read the file and found...');
+    });
+
+    it('keeps type 2 bubbles with isCapabilityIteration=false even with empty text', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({ bubbleId: 'b2', type: 2, text: '', isCapabilityIteration: false }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.messages).toHaveLength(2); // both kept (backward compat)
+    });
+
+    it('does not filter type 1 (user) bubbles regardless of content', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: '' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.messages).toHaveLength(1);
+      expect(result!.messages[0].role).toBe('user');
+    });
+  });
+
+  describe('tokenCountUpUntilHere fallback', () => {
+    it('uses tokenCountUpUntilHere delta when tokenCount is zero', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({
+          bubbleId: 'b1',
+          type: 2,
+          text: 'First response',
+          tokenCount: { inputTokens: 0, outputTokens: 0 },
+          tokenCountUpUntilHere: 500,
+          modelInfo: { modelName: 'claude-4.5-sonnet' },
+        }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: 'Second response',
+          tokenCount: { inputTokens: 0, outputTokens: 0 },
+          tokenCountUpUntilHere: 1200,
+          modelInfo: { modelName: 'claude-4.5-sonnet' },
+        }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.tokenUsage).toHaveLength(2);
+      expect(result!.tokenUsage[0].outputTokens).toBe(500);
+      expect(result!.tokenUsage[1].outputTokens).toBe(700);
+      // Input tokens are 0 for cumulative fallback
+      expect(result!.tokenUsage[0].inputTokens).toBe(0);
+      expect(result!.tokenUsage[1].inputTokens).toBe(0);
+    });
+
+    it('prefers per-bubble tokenCount over tokenCountUpUntilHere', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({
+          bubbleId: 'b1',
+          type: 2,
+          text: 'Response',
+          tokenCount: { inputTokens: 100, outputTokens: 50 },
+          tokenCountUpUntilHere: 1000,
+          modelInfo: { modelName: 'claude-4.5-sonnet' },
+        }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.tokenUsage).toHaveLength(1);
+      expect(result!.tokenUsage[0].inputTokens).toBe(100);
+      expect(result!.tokenUsage[0].outputTokens).toBe(50);
+    });
+  });
+
   describe('empty input', () => {
     it('returns null when bubbles array is empty', () => {
       const conv = makeConversation();

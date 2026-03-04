@@ -36,6 +36,7 @@ function createMockVscdb(dbPath: string): void {
     modelConfig: { modelName: 'claude-4.5-sonnet' },
     fullConversationHeadersOnly: [
       { bubbleId: 'b1', type: 1 },
+      { bubbleId: 'b1-tool', type: 2 },
       { bubbleId: 'b2', type: 2 },
     ],
   };
@@ -72,6 +73,21 @@ function createMockVscdb(dbPath: string): void {
       createdAt: '2024-01-23T10:00:00Z',
       tokenCount: null,
       modelInfo: null,
+      timingInfo: null,
+    }))
+  );
+  // Tool-call bubble with no text (should be filtered out during normalization)
+  vscdb.prepare('INSERT INTO cursorDiskKV (key, value) VALUES (?, ?)').run(
+    'bubbleId:conv-001:b1-tool',
+    Buffer.from(JSON.stringify({
+      type: 2,
+      text: '',
+      isCapabilityIteration: true,
+      capabilityType: 1,
+      createdAt: '2024-01-23T10:00:02Z',
+      tokenCount: { inputTokens: 0, outputTokens: 0 },
+      tokenCountUpUntilHere: 300,
+      modelInfo: { modelName: 'claude-4.5-sonnet' },
       timingInfo: null,
     }))
   );
@@ -222,29 +238,24 @@ describe('Cursor Ingestion Integration', () => {
     expect(countAfter).toBe(countBefore);
   });
 
-  it('token usage is recorded for assistant bubbles with non-zero token counts', () => {
+  it('token usage is recorded for assistant bubbles with non-zero token counts and cumulative fallback', () => {
     runCursorIngestion();
 
     const tuCount = testDb.get<{ count: number }>(sql`SELECT COUNT(*) as count FROM token_usage`)!.count;
-    expect(tuCount).toBe(2); // Both AI bubbles have token counts
+    // 2 from real tokenCount (b2 claude, b4 gpt-4o) + 1 from cumulative fallback (b1-tool)
+    expect(tuCount).toBe(3);
 
-    const tuRows = sqlite.prepare('SELECT model, input_tokens, output_tokens FROM token_usage ORDER BY model').all() as Array<{
+    const tuRows = sqlite.prepare('SELECT model, input_tokens, output_tokens FROM token_usage ORDER BY created_at').all() as Array<{
       model: string;
       input_tokens: number;
       output_tokens: number;
     }>;
 
-    // claude-4.5-sonnet conversation
-    const claudeRow = tuRows.find(r => r.model === 'claude-4.5-sonnet');
-    expect(claudeRow).toBeDefined();
-    expect(claudeRow!.input_tokens).toBe(1500);
-    expect(claudeRow!.output_tokens).toBe(800);
-
-    // gpt-4o conversation
-    const gptRow = tuRows.find(r => r.model === 'gpt-4o');
-    expect(gptRow).toBeDefined();
-    expect(gptRow!.input_tokens).toBe(2000);
-    expect(gptRow!.output_tokens).toBe(1200);
+    // Find the cumulative fallback record (input_tokens = 0, output_tokens = 300)
+    const cumulativeRow = tuRows.find(r => r.output_tokens === 300);
+    expect(cumulativeRow).toBeDefined();
+    expect(cumulativeRow!.input_tokens).toBe(0);
+    expect(cumulativeRow!.model).toBe('claude-4.5-sonnet');
   });
 
   it('parser extracts isCapabilityIteration, capabilityType, and tokenCountUpUntilHere fields', () => {
@@ -268,6 +279,22 @@ describe('Cursor Ingestion Integration', () => {
     const titles = sqlite.prepare('SELECT title FROM conversations ORDER BY created_at').all() as Array<{ title: string }>;
     expect(titles[0].title).toBe('Please fix the login bug where users get 401 errors');
     expect(titles[1].title).toBe('Refactor the API routes to use controllers');
+  });
+
+  it('filters out tool-call bubbles with no text content', () => {
+    runCursorIngestion();
+
+    // No message should have null/empty content from a tool-call bubble
+    const emptyMessages = sqlite.prepare(
+      "SELECT COUNT(*) as count FROM messages WHERE (content IS NULL OR content = '') AND role = 'assistant'"
+    ).get() as { count: number };
+    expect(emptyMessages.count).toBe(0);
+
+    // Conv-001 should have 2 messages (user + assistant with text), not 3
+    const conv1Messages = sqlite.prepare(
+      "SELECT COUNT(*) as count FROM messages m JOIN conversations c ON m.conversation_id = c.id WHERE c.title LIKE '%login bug%'"
+    ).get() as { count: number };
+    expect(conv1Messages.count).toBe(2);
   });
 
   it('foreign key integrity is maintained', () => {

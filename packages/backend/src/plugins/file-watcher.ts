@@ -1,3 +1,4 @@
+import fp from 'fastify-plugin';
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { watch, type FSWatcher } from 'chokidar';
 import { join } from 'node:path';
@@ -29,93 +30,197 @@ function getCursorGlobalStoragePath(cursorBasePath?: string): string | null {
   try { statSync(dirPath); return dirPath; } catch { return null; }
 }
 
+declare module 'fastify' {
+  interface FastifyInstance {
+    fileWatcher: {
+      restart: () => Promise<void>;
+    };
+  }
+}
+
 export interface FileWatcherOptions {
   basePath?: string;
   cursorBasePath?: string;
   onFilesChanged: () => Promise<void>;
 }
 
-const fileWatcherPlugin: FastifyPluginAsync<FileWatcherOptions> = async (
+const fileWatcherPluginInner: FastifyPluginAsync<FileWatcherOptions> = async (
   app: FastifyInstance,
   opts: FileWatcherOptions,
 ) => {
-  const watchDir = opts.basePath || DEFAULT_BASE_DIR;
-  const watchers: FSWatcher[] = [];
+  let watchers: FSWatcher[] = [];
   let claudeDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   let cursorDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-  // Claude Code watcher: 1s debounce for JSONL file changes
-  const claudeWatcher = watch(watchDir, {
-    ignoreInitial: true,
-    depth: 5,
-    persistent: true,
-  });
-  watchers.push(claudeWatcher);
+  /**
+   * Create watchers for enabled agents based on current settings.
+   * Falls back to opts paths or OS defaults when settings paths are empty.
+   */
+  function createWatchers(
+    claudeCodePath: string | undefined,
+    cursorPath: string | undefined,
+    claudeCodeEnabled: boolean,
+    cursorEnabled: boolean,
+  ): void {
+    // Claude Code watcher: 1s debounce for JSONL file changes
+    if (claudeCodeEnabled) {
+      const watchDir = claudeCodePath || opts.basePath || DEFAULT_BASE_DIR;
 
-  function scheduleClaudeIngestion() {
-    if (claudeDebounceTimer) clearTimeout(claudeDebounceTimer);
-    claudeDebounceTimer = setTimeout(() => {
-      claudeDebounceTimer = null;
-      opts.onFilesChanged().catch((err) => {
-        app.log.error({ err }, 'File watcher ingestion callback failed');
+      const claudeWatcher = watch(watchDir, {
+        ignoreInitial: true,
+        depth: 5,
+        persistent: true,
       });
-    }, 1000);
-  }
+      watchers.push(claudeWatcher);
 
-  claudeWatcher
-    .on('add', (path) => {
-      if (path.endsWith('.jsonl')) {
-        app.log.info({ path }, 'New JSONL file detected');
-        scheduleClaudeIngestion();
+      function scheduleClaudeIngestion() {
+        if (claudeDebounceTimer) clearTimeout(claudeDebounceTimer);
+        claudeDebounceTimer = setTimeout(() => {
+          claudeDebounceTimer = null;
+          opts.onFilesChanged().catch((err) => {
+            app.log.error({ err }, 'File watcher ingestion callback failed');
+          });
+        }, 1000);
       }
-    })
-    .on('change', (path) => {
-      if (path.endsWith('.jsonl')) {
-        app.log.info({ path }, 'JSONL file modified');
-        scheduleClaudeIngestion();
-      }
-    });
 
-  // Cursor watcher: 3s debounce for state.vscdb changes (Cursor writes frequently)
-  const cursorDir = getCursorGlobalStoragePath(opts.cursorBasePath);
-  if (cursorDir) {
-    const cursorWatcher = watch(cursorDir, {
-      ignoreInitial: true,
-      depth: 0,
-      persistent: true,
-    });
-    watchers.push(cursorWatcher);
-
-    function scheduleCursorIngestion() {
-      if (cursorDebounceTimer) clearTimeout(cursorDebounceTimer);
-      cursorDebounceTimer = setTimeout(() => {
-        cursorDebounceTimer = null;
-        opts.onFilesChanged().catch((err) => {
-          app.log.error({ err }, 'Cursor file watcher ingestion callback failed');
+      claudeWatcher
+        .on('add', (path) => {
+          if (path.endsWith('.jsonl')) {
+            app.log.info({ path }, 'New JSONL file detected');
+            scheduleClaudeIngestion();
+          }
+        })
+        .on('change', (path) => {
+          if (path.endsWith('.jsonl')) {
+            app.log.info({ path }, 'JSONL file modified');
+            scheduleClaudeIngestion();
+          }
         });
-      }, 3000);
     }
 
-    cursorWatcher
-      .on('change', (path) => {
-        // Only trigger on state.vscdb changes, ignore WAL and journal files
-        if (path.endsWith('state.vscdb')) {
-          app.log.info({ path }, 'Cursor state.vscdb modified');
-          scheduleCursorIngestion();
-        }
-      });
+    // Cursor watcher: 3s debounce for state.vscdb changes (Cursor writes frequently)
+    if (cursorEnabled) {
+      const cursorDir = getCursorGlobalStoragePath(cursorPath || opts.cursorBasePath);
+      if (cursorDir) {
+        const cursorWatcher = watch(cursorDir, {
+          ignoreInitial: true,
+          depth: 0,
+          persistent: true,
+        });
+        watchers.push(cursorWatcher);
 
-    app.log.info({ cursorDir }, 'Watching Cursor globalStorage for state.vscdb changes');
+        function scheduleCursorIngestion() {
+          if (cursorDebounceTimer) clearTimeout(cursorDebounceTimer);
+          cursorDebounceTimer = setTimeout(() => {
+            cursorDebounceTimer = null;
+            opts.onFilesChanged().catch((err) => {
+              app.log.error({ err }, 'Cursor file watcher ingestion callback failed');
+            });
+          }, 3000);
+        }
+
+        cursorWatcher
+          .on('change', (path) => {
+            // Only trigger on state.vscdb changes, ignore WAL and journal files
+            if (path.endsWith('state.vscdb')) {
+              app.log.info({ path }, 'Cursor state.vscdb modified');
+              scheduleCursorIngestion();
+            }
+          });
+
+        app.log.info({ cursorDir }, 'Watching Cursor globalStorage for state.vscdb changes');
+      }
+    }
+  }
+
+  /**
+   * Close all existing watchers and clear debounce timers.
+   */
+  async function closeWatchers(): Promise<void> {
+    if (claudeDebounceTimer) { clearTimeout(claudeDebounceTimer); claudeDebounceTimer = null; }
+    if (cursorDebounceTimer) { clearTimeout(cursorDebounceTimer); cursorDebounceTimer = null; }
+    for (const w of watchers) {
+      await w.close();
+    }
+    watchers = [];
+  }
+
+  /**
+   * Restart watchers with fresh settings from DB.
+   * Closes old watchers first to avoid race conditions (Pitfall 1).
+   * Triggers re-ingestion after restart.
+   */
+  async function restart(): Promise<void> {
+    // 1. Close existing watchers
+    await closeWatchers();
+
+    // 2. Read updated settings from DB
+    let claudeCodePath: string | undefined;
+    let cursorPath: string | undefined;
+    let claudeCodeEnabled = true;
+    let cursorEnabled = true;
+
+    try {
+      const { getSettings } = await import('../db/queries/settings.js');
+      const currentSettings = getSettings();
+      claudeCodePath = currentSettings.claudeCodePath || undefined;
+      cursorPath = currentSettings.cursorPath || undefined;
+      claudeCodeEnabled = currentSettings.claudeCodeEnabled;
+      cursorEnabled = currentSettings.cursorEnabled;
+    } catch {
+      // Settings table may not exist (tests); use defaults
+    }
+
+    // 3. Create new watchers for enabled agents only
+    createWatchers(claudeCodePath, cursorPath, claudeCodeEnabled, cursorEnabled);
+
+    // 4. Trigger re-ingestion via app.inject
+    try {
+      await app.inject({ method: 'POST', url: '/api/ingest' });
+    } catch {
+      // Ingestion route may not be registered in all contexts
+    }
+  }
+
+  // Decorate app with restart capability
+  app.decorate('fileWatcher', { restart });
+
+  // Initial setup: determine paths and enabled state
+  // When basePath is explicitly provided (tests), use it directly without DB lookup
+  // to maintain test isolation. In production, read paths from settings DB.
+  if (opts.basePath) {
+    // Test/explicit mode: only watch the provided basePath, no Cursor watcher
+    createWatchers(opts.basePath, opts.cursorBasePath, true, !!opts.cursorBasePath);
+  } else {
+    // Production mode: read settings from DB
+    let claudeCodePath: string | undefined;
+    let cursorPath: string | undefined;
+    let claudeCodeEnabled = true;
+    let cursorEnabled = true;
+
+    try {
+      const { getSettings } = await import('../db/queries/settings.js');
+      const currentSettings = getSettings();
+      claudeCodePath = currentSettings.claudeCodePath || undefined;
+      cursorPath = currentSettings.cursorPath || undefined;
+      claudeCodeEnabled = currentSettings.claudeCodeEnabled;
+      cursorEnabled = currentSettings.cursorEnabled;
+    } catch {
+      // Settings table may not exist; use OS defaults
+    }
+
+    createWatchers(claudeCodePath, cursorPath, claudeCodeEnabled, cursorEnabled);
   }
 
   // Clean shutdown
   app.addHook('onClose', async () => {
-    if (claudeDebounceTimer) clearTimeout(claudeDebounceTimer);
-    if (cursorDebounceTimer) clearTimeout(cursorDebounceTimer);
-    for (const w of watchers) {
-      await w.close();
-    }
+    await closeWatchers();
   });
 };
+
+// Use fp() to break encapsulation so fileWatcher decorator propagates to parent
+const fileWatcherPlugin = fp(fileWatcherPluginInner, {
+  name: 'cowboy-file-watcher',
+});
 
 export default fileWatcherPlugin;

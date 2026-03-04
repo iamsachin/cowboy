@@ -7,6 +7,7 @@ import ingestionPlugin from './ingestion/index.js';
 import type { IngestionPluginOptions } from './ingestion/index.js';
 import websocketPlugin from './plugins/websocket.js';
 import fileWatcherPlugin from './plugins/file-watcher.js';
+import syncSchedulerPlugin from './plugins/sync-scheduler.js';
 import { registerCors } from './plugins/cors.js';
 import { registerStatic } from './plugins/static.js';
 
@@ -41,12 +42,16 @@ export async function buildApp(opts?: AppOptions): Promise<FastifyInstance> {
   });
 
   // Register file watcher to trigger ingestion on JSONL changes
+  // File watcher reads paths from settings DB internally; basePath is fallback for tests
   await app.register(fileWatcherPlugin, {
     basePath: opts?.fileWatcher?.basePath ?? opts?.ingestion?.basePath,
     onFilesChanged: async () => {
       await app.inject({ method: 'POST', url: '/api/ingest' });
     },
   });
+
+  // Register sync scheduler (reads settings from DB, auto-starts if enabled)
+  await app.register(syncSchedulerPlugin);
 
   // Register static file serving in production
   if (process.env.NODE_ENV === 'production') {

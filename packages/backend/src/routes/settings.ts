@@ -68,6 +68,14 @@ export default async function settingsRoutes(app: FastifyInstance) {
       cursorPath: expandTilde(body.cursorPath),
       cursorEnabled: body.cursorEnabled,
     });
+
+    // Restart file watcher with new paths and trigger re-ingestion
+    try {
+      await app.fileWatcher.restart();
+    } catch {
+      // fileWatcher may not be registered in all contexts (e.g. tests)
+    }
+
     return updated;
   });
 
@@ -80,6 +88,18 @@ export default async function settingsRoutes(app: FastifyInstance) {
       syncCategories: string[];
     };
     const updated = updateSyncSettings(body);
+
+    // Wire sync scheduler based on new settings
+    try {
+      if (updated.syncEnabled && updated.syncUrl) {
+        app.syncScheduler.start(updated.syncFrequency * 1000);
+      } else {
+        app.syncScheduler.stop();
+      }
+    } catch {
+      // syncScheduler may not be registered in all contexts (e.g. tests)
+    }
+
     return updated;
   });
 
@@ -106,8 +126,13 @@ export default async function settingsRoutes(app: FastifyInstance) {
     }
   });
 
-  // POST /settings/sync-now -- placeholder (Plan 02 will wire to sync scheduler)
+  // POST /settings/sync-now -- trigger immediate sync
   app.post('/settings/sync-now', async () => {
-    return { message: 'Sync not configured' };
+    try {
+      await app.syncScheduler.syncNow();
+      return { message: 'Sync triggered' };
+    } catch {
+      return { message: 'Sync not configured' };
+    }
   });
 }

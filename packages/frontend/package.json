@@ -10,8 +10,11 @@
   },
   "dependencies": {
     "@cowboy/shared": "workspace:*",
+    "@vuepic/vue-datepicker": "^12.1.0",
+    "chart.js": "^4.5.1",
     "lucide-vue-next": "latest",
     "vue": "^3.5.0",
+    "vue-chartjs": "^5.3.3",
     "vue-router": "^4.5.0"
   },
   "devDependencies": {

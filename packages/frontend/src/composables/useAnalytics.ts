@@ -1,0 +1,59 @@
+import { ref, watch } from 'vue';
+import { autoGranularity } from '@cowboy/shared';
+import type { OverviewStats, TimeSeriesPoint } from '@cowboy/shared';
+import { useDateRange } from './useDateRange';
+
+export function useAnalytics() {
+  const { dateRange } = useDateRange();
+
+  const overview = ref<OverviewStats | null>(null);
+  const timeseries = ref<TimeSeriesPoint[]>([]);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
+
+  async function fetchOverview(): Promise<void> {
+    const { from, to } = dateRange.value;
+    const res = await fetch(`/api/analytics/overview?from=${from}&to=${to}`);
+    if (!res.ok) throw new Error(`Overview fetch failed: ${res.status}`);
+    overview.value = await res.json();
+  }
+
+  async function fetchTimeSeries(): Promise<void> {
+    const { from, to } = dateRange.value;
+    const granularity = autoGranularity(from, to);
+    const res = await fetch(
+      `/api/analytics/timeseries?from=${from}&to=${to}&granularity=${granularity}`
+    );
+    if (!res.ok) throw new Error(`Timeseries fetch failed: ${res.status}`);
+    timeseries.value = await res.json();
+  }
+
+  async function fetchAll(): Promise<void> {
+    loading.value = true;
+    error.value = null;
+    try {
+      await Promise.all([fetchOverview(), fetchTimeSeries()]);
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : String(e);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  // Watch dateRange and re-fetch on change
+  watch(
+    () => dateRange.value,
+    () => {
+      fetchAll();
+    },
+    { deep: true, immediate: true }
+  );
+
+  return {
+    overview,
+    timeseries,
+    loading,
+    error,
+    fetchAll,
+  };
+}

@@ -238,24 +238,31 @@ describe('Cursor Ingestion Integration', () => {
     expect(countAfter).toBe(countBefore);
   });
 
-  it('token usage is recorded for assistant bubbles with non-zero token counts and cumulative fallback', () => {
+  it('token usage is recorded for assistant bubbles with non-zero token counts', () => {
     runCursorIngestion();
 
     const tuCount = testDb.get<{ count: number }>(sql`SELECT COUNT(*) as count FROM token_usage`)!.count;
-    // 2 from real tokenCount (b2 claude, b4 gpt-4o) + 1 from cumulative fallback (b1-tool)
-    expect(tuCount).toBe(3);
+    // 2 from real tokenCount (b2 claude, b4 gpt-4o)
+    // Tool-call bubble (b1-tool) is filtered from messages so its cumulative tokens are not recorded
+    expect(tuCount).toBe(2);
 
-    const tuRows = sqlite.prepare('SELECT model, input_tokens, output_tokens FROM token_usage ORDER BY created_at').all() as Array<{
+    const tuRows = sqlite.prepare('SELECT model, input_tokens, output_tokens FROM token_usage ORDER BY model').all() as Array<{
       model: string;
       input_tokens: number;
       output_tokens: number;
     }>;
 
-    // Find the cumulative fallback record (input_tokens = 0, output_tokens = 300)
-    const cumulativeRow = tuRows.find(r => r.output_tokens === 300);
-    expect(cumulativeRow).toBeDefined();
-    expect(cumulativeRow!.input_tokens).toBe(0);
-    expect(cumulativeRow!.model).toBe('claude-4.5-sonnet');
+    // claude-4.5-sonnet conversation
+    const claudeRow = tuRows.find(r => r.model === 'claude-4.5-sonnet');
+    expect(claudeRow).toBeDefined();
+    expect(claudeRow!.input_tokens).toBe(1500);
+    expect(claudeRow!.output_tokens).toBe(800);
+
+    // gpt-4o conversation
+    const gptRow = tuRows.find(r => r.model === 'gpt-4o');
+    expect(gptRow).toBeDefined();
+    expect(gptRow!.input_tokens).toBe(2000);
+    expect(gptRow!.output_tokens).toBe(1200);
   });
 
   it('parser extracts isCapabilityIteration, capabilityType, and tokenCountUpUntilHere fields', () => {

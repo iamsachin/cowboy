@@ -40,10 +40,20 @@ export function normalizeCursorConversation(
   // ── Messages ──────────────────────────────────────────────────────────
 
   const normalizedMessages: NormalizedData['messages'] = [];
+  const includedBubbleIds = new Set<string>();
 
   for (const bubble of bubbles) {
     const role = bubble.type === 1 ? 'user' : bubble.type === 2 ? 'assistant' : null;
     if (!role) continue;
+
+    // Skip tool-call-only assistant bubbles with no text content.
+    // These are capability iterations (file reads, edits, etc.) that
+    // should not appear as empty chat messages.
+    if (role === 'assistant' && bubble.isCapabilityIteration && !bubble.text?.trim()) {
+      continue;
+    }
+
+    includedBubbleIds.add(bubble.bubbleId);
 
     const messageId = generateId(conversationId, bubble.bubbleId);
     const bubbleTimestamp = deriveBubbleTimestamp(bubble, conv);
@@ -68,15 +78,19 @@ export function normalizeCursorConversation(
   // ── Token usage ────────────────────────────────────────────────────────
 
   const normalizedTokenUsage: NormalizedData['tokenUsage'] = [];
+  let prevCumulativeTokens = 0;
 
   for (const bubble of bubbles) {
     if (bubble.type !== 2) continue; // Only assistant bubbles have token usage
 
+    // Track cumulative tokens even for filtered bubbles (needed for differential calc)
+    const hasMessage = includedBubbleIds.has(bubble.bubbleId);
+
     const inputTokens = bubble.tokenCount?.inputTokens ?? 0;
     const outputTokens = bubble.tokenCount?.outputTokens ?? 0;
 
-    // Only record if there are actual token counts
-    if (inputTokens > 0 || outputTokens > 0) {
+    // Only record if there are actual token counts and the bubble has a corresponding message
+    if ((inputTokens > 0 || outputTokens > 0) && hasMessage) {
       const messageId = generateId(conversationId, bubble.bubbleId);
       const bubbleModel = bubble.modelInfo?.modelName ?? conv.modelConfig?.modelName ?? 'unknown';
       const bubbleTimestamp = deriveBubbleTimestamp(bubble, conv);
@@ -92,6 +106,29 @@ export function normalizeCursorConversation(
         cacheCreationTokens: 0,
         createdAt: bubbleTimestamp,
       });
+    } else if (bubble.tokenCountUpUntilHere && bubble.tokenCountUpUntilHere > prevCumulativeTokens && hasMessage) {
+      // Use differential of cumulative token count as output token estimate
+      const estimatedOutputTokens = bubble.tokenCountUpUntilHere - prevCumulativeTokens;
+      const messageId = generateId(conversationId, bubble.bubbleId);
+      const bubbleModel = bubble.modelInfo?.modelName ?? conv.modelConfig?.modelName ?? 'unknown';
+      const bubbleTimestamp = deriveBubbleTimestamp(bubble, conv);
+
+      normalizedTokenUsage.push({
+        id: generateId(conversationId, `token-${bubble.bubbleId}`),
+        conversationId,
+        messageId,
+        model: bubbleModel,
+        inputTokens: 0,  // Cannot distinguish input vs output from cumulative
+        outputTokens: estimatedOutputTokens,
+        cacheReadTokens: 0,
+        cacheCreationTokens: 0,
+        createdAt: bubbleTimestamp,
+      });
+    }
+
+    // Always update cumulative tracker (even for filtered bubbles)
+    if (bubble.tokenCountUpUntilHere) {
+      prevCumulativeTokens = bubble.tokenCountUpUntilHere;
     }
   }
 

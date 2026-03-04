@@ -145,3 +145,52 @@ export interface ProjectStatsRow {
   totalCacheCreation: number;
   topModels: ProjectModelEntry[];
 }
+
+// ── Plan Tracking Types ─────────────────────────────────────────────
+
+export interface PlanRow {
+  id: string;
+  conversationId: string;
+  title: string;
+  totalSteps: number;
+  completedSteps: number;
+  status: string;
+  createdAt: string;
+  agent: string;
+  project: string | null;
+}
+
+export interface PlanStepRow {
+  id: string;
+  planId: string;
+  stepNumber: number;
+  content: string;
+  status: string;
+}
+
+export interface PlanListResponse {
+  rows: PlanRow[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface PlanDetailResponse {
+  plan: PlanRow;
+  steps: PlanStepRow[];
+  conversationTitle: string | null;
+  sourceMessageId: string;
+}
+
+export interface PlanStatsResponse {
+  totalPlans: number;
+  totalSteps: number;
+  completionRate: number;
+  avgStepsPerPlan: number;
+}
+
+export interface PlanTimeSeriesPoint {
+  period: string;
+  planCount: number;
+  completionRate: number;
+}

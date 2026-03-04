@@ -42,3 +42,23 @@ export const tokenUsage = sqliteTable('token_usage', {
   cacheCreationTokens: integer('cache_creation_tokens').default(0),
   createdAt: text('created_at').notNull(),
 });
+
+export const plans = sqliteTable('plans', {
+  id: text('id').primaryKey(),
+  conversationId: text('conversation_id').notNull().references(() => conversations.id),
+  sourceMessageId: text('source_message_id').notNull().references(() => messages.id),
+  title: text('title').notNull(),
+  totalSteps: integer('total_steps').notNull(),
+  completedSteps: integer('completed_steps').notNull().default(0),
+  status: text('status').notNull().default('unknown'),
+  createdAt: text('created_at').notNull(),
+});
+
+export const planSteps = sqliteTable('plan_steps', {
+  id: text('id').primaryKey(),
+  planId: text('plan_id').notNull().references(() => plans.id),
+  stepNumber: integer('step_number').notNull(),
+  content: text('content').notNull(),
+  status: text('status').notNull().default('unknown'),
+  createdAt: text('created_at').notNull(),
+});

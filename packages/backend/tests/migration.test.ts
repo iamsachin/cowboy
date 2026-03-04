@@ -37,13 +37,13 @@ describe('Database Migration', () => {
     expect(fs.existsSync(testDbPath)).toBe(true);
   });
 
-  it('creates all 4 tables', () => {
+  it('creates all 6 tables', () => {
     const tables = sqlite
       .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '__drizzle%' ORDER BY name")
       .all() as { name: string }[];
 
     const tableNames = tables.map((t) => t.name).sort();
-    expect(tableNames).toEqual(['conversations', 'messages', 'token_usage', 'tool_calls']);
+    expect(tableNames).toEqual(['conversations', 'messages', 'plan_steps', 'plans', 'token_usage', 'tool_calls']);
   });
 
   it('conversations table has expected columns', () => {

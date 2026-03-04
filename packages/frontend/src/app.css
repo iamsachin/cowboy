@@ -3,6 +3,12 @@
   themes: forest --default;
 }
 
+/* Override forest primary from green to blue */
+[data-theme="forest"] {
+  --color-primary: oklch(0.55 0.18 250);
+  --color-primary-content: oklch(0.98 0 0);
+}
+
 /* Override highlight.js background so the DaisyUI container provides it */
 .hljs {
   background: transparent !important;

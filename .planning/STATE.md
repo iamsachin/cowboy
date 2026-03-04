@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-04T08:10:00Z"
-last_activity: 2026-03-04 -- Completed 04-01 Conversation browser API (detail, filters, search)
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-03-04T08:18:00Z"
+last_activity: 2026-03-04 -- Completed 04-03 Conversation detail page (chat bubbles, code blocks, tool calls)
 progress:
   total_phases: 9
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 11
-  completed_plans: 9
-  percent: 82
+  completed_plans: 11
+  percent: 100
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-04)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing -- every conversation, tool call, token, and plan across all agents in one place.
-**Current focus:** Phase 4: Conversation Browser (In Progress)
+**Current focus:** Phase 4: Conversation Browser (Complete) -- Ready for Phase 5
 
 ## Current Position
 
-Phase: 4 of 9 (Conversation Browser)
-Plan: 1 of 3 in current phase
-Status: Executing Phase 04 -- Plan 01 complete, Plans 02-03 remaining
-Last activity: 2026-03-04 -- Completed 04-01 Conversation browser API (detail, filters, search)
+Phase: 4 of 9 (Conversation Browser) -- COMPLETE
+Plan: 3 of 3 in current phase (all complete)
+Status: Phase 04 complete -- all 3 plans delivered, ready for Phase 05
+Last activity: 2026-03-04 -- Completed 04-03 Conversation detail page (chat bubbles, code blocks, tool calls)
 
-Progress: [########--] 82%
+Progress: [##########] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
+- Total plans completed: 11
 - Average duration: 4min
-- Total execution time: 38min
+- Total execution time: 44min
 
 **By Phase:**
 
@@ -52,9 +52,11 @@ Progress: [########--] 82%
 | Phase 03 P02 | 4min | 2 tasks | 9 files |
 | Phase 03 P03 | 4min | 2 tasks | 3 files |
 | Phase 04 P01 | 3min | 2 tasks | 6 files |
+| Phase 04 P02 | 3min | 2 tasks | 6 files |
+| Phase 04 P03 | 3min | 2 tasks | 9 files |
 
 **Recent Trend:**
-- Last 5 plans: 3min, 5min, 4min, 4min, 3min
+- Last 5 plans: 4min, 3min, 3min, 3min, 3min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -102,6 +104,13 @@ Recent decisions affecting current work:
 - [Phase 04]: Snippet extraction server-side with <mark> tags for search term highlighting
 - [Phase 04]: Detail route registered before list route to avoid Fastify parameter conflicts
 - [Phase 04]: Token summary aggregated per-model then totaled with calculateCost for accurate cost/savings
+- [Phase 04]: ConversationBrowser owns its own composable instance for self-contained data fetching
+- [Phase 04]: Project filter populates dynamically from current result set rather than separate API call
+- [Phase 04]: Search snippet sanitization strips all HTML except mark tags for safe v-html rendering
+- [Phase 04]: highlight.js with selective language loading (12 languages) over full bundle for smaller payload
+- [Phase 04]: Transparent hljs background via CSS override for DaisyUI theme compatibility
+- [Phase 04]: Regex-based markdown code fence parsing in ChatMessage for inline code block rendering
+- [Phase 04]: Chronological timeline merge of messages and toolCalls for natural conversation flow
 
 ### Pending Todos
 
@@ -113,6 +122,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-04T08:10:00Z
-Stopped at: Completed 04-01-PLAN.md
-Resume file: .planning/phases/04-conversation-browser/04-01-SUMMARY.md
+Last session: 2026-03-04T08:18:00Z
+Stopped at: Completed 04-03-PLAN.md (Phase 04 complete)
+Resume file: .planning/phases/04-conversation-browser/04-03-SUMMARY.md

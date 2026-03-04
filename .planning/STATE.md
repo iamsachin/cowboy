@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: "Completed 05-01-PLAN.md"
-last_updated: "2026-03-04T09:50:56Z"
-last_activity: 2026-03-04 -- Completed 05-01 Backend real-time infrastructure (WebSocket, file watcher)
+stopped_at: "Completed 05-02-PLAN.md"
+last_updated: "2026-03-04T09:57:42Z"
+last_activity: 2026-03-04 -- Completed 05-02 Frontend WebSocket integration (composable, indicator, live refetch)
 progress:
   total_phases: 9
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 13
-  completed_plans: 12
-  percent: 92
+  completed_plans: 13
+  percent: 100
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-04)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing -- every conversation, tool call, token, and plan across all agents in one place.
-**Current focus:** Phase 5: Real-Time Updates -- Plan 01 (backend infrastructure) complete, Plan 02 (frontend) next
+**Current focus:** Phase 5 complete -- Real-Time Updates fully delivered (backend + frontend). Ready for Phase 6: Cursor Adapter
 
 ## Current Position
 
-Phase: 5 of 9 (Real-Time Updates)
-Plan: 1 of 2 in current phase
-Status: Plan 05-01 complete -- backend WebSocket and file watcher infrastructure delivered
-Last activity: 2026-03-04 -- Completed 05-01 Backend real-time infrastructure (WebSocket broadcast, chokidar file watcher)
+Phase: 5 of 9 (Real-Time Updates) -- COMPLETE
+Plan: 2 of 2 in current phase
+Status: Phase 05 complete -- all real-time infrastructure delivered (backend + frontend)
+Last activity: 2026-03-04 -- Completed 05-02 Frontend WebSocket integration (composable, indicator, live refetch)
 
-Progress: [#########-] 92%
+Progress: [##########] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
+- Total plans completed: 13
 - Average duration: 4min
-- Total execution time: 50min
+- Total execution time: 53min
 
 **By Phase:**
 
@@ -55,9 +55,10 @@ Progress: [#########-] 92%
 | Phase 04 P02 | 3min | 2 tasks | 6 files |
 | Phase 04 P03 | 3min | 2 tasks | 9 files |
 | Phase 05 P01 | 6min | 2 tasks | 10 files |
+| Phase 05 P02 | 3min | 2 tasks | 6 files |
 
 **Recent Trend:**
-- Last 5 plans: 3min, 3min, 3min, 3min, 6min
+- Last 5 plans: 3min, 3min, 3min, 6min, 3min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -116,6 +117,10 @@ Recent decisions affecting current work:
 - [Phase 05]: File watcher callback uses app.inject POST /api/ingest to reuse existing 409 concurrency guard
 - [Phase 05]: WebSocket route at /api/ws registered directly (not via prefix) due to fp() encapsulation breaking
 - [Phase 04]: Chronological timeline merge of messages and toolCalls for natural conversation flow
+- [Phase 05]: useWebSocket singleton uses module-level state matching useDateRange pattern (no Pinia)
+- [Phase 05]: onDataChanged pub/sub with Set<callback> and unsubscribe return for onScopeDispose cleanup
+- [Phase 05]: visibilitychange always fires all listeners on tab visible to catch up on missed data changes
+- [Phase 05]: Conversation detail page stays static (no live updates) per user decision
 
 ### Pending Todos
 
@@ -127,6 +132,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-04T09:50:56Z
-Stopped at: Completed 05-01-PLAN.md
-Resume file: .planning/phases/05-real-time-updates/05-01-SUMMARY.md
+Last session: 2026-03-04T09:57:42Z
+Stopped at: Completed 05-02-PLAN.md
+Resume file: .planning/phases/05-real-time-updates/05-02-SUMMARY.md

@@ -63,7 +63,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Real-Time
 
 - [x] **LIVE-01**: Dashboard updates live via WebSocket as new log data is detected
-- [ ] **LIVE-02**: WebSocket reconnects automatically when connection drops (including background tab recovery)
+- [x] **LIVE-02**: WebSocket reconnects automatically when connection drops (including background tab recovery)
 
 ### Infrastructure
 
@@ -125,7 +125,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONV-04 | Phase 4: Conversation Browser | Complete |
 | INGEST-04 | Phase 5: Real-Time Updates | Complete |
 | LIVE-01 | Phase 5: Real-Time Updates | Complete |
-| LIVE-02 | Phase 5: Real-Time Updates | Pending |
+| LIVE-02 | Phase 5: Real-Time Updates | Complete |
 | INGEST-02 | Phase 6: Cursor Integration + Agent Comparison | Pending |
 | DASH-04 | Phase 6: Cursor Integration + Agent Comparison | Pending |
 | DASH-05 | Phase 6: Cursor Integration + Agent Comparison | Pending |

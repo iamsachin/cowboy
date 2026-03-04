@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: black --default;
+  themes: dark --default;
 }
 
 /* Override highlight.js background so the DaisyUI container provides it */

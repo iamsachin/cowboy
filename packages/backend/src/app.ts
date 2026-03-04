@@ -1,5 +1,6 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import healthRoutes from './routes/health.js';
+import analyticsRoutes from './routes/analytics.js';
 import ingestionPlugin from './ingestion/index.js';
 import type { IngestionPluginOptions } from './ingestion/index.js';
 import { registerCors } from './plugins/cors.js';
@@ -19,6 +20,7 @@ export async function buildApp(opts?: AppOptions): Promise<FastifyInstance> {
 
   // Register routes under /api prefix
   await app.register(healthRoutes, { prefix: '/api' });
+  await app.register(analyticsRoutes, { prefix: '/api' });
   await app.register(ingestionPlugin, { prefix: '/api', ...opts?.ingestion });
 
   // Register static file serving in production

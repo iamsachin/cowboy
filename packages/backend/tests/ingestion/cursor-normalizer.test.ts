@@ -406,6 +406,61 @@ describe('normalizeCursorConversation', () => {
     });
   });
 
+  describe('deriveTitle XML handling', () => {
+    it('skips user bubbles whose text starts with "<"', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: '<system-reminder>Today is March 5</system-reminder>' }),
+        makeBubble({ bubbleId: 'b2', type: 1, text: 'How do I set up Vitest?' }),
+        makeBubble({ bubbleId: 'b3', type: 2, text: 'Response' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.conversation.title).toBe('How do I set up Vitest?');
+    });
+
+    it('picks first plain-text user bubble when mix of XML and plain', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: '<local-command-caveat>Caveat text</local-command-caveat>' }),
+        makeBubble({ bubbleId: 'b2', type: 1, text: '<objective>Build a thing</objective>' }),
+        makeBubble({ bubbleId: 'b3', type: 1, text: 'What is the best database for this?' }),
+        makeBubble({ bubbleId: 'b4', type: 2, text: 'I recommend SQLite' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.conversation.title).toBe('What is the best database for this?');
+    });
+
+    it('falls back to XML-stripped text when all user bubbles start with "<"', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: '<local-command-caveat>Important warning about commands in the system</local-command-caveat>' }),
+        makeBubble({ bubbleId: 'b2', type: 2, text: 'Response' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.conversation.title).toBe('Important warning about commands in the system');
+    });
+
+    it('returns null when all user bubbles are XML and stripped text is <= 10 chars', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: '<tag>Hi</tag>' }),
+        makeBubble({ bubbleId: 'b2', type: 2, text: 'Response' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.conversation.title).toBeNull();
+    });
+
+    it('plain-text user bubbles still produce titles as before (no regression)', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'Help me refactor this function' }),
+        makeBubble({ bubbleId: 'b2', type: 2, text: 'Sure, here is the refactored version' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.conversation.title).toBe('Help me refactor this function');
+    });
+  });
+
   describe('determinism', () => {
     it('same input always produces same output', () => {
       const conv = makeConversation();

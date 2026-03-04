@@ -230,6 +230,173 @@ describe('normalizeConversation', () => {
     });
   });
 
+  describe('deriveTitle XML handling', () => {
+    it('skips user messages whose trimmed content starts with "<"', () => {
+      const result: ParseResult = {
+        sessionId: 'session-xml-skip',
+        userMessages: [
+          {
+            uuid: 'uuid-xml-1',
+            timestamp: '2026-01-15T10:00:00.000Z',
+            content: '<local-command-caveat>Warning text about local commands</local-command-caveat>',
+            toolResults: [],
+          },
+          {
+            uuid: 'uuid-plain-1',
+            timestamp: '2026-01-15T10:00:01.000Z',
+            content: 'What is TypeScript?',
+            toolResults: [],
+          },
+        ],
+        assistantMessages: [{
+          firstUuid: 'uuid-asst-1',
+          messageId: 'msg_xml_1',
+          timestamp: '2026-01-15T10:00:02.000Z',
+          model: 'claude-sonnet-4-6',
+          contentBlocks: [{ type: 'text', text: 'Response' }],
+          toolUseBlocks: [],
+          usage: { input_tokens: 10, output_tokens: 5 },
+          stopReason: 'end_turn',
+        }],
+        skippedLines: 0,
+        timestamps: ['2026-01-15T10:00:00.000Z', '2026-01-15T10:00:01.000Z', '2026-01-15T10:00:02.000Z'],
+      };
+      const data = normalizeConversation(result, 'test-project');
+      expect(data!.conversation.title).toBe('What is TypeScript?');
+    });
+
+    it('picks first plain-text user message when multiple XML messages precede it', () => {
+      const result: ParseResult = {
+        sessionId: 'session-multi-xml',
+        userMessages: [
+          {
+            uuid: 'uuid-xml-1',
+            timestamp: '2026-01-15T10:00:00.000Z',
+            content: '<system-reminder>Today is March 5 2026</system-reminder>',
+            toolResults: [],
+          },
+          {
+            uuid: 'uuid-xml-2',
+            timestamp: '2026-01-15T10:00:01.000Z',
+            content: '<objective>Fix the build pipeline</objective>',
+            toolResults: [],
+          },
+          {
+            uuid: 'uuid-plain-1',
+            timestamp: '2026-01-15T10:00:02.000Z',
+            content: 'How do I configure ESLint?',
+            toolResults: [],
+          },
+        ],
+        assistantMessages: [{
+          firstUuid: 'uuid-asst-1',
+          messageId: 'msg_multi_xml',
+          timestamp: '2026-01-15T10:00:03.000Z',
+          model: 'claude-sonnet-4-6',
+          contentBlocks: [{ type: 'text', text: 'Response' }],
+          toolUseBlocks: [],
+          usage: { input_tokens: 10, output_tokens: 5 },
+          stopReason: 'end_turn',
+        }],
+        skippedLines: 0,
+        timestamps: ['2026-01-15T10:00:00.000Z', '2026-01-15T10:00:02.000Z', '2026-01-15T10:00:03.000Z'],
+      };
+      const data = normalizeConversation(result, 'test-project');
+      expect(data!.conversation.title).toBe('How do I configure ESLint?');
+    });
+
+    it('falls back to XML-stripped content when ALL user messages start with "<"', () => {
+      const result: ParseResult = {
+        sessionId: 'session-all-xml',
+        userMessages: [
+          {
+            uuid: 'uuid-xml-1',
+            timestamp: '2026-01-15T10:00:00.000Z',
+            content: '<local-command-caveat>Warning text about local commands that is long enough</local-command-caveat>',
+            toolResults: [],
+          },
+          {
+            uuid: 'uuid-xml-2',
+            timestamp: '2026-01-15T10:00:01.000Z',
+            content: '<system-reminder>Important system context here for the model</system-reminder>',
+            toolResults: [],
+          },
+        ],
+        assistantMessages: [{
+          firstUuid: 'uuid-asst-1',
+          messageId: 'msg_all_xml',
+          timestamp: '2026-01-15T10:00:02.000Z',
+          model: 'claude-sonnet-4-6',
+          contentBlocks: [{ type: 'text', text: 'Response' }],
+          toolUseBlocks: [],
+          usage: { input_tokens: 10, output_tokens: 5 },
+          stopReason: 'end_turn',
+        }],
+        skippedLines: 0,
+        timestamps: ['2026-01-15T10:00:00.000Z', '2026-01-15T10:00:01.000Z', '2026-01-15T10:00:02.000Z'],
+      };
+      const data = normalizeConversation(result, 'test-project');
+      // Fallback: strip tags, use first with >10 chars
+      expect(data!.conversation.title).toBe('Warning text about local commands that is long enough');
+    });
+
+    it('returns null when all user messages are XML and stripped text is <= 10 chars', () => {
+      const result: ParseResult = {
+        sessionId: 'session-short-xml',
+        userMessages: [
+          {
+            uuid: 'uuid-xml-1',
+            timestamp: '2026-01-15T10:00:00.000Z',
+            content: '<tag>Short</tag>',
+            toolResults: [],
+          },
+        ],
+        assistantMessages: [{
+          firstUuid: 'uuid-asst-1',
+          messageId: 'msg_short_xml',
+          timestamp: '2026-01-15T10:00:01.000Z',
+          model: 'claude-sonnet-4-6',
+          contentBlocks: [{ type: 'text', text: 'Response' }],
+          toolUseBlocks: [],
+          usage: { input_tokens: 10, output_tokens: 5 },
+          stopReason: 'end_turn',
+        }],
+        skippedLines: 0,
+        timestamps: ['2026-01-15T10:00:00.000Z', '2026-01-15T10:00:01.000Z'],
+      };
+      const data = normalizeConversation(result, 'test-project');
+      expect(data!.conversation.title).toBeNull();
+    });
+
+    it('plain-text messages still produce titles as before (no regression)', () => {
+      const result: ParseResult = {
+        sessionId: 'session-plain',
+        userMessages: [
+          {
+            uuid: 'uuid-plain-1',
+            timestamp: '2026-01-15T10:00:00.000Z',
+            content: 'Explain async/await in JavaScript',
+            toolResults: [],
+          },
+        ],
+        assistantMessages: [{
+          firstUuid: 'uuid-asst-1',
+          messageId: 'msg_plain',
+          timestamp: '2026-01-15T10:00:01.000Z',
+          model: 'claude-sonnet-4-6',
+          contentBlocks: [{ type: 'text', text: 'Response' }],
+          toolUseBlocks: [],
+          usage: { input_tokens: 10, output_tokens: 5 },
+          stopReason: 'end_turn',
+        }],
+        skippedLines: 0,
+        timestamps: ['2026-01-15T10:00:00.000Z', '2026-01-15T10:00:01.000Z'],
+      };
+      const data = normalizeConversation(result, 'test-project');
+      expect(data!.conversation.title).toBe('Explain async/await in JavaScript');
+    });
+  });
+
   describe('determinism', () => {
     it('same input always produces same output', () => {
       const data1 = normalizeConversation(toolResult, '-Users-sachin-Desktop-learn-cowboy');

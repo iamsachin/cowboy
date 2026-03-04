@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { getOverviewStats, getTimeSeries, getConversationList } from '../db/queries/analytics.js';
+import { getOverviewStats, getTimeSeries, getConversationList, getConversationDetail } from '../db/queries/analytics.js';
 import { autoGranularity } from '@cowboy/shared';
 import type { Granularity } from '@cowboy/shared';
 
@@ -29,15 +29,30 @@ export default async function analyticsRoutes(app: FastifyInstance) {
     return getTimeSeries(fromDate, toDate, gran);
   });
 
-  // GET /analytics/conversations?from=&to=&page=&limit=&sort=&order=
+  // GET /analytics/conversations/:id -- must be registered BEFORE the list route
+  app.get('/analytics/conversations/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+
+    const detail = getConversationDetail(id);
+    if (!detail) {
+      return reply.status(404).send({ error: 'Conversation not found' });
+    }
+
+    return detail;
+  });
+
+  // GET /analytics/conversations?from=&to=&page=&limit=&sort=&order=&agent=&project=&search=
   app.get('/analytics/conversations', async (request) => {
-    const { from, to, page, limit, sort, order } = request.query as {
+    const { from, to, page, limit, sort, order, agent, project, search } = request.query as {
       from?: string;
       to?: string;
       page?: string;
       limit?: string;
       sort?: string;
       order?: string;
+      agent?: string;
+      project?: string;
+      search?: string;
     };
 
     const toDate = to || new Date().toISOString().slice(0, 10);
@@ -50,6 +65,9 @@ export default async function analyticsRoutes(app: FastifyInstance) {
       Number(limit) || 20,
       sort || 'date',
       order || 'desc',
+      agent || undefined,
+      project || undefined,
+      search || undefined,
     );
   });
 }

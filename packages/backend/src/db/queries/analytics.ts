@@ -1,8 +1,8 @@
 import { db } from '../index.js';
-import { conversations, tokenUsage } from '../schema.js';
-import { sql, and, gte, lte } from 'drizzle-orm';
+import { conversations, messages, toolCalls, tokenUsage } from '../schema.js';
+import { sql, and, gte, lte, eq, like, or } from 'drizzle-orm';
 import { calculateCost } from '@cowboy/shared';
-import type { OverviewStats, TimeSeriesPoint, ConversationRow, ConversationListResponse } from '@cowboy/shared';
+import type { OverviewStats, TimeSeriesPoint, ConversationRow, ConversationListResponse, ConversationDetailResponse } from '@cowboy/shared';
 import type { Granularity } from '@cowboy/shared';
 
 /**
@@ -216,7 +216,7 @@ export function getTimeSeries(from: string, to: string, granularity: Granularity
 }
 
 /**
- * Get paginated conversation list with token breakdown and cost.
+ * Get paginated conversation list with token breakdown, cost, and optional filters.
  */
 export function getConversationList(
   from: string,
@@ -225,11 +225,38 @@ export function getConversationList(
   limit: number = 20,
   sort: string = 'date',
   order: string = 'desc',
+  agent?: string,
+  project?: string,
+  search?: string,
 ): ConversationListResponse {
-  const dateFilter = and(
+  const conditions = [
     gte(conversations.createdAt, from),
-    lte(conversations.createdAt, to + 'T23:59:59Z')
-  );
+    lte(conversations.createdAt, to + 'T23:59:59Z'),
+  ];
+
+  if (agent) conditions.push(eq(conversations.agent, agent));
+  if (project) conditions.push(eq(conversations.project, project));
+
+  // For search: query conversations where title/project/model match
+  // OR where a message content matches
+  if (search) {
+    const searchPattern = `%${search}%`;
+    const matchingConvIds = db
+      .selectDistinct({ id: messages.conversationId })
+      .from(messages)
+      .where(like(messages.content, searchPattern));
+
+    conditions.push(
+      or(
+        like(conversations.title, searchPattern),
+        like(conversations.project, searchPattern),
+        like(conversations.model, searchPattern),
+        sql`${conversations.id} IN (${matchingConvIds})`
+      )!
+    );
+  }
+
+  const dateFilter = and(...conditions);
 
   const offset = (page - 1) * limit;
 
@@ -245,6 +272,8 @@ export function getConversationList(
     .select({
       id: conversations.id,
       date: conversations.createdAt,
+      agent: conversations.agent,
+      title: conversations.title,
       project: conversations.project,
       model: conversations.model,
       inputTokens: sql<number>`coalesce(sum(${tokenUsage.inputTokens}), 0)`,
@@ -261,7 +290,7 @@ export function getConversationList(
     .offset(offset)
     .all();
 
-  // Total count for pagination
+  // Total count for pagination (with same filters)
   const totalResult = db
     .select({ count: sql<number>`count(*)` })
     .from(conversations)
@@ -277,9 +306,11 @@ export function getConversationList(
 
     const costResult = calculateCost(model, input, output, cacheRead, cacheCreation);
 
-    return {
+    const baseRow: ConversationRow = {
       id: row.id,
       date: row.date,
+      agent: row.agent,
+      title: row.title,
       project: row.project,
       model: row.model,
       inputTokens: input,
@@ -289,6 +320,14 @@ export function getConversationList(
       cost: costResult?.cost ?? null,
       savings: costResult?.savings ?? null,
     };
+
+    // If search was provided, extract a snippet from matching message content
+    if (search) {
+      const snippet = getSearchSnippet(row.id, search);
+      return { ...baseRow, snippet };
+    }
+
+    return baseRow;
   });
 
   return {
@@ -296,5 +335,151 @@ export function getConversationList(
     total: Number(totalResult?.count ?? 0),
     page,
     limit,
+  };
+}
+
+/**
+ * Extract a text snippet from a conversation's messages matching the search term.
+ */
+function getSearchSnippet(conversationId: string, searchTerm: string): string | null {
+  const matchingMsg = db
+    .select({ content: messages.content })
+    .from(messages)
+    .where(and(
+      eq(messages.conversationId, conversationId),
+      like(messages.content, `%${searchTerm}%`)
+    ))
+    .limit(1)
+    .get();
+
+  if (!matchingMsg?.content) return null;
+
+  return extractSnippet(matchingMsg.content, searchTerm);
+}
+
+/**
+ * Extract snippet with context around the search term.
+ */
+function extractSnippet(content: string, searchTerm: string, contextChars: number = 100): string | null {
+  const lowerContent = content.toLowerCase();
+  const lowerTerm = searchTerm.toLowerCase();
+  const idx = lowerContent.indexOf(lowerTerm);
+  if (idx === -1) return null;
+
+  const start = Math.max(0, idx - contextChars);
+  const end = Math.min(content.length, idx + searchTerm.length + contextChars);
+
+  let snippet = '';
+  if (start > 0) snippet += '...';
+  snippet += content.slice(start, idx);
+  snippet += `<mark>${content.slice(idx, idx + searchTerm.length)}</mark>`;
+  snippet += content.slice(idx + searchTerm.length, end);
+  if (end < content.length) snippet += '...';
+
+  return snippet;
+}
+
+/**
+ * Get full conversation detail: conversation metadata, messages, tool calls, and token summary.
+ */
+export function getConversationDetail(conversationId: string): ConversationDetailResponse | null {
+  const conv = db
+    .select()
+    .from(conversations)
+    .where(eq(conversations.id, conversationId))
+    .get();
+
+  if (!conv) return null;
+
+  const msgs = db
+    .select({
+      id: messages.id,
+      role: messages.role,
+      content: messages.content,
+      createdAt: messages.createdAt,
+      model: messages.model,
+    })
+    .from(messages)
+    .where(eq(messages.conversationId, conversationId))
+    .orderBy(messages.createdAt)
+    .all();
+
+  const tools = db
+    .select({
+      id: toolCalls.id,
+      messageId: toolCalls.messageId,
+      name: toolCalls.name,
+      input: toolCalls.input,
+      output: toolCalls.output,
+      status: toolCalls.status,
+      duration: toolCalls.duration,
+      createdAt: toolCalls.createdAt,
+    })
+    .from(toolCalls)
+    .where(eq(toolCalls.conversationId, conversationId))
+    .orderBy(toolCalls.createdAt)
+    .all();
+
+  // Token summary grouped by model, then totaled
+  const tokenRows = db
+    .select({
+      model: tokenUsage.model,
+      inputTokens: sql<number>`sum(${tokenUsage.inputTokens})`,
+      outputTokens: sql<number>`sum(${tokenUsage.outputTokens})`,
+      cacheReadTokens: sql<number>`sum(${tokenUsage.cacheReadTokens})`,
+      cacheCreationTokens: sql<number>`sum(${tokenUsage.cacheCreationTokens})`,
+    })
+    .from(tokenUsage)
+    .where(eq(tokenUsage.conversationId, conversationId))
+    .groupBy(tokenUsage.model)
+    .all();
+
+  let totalInput = 0;
+  let totalOutput = 0;
+  let totalCacheRead = 0;
+  let totalCacheCreation = 0;
+  let totalCost = 0;
+  let totalSavings = 0;
+  let hasCost = false;
+
+  for (const row of tokenRows) {
+    const input = Number(row.inputTokens);
+    const output = Number(row.outputTokens);
+    const cacheRead = Number(row.cacheReadTokens);
+    const cacheCreation = Number(row.cacheCreationTokens);
+
+    totalInput += input;
+    totalOutput += output;
+    totalCacheRead += cacheRead;
+    totalCacheCreation += cacheCreation;
+
+    const costResult = calculateCost(row.model, input, output, cacheRead, cacheCreation);
+    if (costResult) {
+      hasCost = true;
+      totalCost += costResult.cost;
+      totalSavings += costResult.savings;
+    }
+  }
+
+  return {
+    conversation: {
+      id: conv.id,
+      agent: conv.agent,
+      project: conv.project,
+      title: conv.title,
+      createdAt: conv.createdAt,
+      updatedAt: conv.updatedAt,
+      model: conv.model,
+    },
+    messages: msgs,
+    toolCalls: tools,
+    tokenSummary: {
+      inputTokens: totalInput,
+      outputTokens: totalOutput,
+      cacheReadTokens: totalCacheRead,
+      cacheCreationTokens: totalCacheCreation,
+      cost: hasCost ? totalCost : null,
+      savings: hasCost ? totalSavings : null,
+    },
   };
 }

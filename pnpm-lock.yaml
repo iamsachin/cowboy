@@ -60,12 +60,18 @@ importers:
       '@cowboy/shared':
         specifier: workspace:*
         version: link:../shared
+      '@highlightjs/vue-plugin':
+        specifier: ^2.1.0
+        version: 2.1.0(highlight.js@11.11.1)(vue@3.5.29(typescript@5.9.3))
       '@vuepic/vue-datepicker':
         specifier: ^12.1.0
         version: 12.1.0(vue@3.5.29(typescript@5.9.3))
       chart.js:
         specifier: ^4.5.1
         version: 4.5.1
+      highlight.js:
+        specifier: ^11.11.1
+        version: 11.11.1
       lucide-vue-next:
         specifier: latest
         version: 0.576.0(vue@3.5.29(typescript@5.9.3))
@@ -628,6 +634,12 @@ packages:
 
   '@floating-ui/vue@1.1.11':
     resolution: {integrity: sha512-HzHKCNVxnGS35r9fCHBc3+uCnjw9IWIlCPL683cGgM9Kgj2BiAl8x1mS7vtvP6F9S/e/q4O6MApwSHj8hNLGfw==}
+
+  '@highlightjs/vue-plugin@2.1.0':
+    resolution: {integrity: sha512-E+bmk4ncca+hBEYRV2a+1aIzIV0VSY/e5ArjpuSN9IO7wBJrzUE2u4ESCwrbQD7sAy+jWQjkV5qCCWgc+pu7CQ==}
+    peerDependencies:
+      highlight.js: ^11.0.1
+      vue: ^3
 
   '@isaacs/cliui@9.0.0':
     resolution: {integrity: sha512-AokJm4tuBHillT+FpMtxQ60n8ObyXBatq7jD2/JA9dxbDDokKQm8KMht5ibGzLVU9IJDIKK4TPKgMHEYMn3lMg==}
@@ -1423,6 +1435,10 @@ packages:
   he@1.2.0:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
     hasBin: true
+
+  highlight.js@11.11.1:
+    resolution: {integrity: sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w==}
+    engines: {node: '>=12.0.0'}
 
   http-errors@2.0.1:
     resolution: {integrity: sha512-4FbRdAX+bSdmo4AUFuS0WNiPz8NgFt+r8ThgNWmlrjQjt1Q7ZR9+zTlce2859x4KSXrwIsaeTqDoKQmtP8pLmQ==}
@@ -2409,6 +2425,11 @@ snapshots:
       - '@vue/composition-api'
       - vue
 
+  '@highlightjs/vue-plugin@2.1.0(highlight.js@11.11.1)(vue@3.5.29(typescript@5.9.3))':
+    dependencies:
+      highlight.js: 11.11.1
+      vue: 3.5.29(typescript@5.9.3)
+
   '@isaacs/cliui@9.0.0': {}
 
   '@jridgewell/gen-mapping@0.3.13':
@@ -3140,6 +3161,8 @@ snapshots:
   has-flag@4.0.0: {}
 
   he@1.2.0: {}
+
+  highlight.js@11.11.1: {}
 
   http-errors@2.0.1:
     dependencies:

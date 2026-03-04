@@ -7,9 +7,10 @@ import type { Granularity } from '@cowboy/shared';
 
 /**
  * Get overview stats for KPI cards: token totals, cost, conversation count, active days, trends.
+ * Optional agent parameter filters results to a specific agent (e.g., 'claude-code' or 'cursor').
  */
-export function getOverviewStats(from: string, to: string): OverviewStats {
-  const stats = computePeriodStats(from, to);
+export function getOverviewStats(from: string, to: string, agent?: string): OverviewStats {
+  const stats = computePeriodStats(from, to, agent);
 
   // Compute prior period for trend calculation
   // Prior period ends the day before current 'from' to avoid overlap
@@ -21,7 +22,7 @@ export function getOverviewStats(from: string, to: string): OverviewStats {
   const priorFrom = priorFromDate.toISOString().slice(0, 10);
   const priorTo = priorToDate.toISOString().slice(0, 10);
 
-  const priorStats = computePeriodStats(priorFrom, priorTo);
+  const priorStats = computePeriodStats(priorFrom, priorTo, agent);
 
   return {
     totalTokens: stats.totalInput + stats.totalOutput + stats.totalCacheRead + stats.totalCacheCreation,
@@ -61,11 +62,13 @@ interface PeriodStats {
   activeDays: number;
 }
 
-function computePeriodStats(from: string, to: string): PeriodStats {
-  const dateFilter = and(
+function computePeriodStats(from: string, to: string, agent?: string): PeriodStats {
+  const conditions = [
     gte(conversations.createdAt, from),
-    lte(conversations.createdAt, to + 'T23:59:59Z')
-  );
+    lte(conversations.createdAt, to + 'T23:59:59Z'),
+  ];
+  if (agent) conditions.push(eq(conversations.agent, agent));
+  const dateFilter = and(...conditions);
 
   // Token totals
   const tokenTotals = db
@@ -146,18 +149,21 @@ function computePeriodStats(from: string, to: string): PeriodStats {
 
 /**
  * Get time-series data grouped by granularity.
+ * Optional agent parameter filters results to a specific agent.
  */
-export function getTimeSeries(from: string, to: string, granularity: Granularity): TimeSeriesPoint[] {
+export function getTimeSeries(from: string, to: string, granularity: Granularity, agent?: string): TimeSeriesPoint[] {
   const dateFormat = granularity === 'daily'
     ? '%Y-%m-%d'
     : granularity === 'weekly'
     ? '%Y-W%W'
     : '%Y-%m';
 
-  const dateFilter = and(
+  const conditions = [
     gte(conversations.createdAt, from),
-    lte(conversations.createdAt, to + 'T23:59:59Z')
-  );
+    lte(conversations.createdAt, to + 'T23:59:59Z'),
+  ];
+  if (agent) conditions.push(eq(conversations.agent, agent));
+  const dateFilter = and(...conditions);
 
   const rows = db
     .select({
@@ -213,6 +219,40 @@ export function getTimeSeries(from: string, to: string, granularity: Granularity
   }
 
   return Array.from(periodMap.values()).sort((a, b) => a.period.localeCompare(b.period));
+}
+
+/**
+ * Get model usage distribution: how many conversations use each model and total tokens per model.
+ * Optional agent parameter filters results to a specific agent.
+ */
+export function getModelDistribution(from: string, to: string, agent?: string): Array<{ model: string; count: number; totalTokens: number }> {
+  const conditions = [
+    gte(conversations.createdAt, from),
+    lte(conversations.createdAt, to + 'T23:59:59Z'),
+  ];
+  if (agent) conditions.push(eq(conversations.agent, agent));
+  const dateFilter = and(...conditions);
+
+  const totalTokensExpr = sql<number>`coalesce(sum(${tokenUsage.inputTokens}) + sum(${tokenUsage.outputTokens}) + sum(${tokenUsage.cacheReadTokens}) + sum(${tokenUsage.cacheCreationTokens}), 0)`;
+
+  const rows = db
+    .select({
+      model: tokenUsage.model,
+      count: sql<number>`count(distinct ${tokenUsage.conversationId})`,
+      totalTokens: totalTokensExpr,
+    })
+    .from(tokenUsage)
+    .innerJoin(conversations, sql`${tokenUsage.conversationId} = ${conversations.id}`)
+    .where(dateFilter)
+    .groupBy(tokenUsage.model)
+    .orderBy(sql`${totalTokensExpr} DESC`)
+    .all();
+
+  return rows.map(r => ({
+    model: r.model,
+    count: Number(r.count),
+    totalTokens: Number(r.totalTokens),
+  }));
 }
 
 /**

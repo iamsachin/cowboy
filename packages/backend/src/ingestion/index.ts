@@ -4,6 +4,9 @@ import { conversations, messages, toolCalls, tokenUsage } from '../db/schema.js'
 import { discoverJsonlFiles } from './file-discovery.js';
 import { parseJsonlFile } from './claude-code-parser.js';
 import { normalizeConversation } from './normalizer.js';
+import { discoverCursorDb } from './cursor-file-discovery.js';
+import { parseCursorDb, getBubblesForConversation } from './cursor-parser.js';
+import { normalizeCursorConversation } from './cursor-normalizer.js';
 import type { IngestionStats, IngestionStatus } from './types.js';
 
 export interface IngestionPluginOptions {
@@ -95,6 +98,60 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
         }
 
         status.progress.filesProcessed++;
+      }
+
+      // ── Cursor ingestion ────────────────────────────────────────────────
+      const cursorDbPath = discoverCursorDb();
+      if (cursorDbPath) {
+        try {
+          const cursorConversations = parseCursorDb(cursorDbPath);
+          app.log.info({ count: cursorConversations.length }, 'Discovered Cursor conversations');
+
+          for (const conv of cursorConversations) {
+            try {
+              const bubbles = getBubblesForConversation(cursorDbPath, conv.composerId);
+              const normalizedData = normalizeCursorConversation(conv, bubbles, 'Cursor');
+              if (!normalizedData) continue;
+
+              db.transaction((tx) => {
+                tx.insert(conversations)
+                  .values(normalizedData.conversation)
+                  .onConflictDoNothing({ target: conversations.id })
+                  .run();
+
+                if (normalizedData.messages.length > 0) {
+                  tx.insert(messages)
+                    .values(normalizedData.messages)
+                    .onConflictDoNothing({ target: messages.id })
+                    .run();
+                }
+
+                if (normalizedData.toolCalls.length > 0) {
+                  tx.insert(toolCalls)
+                    .values(normalizedData.toolCalls)
+                    .onConflictDoNothing({ target: toolCalls.id })
+                    .run();
+                }
+
+                if (normalizedData.tokenUsage.length > 0) {
+                  tx.insert(tokenUsage)
+                    .values(normalizedData.tokenUsage)
+                    .onConflictDoNothing({ target: tokenUsage.id })
+                    .run();
+                }
+              });
+
+              stats.conversationsFound++;
+              stats.messagesParsed += normalizedData.messages.length;
+              stats.toolCallsExtracted += normalizedData.toolCalls.length;
+              stats.tokensRecorded += normalizedData.tokenUsage.length;
+            } catch (err) {
+              app.log.error({ err, composerId: conv.composerId }, 'Error processing Cursor conversation');
+            }
+          }
+        } catch (err) {
+          app.log.error({ err }, 'Error processing Cursor state.vscdb');
+        }
       }
     } catch (err) {
       app.log.error({ err }, 'Error during ingestion');

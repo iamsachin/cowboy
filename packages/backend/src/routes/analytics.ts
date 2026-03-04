@@ -1,32 +1,43 @@
 import { FastifyInstance } from 'fastify';
-import { getOverviewStats, getTimeSeries, getConversationList, getConversationDetail } from '../db/queries/analytics.js';
+import { getOverviewStats, getTimeSeries, getModelDistribution, getConversationList, getConversationDetail } from '../db/queries/analytics.js';
 import { autoGranularity } from '@cowboy/shared';
 import type { Granularity } from '@cowboy/shared';
 
 export default async function analyticsRoutes(app: FastifyInstance) {
-  // GET /analytics/overview?from=&to=
+  // GET /analytics/overview?from=&to=&agent=
   app.get('/analytics/overview', async (request) => {
-    const { from, to } = request.query as { from?: string; to?: string };
+    const { from, to, agent } = request.query as { from?: string; to?: string; agent?: string };
 
     const toDate = to || new Date().toISOString().slice(0, 10);
     const fromDate = from || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-    return getOverviewStats(fromDate, toDate);
+    return getOverviewStats(fromDate, toDate, agent || undefined);
   });
 
-  // GET /analytics/timeseries?from=&to=&granularity=
+  // GET /analytics/timeseries?from=&to=&granularity=&agent=
   app.get('/analytics/timeseries', async (request) => {
-    const { from, to, granularity } = request.query as {
+    const { from, to, granularity, agent } = request.query as {
       from?: string;
       to?: string;
       granularity?: Granularity;
+      agent?: string;
     };
 
     const toDate = to || new Date().toISOString().slice(0, 10);
     const fromDate = from || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
     const gran = granularity || autoGranularity(fromDate, toDate);
 
-    return getTimeSeries(fromDate, toDate, gran);
+    return getTimeSeries(fromDate, toDate, gran, agent || undefined);
+  });
+
+  // GET /analytics/model-distribution?from=&to=&agent=
+  app.get('/analytics/model-distribution', async (request) => {
+    const { from, to, agent } = request.query as { from?: string; to?: string; agent?: string };
+
+    const toDate = to || new Date().toISOString().slice(0, 10);
+    const fromDate = from || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    return getModelDistribution(fromDate, toDate, agent || undefined);
   });
 
   // GET /analytics/conversations/:id -- must be registered BEFORE the list route

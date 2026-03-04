@@ -95,6 +95,12 @@ export interface ConversationDetailResponse {
   };
 }
 
+export interface ModelDistributionEntry {
+  model: string;
+  count: number;
+  totalTokens: number;
+}
+
 export interface SearchConversationRow extends ConversationRow {
   snippet: string | null;
 }

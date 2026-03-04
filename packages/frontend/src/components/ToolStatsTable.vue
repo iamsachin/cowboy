@@ -89,8 +89,8 @@ const sortedData = computed(() => {
       va = a.name.toLowerCase();
       vb = b.name.toLowerCase();
     } else {
-      va = (a as Record<string, unknown>)[key] as number ?? 0;
-      vb = (b as Record<string, unknown>)[key] as number ?? 0;
+      va = (a as unknown as Record<string, number>)[key] ?? 0;
+      vb = (b as unknown as Record<string, number>)[key] ?? 0;
     }
 
     if (va < vb) return -1 * dir;

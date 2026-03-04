@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Phase 7 in progress -- Advanced analytics backend endpoints delivered (tool-stats, heatmap, project-stats)
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-03-04T12:53:28Z"
-last_activity: 2026-03-04 -- Completed 07-01 Advanced analytics backend API
+status: Phase 7 in progress -- Cost projection with confidence band delivered on CostChart
+stopped_at: Completed 07-02-PLAN.md
+last_updated: "2026-03-04T12:59:00Z"
+last_activity: 2026-03-04 -- Completed 07-02 Cost projection with confidence band
 progress:
   total_phases: 9
   completed_phases: 6
   total_plans: 18
-  completed_plans: 16
-  percent: 89
+  completed_plans: 17
+  percent: 94
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-04)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing -- every conversation, tool call, token, and plan across all agents in one place.
-**Current focus:** Phase 7 in progress -- Advanced analytics backend endpoints delivered
+**Current focus:** Phase 7 in progress -- Cost projection with confidence band delivered on CostChart
 
 ## Current Position
 
 Phase: 7 of 9 (Advanced Analytics)
-Plan: 1 of 3 in current phase -- COMPLETE
-Status: Phase 7 in progress -- tool-stats, heatmap, project-stats API endpoints delivered
-Last activity: 2026-03-04 -- Completed 07-01 Advanced analytics backend API
+Plan: 2 of 3 in current phase -- COMPLETE
+Status: Phase 7 in progress -- Cost projection with confidence band delivered on CostChart
+Last activity: 2026-03-04 -- Completed 07-02 Cost projection with confidence band
 
-Progress: [########--] 89%
+Progress: [█████████░] 94%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
+- Total plans completed: 17
 - Average duration: 5min
-- Total execution time: 75min
+- Total execution time: 77min
 
 **By Phase:**
 
@@ -59,9 +59,10 @@ Progress: [########--] 89%
 | Phase 06 P01 | 7min | 2 tasks | 14 files |
 | Phase 06 P02 | 8min | 3 tasks | 18 files |
 | Phase 07 P01 | 7min | 2 tasks | 9 files |
+| Phase 07 P02 | 2min | 1 tasks | 1 files |
 
 **Recent Trend:**
-- Last 5 plans: 6min, 3min, 7min, 8min, 7min
+- Last 5 plans: 3min, 7min, 8min, 7min, 2min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -138,6 +139,10 @@ Recent decisions affecting current work:
 - [Phase 07]: Tool success checks both 'success' and 'completed' status values for forward compatibility
 - [Phase 07]: Project cost calculated per-model via secondary query for accuracy across mixed-model projects
 - [Phase 07]: topModels uses count(distinct conversationId) per model for accurate model distribution
+- [Phase 07]: Bar base chart with type:'line' on projection datasets for Chart.js mixed chart support
+- [Phase 07]: Projection overlaps at last historical point for seamless visual continuity
+- [Phase 07]: Skip projection for 0-1 data points (insufficient for meaningful moving average)
+- [Phase 07]: Upper/Lower bound datasets hidden from legend and tooltip via filter callbacks
 
 ### Pending Todos
 
@@ -149,6 +154,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T12:53:28Z
-Stopped at: Completed 07-01-PLAN.md
-Resume file: .planning/phases/07-advanced-analytics/07-01-SUMMARY.md
+Last session: 2026-03-04T12:59:00Z
+Stopped at: Completed 07-02-PLAN.md
+Resume file: .planning/phases/07-advanced-analytics/07-02-SUMMARY.md

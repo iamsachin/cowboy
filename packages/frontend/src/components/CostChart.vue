@@ -172,7 +172,8 @@ function computeProjection(timeseries: TimeSeriesPoint[]): {
   return { labels: allLabels, historicalCosts, projectionLine, upperBound, lowerBound };
 }
 
-const chartData = computed(() => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const chartData = computed<any>(() => {
   if (!props.data || props.data.length <= 1) {
     // 0-1 data points: no projection, just the bar chart
     return {

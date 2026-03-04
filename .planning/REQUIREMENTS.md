@@ -21,7 +21,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **TOKEN-01**: User can view token usage per conversation (input, output, cache_read, cache_creation)
 - [x] **TOKEN-02**: User can view estimated cost per conversation based on model pricing
 - [x] **TOKEN-03**: User can view aggregate token usage and cost across all conversations
-- [ ] **TOKEN-04**: User can view cost trend analysis with forward spending projection
+- [x] **TOKEN-04**: User can view cost trend analysis with forward spending projection
 - [x] **TOKEN-05**: User can view model distribution breakdown (which models used, how often)
 
 ### Tool Call Analytics
@@ -129,7 +129,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INGEST-02 | Phase 6: Cursor Integration + Agent Comparison | Complete |
 | DASH-04 | Phase 6: Cursor Integration + Agent Comparison | Complete |
 | DASH-05 | Phase 6: Cursor Integration + Agent Comparison | Complete |
-| TOKEN-04 | Phase 7: Advanced Analytics | Pending |
+| TOKEN-04 | Phase 7: Advanced Analytics | Complete |
 | TOKEN-05 | Phase 7: Advanced Analytics | Complete |
 | TOOL-01 | Phase 7: Advanced Analytics | Complete |
 | TOOL-02 | Phase 7: Advanced Analytics | Complete |

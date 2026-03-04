@@ -49,7 +49,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Plan Tracking
 
-- [ ] **PLAN-01**: System extracts multi-step plans from conversation messages using heuristic detection
+- [x] **PLAN-01**: System extracts multi-step plans from conversation messages using heuristic detection
 - [ ] **PLAN-02**: User can view extracted plans and their completion status
 - [ ] **PLAN-03**: User can view plan statistics (average steps, completion rates)
 
@@ -136,7 +136,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOOL-03 | Phase 7: Advanced Analytics | Complete |
 | DASH-06 | Phase 7: Advanced Analytics | Complete |
 | DASH-07 | Phase 7: Advanced Analytics | Complete |
-| PLAN-01 | Phase 8: Plan Tracking | Pending |
+| PLAN-01 | Phase 8: Plan Tracking | Complete |
 | PLAN-02 | Phase 8: Plan Tracking | Pending |
 | PLAN-03 | Phase 8: Plan Tracking | Pending |
 | SYNC-01 | Phase 9: Settings + Remote Sync | Pending |

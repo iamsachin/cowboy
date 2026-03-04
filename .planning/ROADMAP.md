@@ -142,10 +142,12 @@ Plans:
   1. System extracts multi-step plans from conversation messages using heuristic detection (numbered lists, checkbox patterns, step-by-step instructions)
   2. User can view extracted plans with their steps and inferred completion status
   3. User can view plan statistics showing average step count, completion rates, and trends
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 08-01: TBD
+- [ ] 08-01-PLAN.md -- Plan extractor engine: shared types, DB schema (plans/planSteps tables), heuristic extraction (numbered/checkbox/step patterns), completion inference, ingestion pipeline integration, unit + integration tests
+- [ ] 08-02-PLAN.md -- Plan API: Drizzle query layer (list/detail/stats/timeseries/by-conversation), Fastify routes with filters and pagination, route registration, integration tests
+- [ ] 08-03-PLAN.md -- Frontend Plans page with KPIs/charts/table, plan detail with step list, inline plans in conversation detail, usePlans composable, sidebar and router wiring
 
 ### Phase 9: Settings + Remote Sync
 **Goal**: User can configure the application (log paths, remote sync endpoint, frequency, payload scope) through a settings page
@@ -176,5 +178,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 5. Real-Time Updates | 2/2 | Complete | 2026-03-04 |
 | 6. Cursor Integration + Agent Comparison | 2/2 | Complete | 2026-03-04 |
 | 7. Advanced Analytics | 0/3 | Not started | - |
-| 8. Plan Tracking | 0/1 | Not started | - |
+| 8. Plan Tracking | 0/3 | Not started | - |
 | 9. Settings + Remote Sync | 0/2 | Not started | - |

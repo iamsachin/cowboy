@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Completed 07-03-PLAN.md
-last_updated: "2026-03-04T13:02:55.789Z"
-last_activity: 2026-03-04 -- Completed 07-03 Analytics page frontend
+status: in-progress
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-03-04T13:41:14Z"
+last_activity: 2026-03-04 -- Completed 08-01 Plan extraction engine
 progress:
   total_phases: 9
   completed_phases: 7
-  total_plans: 18
-  completed_plans: 18
-  percent: 94
+  total_plans: 21
+  completed_plans: 19
+  percent: 90
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-04)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing -- every conversation, tool call, token, and plan across all agents in one place.
-**Current focus:** Phase 7 in progress -- Cost projection with confidence band delivered on CostChart
+**Current focus:** Phase 8 in progress -- Plan tracking extraction engine delivered
 
 ## Current Position
 
-Phase: 7 of 9 (Advanced Analytics)
-Plan: 3 of 3 in current phase -- COMPLETE
-Status: Phase 7 COMPLETE -- All analytics: backend endpoints, cost projection, analytics page with heatmap/tool-stats/projects
-Last activity: 2026-03-04 -- Completed 07-03 Analytics page frontend
+Phase: 8 of 9 (Plan Tracking)
+Plan: 1 of 3 in current phase
+Status: 08-01 COMPLETE -- Plan extractor, completion inference, DB schema, ingestion integration
+Last activity: 2026-03-04 -- Completed 08-01 Plan extraction engine
 
-Progress: [█████████░] 94%
+Progress: [█████████░] 90%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17
+- Total plans completed: 19
 - Average duration: 5min
-- Total execution time: 77min
+- Total execution time: 91min
 
 **By Phase:**
 
@@ -61,12 +61,14 @@ Progress: [█████████░] 94%
 | Phase 07 P01 | 7min | 2 tasks | 9 files |
 | Phase 07 P02 | 2min | 1 tasks | 1 files |
 
+| Phase 07 P03 | 5min | 2 tasks | 8 files |
+| Phase 08 P01 | 9min | 2 tasks | 10 files |
+
 **Recent Trend:**
-- Last 5 plans: 3min, 7min, 8min, 7min, 2min
+- Last 5 plans: 8min, 7min, 2min, 5min, 9min
 - Trend: stable
 
 *Updated after each plan completion*
-| Phase 07 P03 | 5min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -147,6 +149,9 @@ Recent decisions affecting current work:
 - [Phase 07]: Non-singleton composable pattern: each AnalyticsPage creates own useAdvancedAnalytics instance
 - [Phase 07]: CSS Grid heatmap with grid-auto-flow: column for GitHub-style week layout, emerald green intensity
 - [Phase 07]: ProjectTable expanded rows use responsive grid: 4 KpiCards + model distribution badges
+- [Phase 08]: Line-by-line scanning for plan extraction (avoids multi-line regex backtracking pitfalls)
+- [Phase 08]: Word-based text pattern matching for completion inference (handles verb form differences)
+- [Phase 08]: insertExtractedPlans helper shared between Claude Code and Cursor ingestion paths
 
 ### Pending Todos
 
@@ -158,6 +163,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T13:02:55.786Z
-Stopped at: Completed 07-03-PLAN.md
-Resume file: None
+Last session: 2026-03-04T13:41:14Z
+Stopped at: Completed 08-01-PLAN.md
+Resume file: .planning/phases/08-plan-tracking/08-02-PLAN.md

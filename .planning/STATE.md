@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-04)
 Phase: 9 of 9 (Settings & Remote Sync)
 Plan: 3 of 3 in current phase
 Status: 09-03 COMPLETE -- Frontend Settings page with useSettings composable
-Last activity: 2026-03-04 - Completed quick task 2: Add Data Management UI to Settings page
+Last activity: 2026-03-04 - Completed quick task 3: Strip raw XML tags from conversation detail UI
 
 Progress: [██████████] 100%
 
@@ -182,9 +182,10 @@ None.
 |---|-------------|------|--------|-----------|
 | 1 | Fix Cursor conversations not reading tokens and content properly | 2026-03-04 | 3c1796c | [1-fix-cursor-conversations-not-reading-tok](./quick/1-fix-cursor-conversations-not-reading-tok/) |
 | 2 | Add Data Management UI to Settings page (clear-db, refresh-db, db-stats) | 2026-03-04 | 932824d | [2-add-a-setting-ui-that-has-buttons-to-cle](./quick/2-add-a-setting-ui-that-has-buttons-to-cle/) |
+| 3 | Strip raw XML tags from conversation detail UI | 2026-03-04 | 6b2c8e0 | [3-improve-conversation-detail-ui-strip-raw](./quick/3-improve-conversation-detail-ui-strip-raw/) |
 
 ## Session Continuity
 
-Last session: 2026-03-04T18:24:27Z
-Stopped at: Completed quick task 2 -- Data Management UI with clear/refresh/stats
+Last session: 2026-03-04T18:38:00Z
+Stopped at: Completed quick task 3 -- XML tag stripping for clean message display
 Resume file: N/A -- Project milestone v1.0 complete

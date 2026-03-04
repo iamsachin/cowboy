@@ -3,6 +3,9 @@ import { getSettings, updateAgentSettings, updateSyncSettings } from '../db/quer
 import { stat, readdir } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { db } from '../db/index.js';
+import { conversations, messages, toolCalls, tokenUsage, plans, planSteps } from '../db/schema.js';
+import { eq, inArray, sql } from 'drizzle-orm';
 
 /**
  * Expand tilde (~) at the start of a path to the user's home directory.
@@ -134,5 +137,121 @@ export default async function settingsRoutes(app: FastifyInstance) {
     } catch {
       return { message: 'Sync not configured' };
     }
+  });
+
+  /**
+   * Helper: clear data tables (NOT settings) inside a transaction.
+   * When agentFilter is provided, only clear rows belonging to that agent.
+   */
+  async function clearDataTables(agentFilter?: string): Promise<void> {
+    db.transaction((tx) => {
+      if (agentFilter) {
+        // Collect conversation IDs for the target agent
+        const convIds = tx
+          .select({ id: conversations.id })
+          .from(conversations)
+          .where(eq(conversations.agent, agentFilter))
+          .all()
+          .map((r) => r.id);
+
+        if (convIds.length > 0) {
+          // Delete child tables first (FK-safe order)
+          tx.delete(planSteps)
+            .where(
+              inArray(
+                planSteps.planId,
+                tx
+                  .select({ id: plans.id })
+                  .from(plans)
+                  .where(inArray(plans.conversationId, convIds)),
+              ),
+            )
+            .run();
+          tx.delete(plans).where(inArray(plans.conversationId, convIds)).run();
+          tx.delete(toolCalls).where(inArray(toolCalls.conversationId, convIds)).run();
+          tx.delete(tokenUsage).where(inArray(tokenUsage.conversationId, convIds)).run();
+          tx.delete(messages).where(inArray(messages.conversationId, convIds)).run();
+          tx.delete(conversations).where(inArray(conversations.id, convIds)).run();
+        }
+      } else {
+        // Delete all data tables in FK-safe order
+        tx.delete(planSteps).run();
+        tx.delete(plans).run();
+        tx.delete(toolCalls).run();
+        tx.delete(tokenUsage).run();
+        tx.delete(messages).run();
+        tx.delete(conversations).run();
+      }
+    });
+  }
+
+  // DELETE /settings/clear-db -- Clear all data tables (NOT settings)
+  app.delete('/settings/clear-db', async (request) => {
+    const { agent } = request.query as { agent?: string };
+    await clearDataTables(agent);
+
+    try {
+      app.broadcast({ type: 'data-changed', timestamp: new Date().toISOString() });
+    } catch {
+      // broadcast may not exist in test contexts
+    }
+
+    return { message: 'Database cleared', ...(agent ? { agent } : {}) };
+  });
+
+  // POST /settings/refresh-db -- Clear data then re-ingest
+  app.post('/settings/refresh-db', async (request) => {
+    const { agent } = request.query as { agent?: string };
+
+    // Clear data first
+    await clearDataTables(agent);
+
+    try {
+      app.broadcast({ type: 'data-changed', timestamp: new Date().toISOString() });
+    } catch {
+      // broadcast may not exist in test contexts
+    }
+
+    // Trigger re-ingestion
+    const ingestResponse = await app.inject({ method: 'POST', url: '/api/ingest' });
+    let ingestBody: unknown;
+    try {
+      ingestBody = JSON.parse(ingestResponse.body);
+    } catch {
+      ingestBody = { message: ingestResponse.body };
+    }
+
+    return ingestBody;
+  });
+
+  // GET /settings/db-stats -- Return row counts for UI display
+  app.get('/settings/db-stats', async () => {
+    const [convCount] = db.select({ count: sql<number>`count(*)` }).from(conversations).all();
+    const [msgCount] = db.select({ count: sql<number>`count(*)` }).from(messages).all();
+    const [tcCount] = db.select({ count: sql<number>`count(*)` }).from(toolCalls).all();
+    const [tuCount] = db.select({ count: sql<number>`count(*)` }).from(tokenUsage).all();
+    const [plCount] = db.select({ count: sql<number>`count(*)` }).from(plans).all();
+
+    const agentCounts = db
+      .select({ agent: conversations.agent, count: sql<number>`count(*)` })
+      .from(conversations)
+      .groupBy(conversations.agent)
+      .all();
+
+    const byAgent: Record<string, number> = {};
+    for (const row of agentCounts) {
+      byAgent[row.agent] = row.count;
+    }
+
+    return {
+      total: {
+        conversations: convCount.count,
+        messages: msgCount.count,
+        toolCalls: tcCount.count,
+        tokenUsage: tuCount.count,
+        plans: plCount.count,
+      },
+      byAgent,
+    };
   });
 }

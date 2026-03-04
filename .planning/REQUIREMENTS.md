@@ -42,10 +42,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Conversation Browser
 
-- [ ] **CONV-01**: User can browse a list of conversations sorted by date, filterable by agent and project
-- [ ] **CONV-02**: User can search conversations by content/metadata
-- [ ] **CONV-03**: User can view full conversation detail with messages, tool calls, code blocks, and timestamps
-- [ ] **CONV-04**: User can see which agent and model produced each conversation
+- [x] **CONV-01**: User can browse a list of conversations sorted by date, filterable by agent and project
+- [x] **CONV-02**: User can search conversations by content/metadata
+- [x] **CONV-03**: User can view full conversation detail with messages, tool calls, code blocks, and timestamps
+- [x] **CONV-04**: User can see which agent and model produced each conversation
 
 ### Plan Tracking
 
@@ -119,10 +119,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOKEN-01 | Phase 3: API + Core Dashboard | Complete |
 | TOKEN-02 | Phase 3: API + Core Dashboard | Complete |
 | TOKEN-03 | Phase 3: API + Core Dashboard | Complete |
-| CONV-01 | Phase 4: Conversation Browser | Pending |
-| CONV-02 | Phase 4: Conversation Browser | Pending |
-| CONV-03 | Phase 4: Conversation Browser | Pending |
-| CONV-04 | Phase 4: Conversation Browser | Pending |
+| CONV-01 | Phase 4: Conversation Browser | Complete |
+| CONV-02 | Phase 4: Conversation Browser | Complete |
+| CONV-03 | Phase 4: Conversation Browser | Complete |
+| CONV-04 | Phase 4: Conversation Browser | Complete |
 | INGEST-04 | Phase 5: Real-Time Updates | Pending |
 | LIVE-01 | Phase 5: Real-Time Updates | Pending |
 | LIVE-02 | Phase 5: Real-Time Updates | Pending |

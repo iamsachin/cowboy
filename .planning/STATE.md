@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-03-04T07:28:38Z"
-last_activity: 2026-03-04 -- Completed 03-03 Conversation table with sorting, pagination, cost display (Phase 3 complete)
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-04T08:10:00Z"
+last_activity: 2026-03-04 -- Completed 04-01 Conversation browser API (detail, filters, search)
 progress:
   total_phases: 9
   completed_phases: 3
-  total_plans: 8
-  completed_plans: 8
-  percent: 100
+  total_plans: 11
+  completed_plans: 9
+  percent: 82
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-04)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing -- every conversation, tool call, token, and plan across all agents in one place.
-**Current focus:** Phase 3: API + Core Dashboard (Complete) -- Ready for Phase 4
+**Current focus:** Phase 4: Conversation Browser (In Progress)
 
 ## Current Position
 
-Phase: 3 of 9 (API + Core Dashboard -- Complete)
-Plan: 3 of 3 in current phase (phase complete)
-Status: Phase 03 complete -- ready for Phase 04 planning
-Last activity: 2026-03-04 -- Completed 03-03 Conversation table with sorting, pagination, cost display
+Phase: 4 of 9 (Conversation Browser)
+Plan: 1 of 3 in current phase
+Status: Executing Phase 04 -- Plan 01 complete, Plans 02-03 remaining
+Last activity: 2026-03-04 -- Completed 04-01 Conversation browser API (detail, filters, search)
 
-Progress: [##########] 100%
+Progress: [########--] 82%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
+- Total plans completed: 9
 - Average duration: 4min
-- Total execution time: 35min
+- Total execution time: 38min
 
 **By Phase:**
 
@@ -51,9 +51,10 @@ Progress: [##########] 100%
 | Phase 03 P01 | 5min | 3 tasks | 13 files |
 | Phase 03 P02 | 4min | 2 tasks | 9 files |
 | Phase 03 P03 | 4min | 2 tasks | 3 files |
+| Phase 04 P01 | 3min | 2 tasks | 6 files |
 
 **Recent Trend:**
-- Last 5 plans: 4min, 3min, 5min, 4min, 4min
+- Last 5 plans: 3min, 5min, 4min, 4min, 3min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -97,6 +98,10 @@ Recent decisions affecting current work:
 - [Phase 03]: ConversationTable uses own composable internally for full encapsulation (no prop drilling)
 - [Phase 03]: Cost column dual format: "$X.XX (saved $Y.YY)" for known models, "N/A" for unknown
 - [Phase 03]: Sort toggle: same column toggles asc/desc, new column defaults desc, resets page to 1
+- [Phase 04]: LIKE-based search across title, project, model, and message content with subquery for content matching
+- [Phase 04]: Snippet extraction server-side with <mark> tags for search term highlighting
+- [Phase 04]: Detail route registered before list route to avoid Fastify parameter conflicts
+- [Phase 04]: Token summary aggregated per-model then totaled with calculateCost for accurate cost/savings
 
 ### Pending Todos
 
@@ -108,6 +113,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-04T07:28:38Z
-Stopped at: Completed 03-03-PLAN.md (Phase 3 complete)
-Resume file: .planning/phases/03-api-core-dashboard/03-03-SUMMARY.md
+Last session: 2026-03-04T08:10:00Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: .planning/phases/04-conversation-browser/04-01-SUMMARY.md

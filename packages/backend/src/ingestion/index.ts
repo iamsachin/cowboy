@@ -9,6 +9,7 @@ import type { IngestionStats, IngestionStatus } from './types.js';
 export interface IngestionPluginOptions {
   basePath?: string;
   autoIngest?: boolean;
+  onIngestionComplete?: () => void;
 }
 
 const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
@@ -106,6 +107,7 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
         stats,
       };
       app.log.info({ stats }, 'Ingestion complete');
+      opts.onIngestionComplete?.();
     }
   }
 

@@ -1,4 +1,5 @@
 import websocket from '@fastify/websocket';
+import fp from 'fastify-plugin';
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { WebSocket } from 'ws';
 
@@ -8,11 +9,11 @@ declare module 'fastify' {
   }
 }
 
-const websocketPlugin: FastifyPluginAsync = async (app: FastifyInstance) => {
+const websocketPluginInner: FastifyPluginAsync = async (app: FastifyInstance) => {
   await app.register(websocket);
 
   // WebSocket route for live updates
-  app.get('/ws', { websocket: true }, (socket) => {
+  app.get('/api/ws', { websocket: true }, (socket) => {
     app.log.info('WebSocket client connected');
 
     socket.on('close', () => {
@@ -33,5 +34,10 @@ const websocketPlugin: FastifyPluginAsync = async (app: FastifyInstance) => {
     }
   });
 };
+
+// Use fp to break encapsulation so broadcast decorator propagates to parent
+const websocketPlugin = fp(websocketPluginInner, {
+  name: 'cowboy-websocket',
+});
 
 export default websocketPlugin;

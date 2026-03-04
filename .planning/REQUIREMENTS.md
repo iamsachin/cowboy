@@ -10,7 +10,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Data Ingestion
 
 - [x] **INGEST-01**: System parses Claude Code JSONL conversation logs from `~/.claude/projects/`
-- [ ] **INGEST-02**: System parses Cursor state.vscdb SQLite database for conversation data
+- [x] **INGEST-02**: System parses Cursor state.vscdb SQLite database for conversation data
 - [x] **INGEST-03**: System normalizes both agent formats into a unified schema (conversations, messages, tool_calls, token_usage)
 - [x] **INGEST-04**: System watches log directories for new/modified files in real-time via chokidar
 - [x] **INGEST-05**: System stores all normalized data in SQLite with deterministic deduplication
@@ -35,8 +35,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DASH-01**: User sees an overview dashboard with KPI cards (total tokens, cost, conversations, active days)
 - [x] **DASH-02**: User can view time-series charts for usage trends (daily/weekly/monthly)
 - [x] **DASH-03**: User can filter all views by date range (presets + custom picker)
-- [ ] **DASH-04**: User can view per-agent dashboard pages (Claude Code, Cursor independently)
-- [ ] **DASH-05**: User can compare agents side-by-side (tokens, cost, tool calls, conversation counts)
+- [x] **DASH-04**: User can view per-agent dashboard pages (Claude Code, Cursor independently)
+- [x] **DASH-05**: User can compare agents side-by-side (tokens, cost, tool calls, conversation counts)
 - [ ] **DASH-06**: User can view activity heatmap showing daily usage patterns (GitHub contribution graph style)
 - [ ] **DASH-07**: User can view per-project analytics grouped by codebase directory
 
@@ -126,9 +126,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INGEST-04 | Phase 5: Real-Time Updates | Complete |
 | LIVE-01 | Phase 5: Real-Time Updates | Complete |
 | LIVE-02 | Phase 5: Real-Time Updates | Complete |
-| INGEST-02 | Phase 6: Cursor Integration + Agent Comparison | Pending |
-| DASH-04 | Phase 6: Cursor Integration + Agent Comparison | Pending |
-| DASH-05 | Phase 6: Cursor Integration + Agent Comparison | Pending |
+| INGEST-02 | Phase 6: Cursor Integration + Agent Comparison | Complete |
+| DASH-04 | Phase 6: Cursor Integration + Agent Comparison | Complete |
+| DASH-05 | Phase 6: Cursor Integration + Agent Comparison | Complete |
 | TOKEN-04 | Phase 7: Advanced Analytics | Pending |
 | TOKEN-05 | Phase 7: Advanced Analytics | Pending |
 | TOOL-01 | Phase 7: Advanced Analytics | Pending |

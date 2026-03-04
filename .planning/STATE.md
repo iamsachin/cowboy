@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: "Completed 05-02-PLAN.md"
-last_updated: "2026-03-04T09:57:42Z"
-last_activity: 2026-03-04 -- Completed 05-02 Frontend WebSocket integration (composable, indicator, live refetch)
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-03-04T11:50:44Z"
+last_activity: 2026-03-04 -- Completed 06-01 Cursor ingestion + agent API filtering
 progress:
   total_phases: 9
   completed_phases: 5
-  total_plans: 13
-  completed_plans: 13
-  percent: 100
+  total_plans: 15
+  completed_plans: 14
+  percent: 93
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-04)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing -- every conversation, tool call, token, and plan across all agents in one place.
-**Current focus:** Phase 5 complete -- Real-Time Updates fully delivered (backend + frontend). Ready for Phase 6: Cursor Adapter
+**Current focus:** Phase 6 in progress -- Cursor ingestion backend complete, frontend agent pages next
 
 ## Current Position
 
-Phase: 5 of 9 (Real-Time Updates) -- COMPLETE
-Plan: 2 of 2 in current phase
-Status: Phase 05 complete -- all real-time infrastructure delivered (backend + frontend)
-Last activity: 2026-03-04 -- Completed 05-02 Frontend WebSocket integration (composable, indicator, live refetch)
+Phase: 6 of 9 (Cursor Integration + Agent Comparison)
+Plan: 1 of 2 in current phase -- COMPLETE
+Status: 06-01 complete -- Cursor ingestion pipeline, agent-filtered API, model pricing all delivered
+Last activity: 2026-03-04 -- Completed 06-01 Cursor ingestion + agent API filtering
 
-Progress: [##########] 100%
+Progress: [#########-] 93%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
+- Total plans completed: 14
 - Average duration: 4min
-- Total execution time: 53min
+- Total execution time: 60min
 
 **By Phase:**
 
@@ -56,9 +56,10 @@ Progress: [##########] 100%
 | Phase 04 P03 | 3min | 2 tasks | 9 files |
 | Phase 05 P01 | 6min | 2 tasks | 10 files |
 | Phase 05 P02 | 3min | 2 tasks | 6 files |
+| Phase 06 P01 | 7min | 2 tasks | 14 files |
 
 **Recent Trend:**
-- Last 5 plans: 3min, 3min, 3min, 6min, 3min
+- Last 5 plans: 3min, 3min, 6min, 3min, 7min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -121,6 +122,11 @@ Recent decisions affecting current work:
 - [Phase 05]: onDataChanged pub/sub with Set<callback> and unsubscribe return for onScopeDispose cleanup
 - [Phase 05]: visibilitychange always fires all listeners on tab visible to catch up on missed data changes
 - [Phase 05]: Conversation detail page stays static (no live updates) per user decision
+- [Phase 06]: Cursor normalizer is separate module -- keeps Claude Code pipeline untouched
+- [Phase 06]: GPT model pricing includes estimated cache rates from OpenAI documentation
+- [Phase 06]: Cursor cacheReadTokens/cacheCreationTokens always 0 (not exposed in vscdb)
+- [Phase 06]: File watcher uses 3s debounce for Cursor vs 1s for Claude Code (Cursor writes more frequently)
+- [Phase 06]: Static project name 'Cursor' for all Cursor conversations (no per-project directory)
 
 ### Pending Todos
 
@@ -128,10 +134,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 6 needs hands-on validation of Cursor vscdb schema against installed version (research gap)
+None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T09:57:42Z
-Stopped at: Completed 05-02-PLAN.md
-Resume file: .planning/phases/05-real-time-updates/05-02-SUMMARY.md
+Last session: 2026-03-04T11:50:44Z
+Stopped at: Completed 06-01-PLAN.md
+Resume file: .planning/phases/06-cursor-integration-agent-comparison/06-01-SUMMARY.md

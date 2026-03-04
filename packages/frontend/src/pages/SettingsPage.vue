@@ -88,6 +88,115 @@
         </div>
       </div>
 
+      <!-- Data Management Section -->
+      <div class="card bg-base-200">
+        <div class="card-body">
+          <h2 class="card-title">
+            <Database class="w-5 h-5" />
+            Data Management
+          </h2>
+          <div class="divider mt-0"></div>
+
+          <!-- Stats summary -->
+          <div v-if="dbStats" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <div class="stat bg-base-300 rounded-lg p-3">
+              <div class="stat-title text-xs">Conversations</div>
+              <div class="stat-value text-lg">{{ dbStats.total.conversations }}</div>
+            </div>
+            <div class="stat bg-base-300 rounded-lg p-3">
+              <div class="stat-title text-xs">Messages</div>
+              <div class="stat-value text-lg">{{ dbStats.total.messages }}</div>
+            </div>
+            <div class="stat bg-base-300 rounded-lg p-3">
+              <div class="stat-title text-xs">Tool Calls</div>
+              <div class="stat-value text-lg">{{ dbStats.total.toolCalls }}</div>
+            </div>
+            <div class="stat bg-base-300 rounded-lg p-3">
+              <div class="stat-title text-xs">Plans</div>
+              <div class="stat-value text-lg">{{ dbStats.total.plans }}</div>
+            </div>
+          </div>
+
+          <div v-if="dbStats && Object.keys(dbStats.byAgent).length > 0" class="flex flex-wrap gap-3 text-sm opacity-70 mt-1">
+            <span v-for="(count, agent) in dbStats.byAgent" :key="agent">
+              {{ agent === 'claude-code' ? 'Claude Code' : agent === 'cursor' ? 'Cursor' : agent }}: {{ count }} conversations
+            </span>
+          </div>
+
+          <!-- Danger Zone -->
+          <div class="border border-error rounded-lg p-4 mt-4 space-y-3">
+            <h3 class="text-sm font-semibold text-error">Danger Zone</h3>
+
+            <div class="flex flex-wrap gap-2">
+              <button
+                class="btn btn-sm"
+                :class="confirmAction === 'clear-all' ? 'btn-error' : 'btn-error btn-outline'"
+                :disabled="clearing"
+                @click="handleConfirmAction('clear-all', () => clearDatabase())"
+              >
+                <span v-if="clearing" class="loading loading-spinner loading-xs"></span>
+                <Trash2 v-else class="w-4 h-4" />
+                {{ confirmAction === 'clear-all' ? 'Confirm Clear All?' : 'Clear All Data' }}
+              </button>
+
+              <button
+                class="btn btn-sm"
+                :class="confirmAction === 'refresh-all' ? 'btn-warning' : 'btn-warning btn-outline'"
+                :disabled="clearing"
+                @click="handleConfirmAction('refresh-all', () => refreshDatabase())"
+              >
+                <span v-if="clearing" class="loading loading-spinner loading-xs"></span>
+                <RotateCcw v-else class="w-4 h-4" />
+                {{ confirmAction === 'refresh-all' ? 'Confirm Refresh All?' : 'Refresh All Data' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Per-Agent Actions -->
+          <div v-if="dbStats && Object.keys(dbStats.byAgent).length > 0" class="mt-4 space-y-2">
+            <h3 class="text-sm font-semibold">Per-Agent Actions</h3>
+            <div
+              v-for="(count, agent) in dbStats.byAgent"
+              :key="agent"
+              class="flex items-center justify-between bg-base-300 rounded-lg px-4 py-2"
+            >
+              <span class="text-sm">
+                {{ agent === 'claude-code' ? 'Claude Code' : agent === 'cursor' ? 'Cursor' : agent }}
+                <span class="opacity-60">-- {{ count }} conversations</span>
+              </span>
+              <div class="flex gap-1">
+                <button
+                  class="btn btn-ghost btn-xs"
+                  :disabled="clearing"
+                  @click="refreshDatabase(agent as string)"
+                >
+                  <RotateCcw class="w-3 h-3" />
+                  Refresh
+                </button>
+                <button
+                  class="btn btn-ghost btn-xs text-error"
+                  :class="confirmAction === `clear-${agent}` ? 'btn-active' : ''"
+                  :disabled="clearing"
+                  @click="handleConfirmAction(`clear-${agent}`, () => clearDatabase(agent as string))"
+                >
+                  <Trash2 class="w-3 h-3" />
+                  {{ confirmAction === `clear-${agent}` ? 'Confirm?' : 'Clear' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Result feedback -->
+          <div
+            v-if="dataActionResult"
+            class="alert mt-4"
+            :class="dataActionResult.success ? 'alert-success' : 'alert-error'"
+          >
+            <span>{{ dataActionResult.message }}</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Remote Sync Section -->
       <div class="card bg-base-200">
         <div class="card-body">
@@ -239,6 +348,9 @@ import {
   Check,
   X,
   Loader2,
+  Database,
+  Trash2,
+  RotateCcw,
 } from 'lucide-vue-next';
 
 const {
@@ -248,12 +360,38 @@ const {
   pathValidation,
   testResult,
   syncNowResult,
+  dbStats,
+  clearing,
+  dataActionResult,
   saveAgentSettings,
   saveSyncSettings,
   validatePath,
   testConnection,
   triggerSyncNow,
+  clearDatabase,
+  refreshDatabase,
 } = useSettings();
+
+// Data management confirmation state
+const confirmAction = ref<string | null>(null);
+const confirmTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
+
+function handleConfirmAction(actionKey: string, action: () => void) {
+  if (confirmAction.value === actionKey) {
+    confirmAction.value = null;
+    if (confirmTimeout.value) clearTimeout(confirmTimeout.value);
+    action();
+  } else {
+    confirmAction.value = actionKey;
+    if (confirmTimeout.value) clearTimeout(confirmTimeout.value);
+    confirmTimeout.value = setTimeout(() => { confirmAction.value = null; }, 3000);
+  }
+}
+
+// Auto-dismiss data action result after 5 seconds
+watch(dataActionResult, (val) => {
+  if (val) setTimeout(() => { dataActionResult.value = null; }, 5000);
+});
 
 // Local form state
 const form = ref({

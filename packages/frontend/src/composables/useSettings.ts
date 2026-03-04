@@ -32,6 +32,22 @@ export interface SyncNowResult {
   message: string;
 }
 
+export interface DbStats {
+  total: {
+    conversations: number;
+    messages: number;
+    toolCalls: number;
+    tokenUsage: number;
+    plans: number;
+  };
+  byAgent: Record<string, number>;
+}
+
+export interface DataActionResult {
+  success: boolean;
+  message: string;
+}
+
 export function useSettings() {
   const settings = ref<SettingsResponse | null>(null);
   const loading = ref(false);
@@ -40,16 +56,79 @@ export function useSettings() {
   const testResult = ref<TestSyncResult | null>(null);
   const syncNowResult = ref<SyncNowResult | null>(null);
 
+  // Data management state
+  const dbStats = ref<DbStats | null>(null);
+  const clearing = ref(false);
+  const dataActionResult = ref<DataActionResult | null>(null);
+
+  async function fetchDbStats(): Promise<void> {
+    try {
+      const res = await fetch('/api/settings/db-stats');
+      if (!res.ok) throw new Error(`DB stats fetch failed: ${res.status}`);
+      dbStats.value = await res.json();
+    } catch (e) {
+      console.error('Failed to fetch db stats:', e);
+    }
+  }
+
   async function fetchSettings(): Promise<void> {
     loading.value = true;
     try {
       const res = await fetch('/api/settings');
       if (!res.ok) throw new Error(`Settings fetch failed: ${res.status}`);
       settings.value = await res.json();
+      // Load db stats after settings
+      await fetchDbStats();
     } catch (e) {
       console.error('Failed to fetch settings:', e);
     } finally {
       loading.value = false;
+    }
+  }
+
+  async function clearDatabase(agent?: string): Promise<void> {
+    clearing.value = true;
+    dataActionResult.value = null;
+    try {
+      const url = agent ? `/api/settings/clear-db?agent=${encodeURIComponent(agent)}` : '/api/settings/clear-db';
+      const res = await fetch(url, { method: 'DELETE' });
+      if (!res.ok) throw new Error(`Clear database failed: ${res.status}`);
+      dataActionResult.value = {
+        success: true,
+        message: agent ? `Cleared all ${agent} data` : 'Cleared all data',
+      };
+      await fetchDbStats();
+    } catch (e) {
+      console.error('Failed to clear database:', e);
+      dataActionResult.value = {
+        success: false,
+        message: `Failed to clear database: ${(e as Error).message}`,
+      };
+    } finally {
+      clearing.value = false;
+    }
+  }
+
+  async function refreshDatabase(agent?: string): Promise<void> {
+    clearing.value = true;
+    dataActionResult.value = null;
+    try {
+      const url = agent ? `/api/settings/refresh-db?agent=${encodeURIComponent(agent)}` : '/api/settings/refresh-db';
+      const res = await fetch(url, { method: 'POST' });
+      if (!res.ok) throw new Error(`Refresh database failed: ${res.status}`);
+      dataActionResult.value = {
+        success: true,
+        message: agent ? `Refreshing ${agent} data...` : 'Refreshing all data...',
+      };
+      await fetchDbStats();
+    } catch (e) {
+      console.error('Failed to refresh database:', e);
+      dataActionResult.value = {
+        success: false,
+        message: `Failed to refresh database: ${(e as Error).message}`,
+      };
+    } finally {
+      clearing.value = false;
     }
   }
 
@@ -154,11 +233,17 @@ export function useSettings() {
     pathValidation,
     testResult,
     syncNowResult,
+    dbStats,
+    clearing,
+    dataActionResult,
     fetchSettings,
     saveAgentSettings,
     saveSyncSettings,
     validatePath,
     testConnection,
     triggerSyncNow,
+    fetchDbStats,
+    clearDatabase,
+    refreshDatabase,
   };
 }

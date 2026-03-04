@@ -23,6 +23,9 @@ export interface CursorBubble {
   modelInfo: { modelName?: string } | null;
   timingInfo: { clientStartTime?: number; clientEndTime?: number } | null;
   toolFormerData?: { additionalData?: Record<string, unknown> } | null;
+  isCapabilityIteration: boolean;   // true when bubble is a tool/capability call
+  capabilityType: number | null;    // numeric type of the capability used
+  tokenCountUpUntilHere: number | null; // cumulative token count up to this bubble
 }
 
 // ── Parser functions ────────────────────────────────────────────────────
@@ -102,6 +105,9 @@ export function getBubblesForConversation(dbPath: string, composerId: string): C
           modelInfo: data?.modelInfo ?? null,
           timingInfo: data?.timingInfo ?? null,
           toolFormerData: data?.toolFormerData ?? null,
+          isCapabilityIteration: data?.isCapabilityIteration ?? false,
+          capabilityType: data?.capabilityType ?? null,
+          tokenCountUpUntilHere: data?.tokenCountUpUntilHere ?? null,
         });
       } catch {
         // Skip rows with invalid JSON

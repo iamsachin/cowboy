@@ -98,6 +98,7 @@ export function updateSyncStatus(data: {
   lastSyncAt?: string;
   lastSyncError?: string | null;
   lastSyncSuccess?: boolean;
+  syncCursor?: string;
 }) {
   db.update(settings).set(data).where(eq(settings.id, 1)).run();
   return getSettings();

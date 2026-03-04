@@ -1,13 +1,17 @@
 <template>
-  <div class="p-4">
-    <h1 class="text-2xl font-bold mb-4">Conversations</h1>
-    <div role="alert" class="alert alert-info">
-      <MessageSquare class="w-5 h-5" />
-      <span>Conversation browser coming in Phase 4</span>
+  <div class="p-4 space-y-4">
+    <!-- Header row: title left, date filter right -->
+    <div class="flex items-center justify-between flex-wrap gap-2">
+      <h1 class="text-2xl font-bold">Conversations</h1>
+      <DateRangeFilter />
     </div>
+
+    <!-- Conversation browser with filters and table -->
+    <ConversationBrowser />
   </div>
 </template>
 
 <script setup lang="ts">
-import { MessageSquare } from 'lucide-vue-next';
+import DateRangeFilter from '../components/DateRangeFilter.vue';
+import ConversationBrowser from '../components/ConversationBrowser.vue';
 </script>

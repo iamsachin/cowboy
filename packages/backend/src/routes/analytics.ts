@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { getOverviewStats, getTimeSeries, getModelDistribution, getConversationList, getConversationDetail } from '../db/queries/analytics.js';
+import { getOverviewStats, getTimeSeries, getModelDistribution, getToolStats, getHeatmapData, getProjectStats, getConversationList, getConversationDetail } from '../db/queries/analytics.js';
 import { autoGranularity } from '@cowboy/shared';
 import type { Granularity } from '@cowboy/shared';
 
@@ -38,6 +38,36 @@ export default async function analyticsRoutes(app: FastifyInstance) {
     const fromDate = from || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
     return getModelDistribution(fromDate, toDate, agent || undefined);
+  });
+
+  // GET /analytics/tool-stats?from=&to=&agent=
+  app.get('/analytics/tool-stats', async (request) => {
+    const { from, to, agent } = request.query as { from?: string; to?: string; agent?: string };
+
+    const toDate = to || new Date().toISOString().slice(0, 10);
+    const fromDate = from || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    return getToolStats(fromDate, toDate, agent || undefined);
+  });
+
+  // GET /analytics/heatmap?from=&to=&agent=
+  app.get('/analytics/heatmap', async (request) => {
+    const { from, to, agent } = request.query as { from?: string; to?: string; agent?: string };
+
+    const toDate = to || new Date().toISOString().slice(0, 10);
+    const fromDate = from || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    return getHeatmapData(fromDate, toDate, agent || undefined);
+  });
+
+  // GET /analytics/project-stats?from=&to=&agent=
+  app.get('/analytics/project-stats', async (request) => {
+    const { from, to, agent } = request.query as { from?: string; to?: string; agent?: string };
+
+    const toDate = to || new Date().toISOString().slice(0, 10);
+    const fromDate = from || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    return getProjectStats(fromDate, toDate, agent || undefined);
   });
 
   // GET /analytics/conversations/:id -- must be registered BEFORE the list route

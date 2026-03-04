@@ -2,7 +2,7 @@ import { db } from '../index.js';
 import { conversations, messages, toolCalls, tokenUsage } from '../schema.js';
 import { sql, and, gte, lte, eq, like, or } from 'drizzle-orm';
 import { calculateCost } from '@cowboy/shared';
-import type { OverviewStats, TimeSeriesPoint, ConversationRow, ConversationListResponse, ConversationDetailResponse } from '@cowboy/shared';
+import type { OverviewStats, TimeSeriesPoint, ConversationRow, ConversationListResponse, ConversationDetailResponse, ToolStatsRow, HeatmapDay, ProjectStatsRow, ProjectModelEntry } from '@cowboy/shared';
 import type { Granularity } from '@cowboy/shared';
 
 /**
@@ -522,4 +522,185 @@ export function getConversationDetail(conversationId: string): ConversationDetai
       savings: hasCost ? totalSavings : null,
     },
   };
+}
+
+/**
+ * Get per-tool statistics: success/failure counts, frequency, avg and P95 duration.
+ * Optional agent parameter filters by agent.
+ */
+export function getToolStats(from: string, to: string, agent?: string): ToolStatsRow[] {
+  const conditions = [
+    gte(conversations.createdAt, from),
+    lte(conversations.createdAt, to + 'T23:59:59Z'),
+  ];
+  if (agent) conditions.push(eq(conversations.agent, agent));
+  const dateFilter = and(...conditions);
+
+  const rows = db
+    .select({
+      name: toolCalls.name,
+      total: sql<number>`count(*)`,
+      success: sql<number>`sum(case when ${toolCalls.status} = 'success' or ${toolCalls.status} = 'completed' then 1 else 0 end)`,
+      failure: sql<number>`sum(case when ${toolCalls.status} is not null and ${toolCalls.status} != 'success' and ${toolCalls.status} != 'completed' then 1 else 0 end)`,
+      avgDuration: sql<number>`avg(${toolCalls.duration})`,
+    })
+    .from(toolCalls)
+    .innerJoin(conversations, sql`${toolCalls.conversationId} = ${conversations.id}`)
+    .where(dateFilter)
+    .groupBy(toolCalls.name)
+    .orderBy(sql`count(*) DESC`)
+    .all();
+
+  // Compute P95 per tool via secondary query (SQLite has no PERCENTILE function)
+  return rows.map(r => {
+    const durations = db
+      .select({ duration: toolCalls.duration })
+      .from(toolCalls)
+      .innerJoin(conversations, sql`${toolCalls.conversationId} = ${conversations.id}`)
+      .where(and(dateFilter, eq(toolCalls.name, r.name), sql`${toolCalls.duration} is not null`))
+      .orderBy(sql`${toolCalls.duration} ASC`)
+      .all()
+      .map(d => Number(d.duration));
+
+    const p95 = durations.length > 0
+      ? durations[Math.min(Math.floor(durations.length * 0.95), durations.length - 1)]
+      : null;
+
+    return {
+      name: r.name,
+      total: Number(r.total),
+      success: Number(r.success),
+      failure: Number(r.failure),
+      avgDuration: r.avgDuration != null ? Math.round(Number(r.avgDuration)) : null,
+      p95Duration: p95,
+    };
+  });
+}
+
+/**
+ * Get daily conversation counts for activity heatmap.
+ * Optional agent parameter filters by agent.
+ */
+export function getHeatmapData(from: string, to: string, agent?: string): HeatmapDay[] {
+  const conditions = [
+    gte(conversations.createdAt, from),
+    lte(conversations.createdAt, to + 'T23:59:59Z'),
+  ];
+  if (agent) conditions.push(eq(conversations.agent, agent));
+
+  const rows = db
+    .select({
+      date: sql<string>`date(${conversations.createdAt})`.as('date'),
+      count: sql<number>`count(*)`,
+    })
+    .from(conversations)
+    .where(and(...conditions))
+    .groupBy(sql`date`)
+    .orderBy(sql`date`)
+    .all();
+
+  return rows.map(r => ({ date: r.date, count: Number(r.count) }));
+}
+
+/**
+ * Get per-project analytics: conversation count, token/cost breakdown, top models.
+ * Optional agent parameter filters by agent.
+ */
+export function getProjectStats(from: string, to: string, agent?: string): ProjectStatsRow[] {
+  const conditions = [
+    gte(conversations.createdAt, from),
+    lte(conversations.createdAt, to + 'T23:59:59Z'),
+  ];
+  if (agent) conditions.push(eq(conversations.agent, agent));
+  const dateFilter = and(...conditions);
+
+  // Get per-project grouped data with token totals
+  const rows = db
+    .select({
+      project: conversations.project,
+      conversationCount: sql<number>`count(distinct ${conversations.id})`,
+      lastActive: sql<string>`max(${conversations.createdAt})`,
+      totalInput: sql<number>`coalesce(sum(${tokenUsage.inputTokens}), 0)`,
+      totalOutput: sql<number>`coalesce(sum(${tokenUsage.outputTokens}), 0)`,
+      totalCacheRead: sql<number>`coalesce(sum(${tokenUsage.cacheReadTokens}), 0)`,
+      totalCacheCreation: sql<number>`coalesce(sum(${tokenUsage.cacheCreationTokens}), 0)`,
+    })
+    .from(conversations)
+    .leftJoin(tokenUsage, sql`${tokenUsage.conversationId} = ${conversations.id}`)
+    .where(dateFilter)
+    .groupBy(conversations.project)
+    .orderBy(sql`count(distinct ${conversations.id}) DESC`)
+    .all();
+
+  return rows.map(r => {
+    const projectName = r.project ?? 'Unknown';
+    const totalInput = Number(r.totalInput);
+    const totalOutput = Number(r.totalOutput);
+    const totalCacheRead = Number(r.totalCacheRead);
+    const totalCacheCreation = Number(r.totalCacheCreation);
+
+    // Calculate cost per model for this project using secondary query
+    const projectConditions = [
+      ...conditions.map(c => c), // re-create conditions
+      eq(conversations.project, r.project!),
+    ];
+    const perModelTokens = db
+      .select({
+        model: tokenUsage.model,
+        inputTokens: sql<number>`sum(${tokenUsage.inputTokens})`,
+        outputTokens: sql<number>`sum(${tokenUsage.outputTokens})`,
+        cacheReadTokens: sql<number>`sum(${tokenUsage.cacheReadTokens})`,
+        cacheCreationTokens: sql<number>`sum(${tokenUsage.cacheCreationTokens})`,
+      })
+      .from(tokenUsage)
+      .innerJoin(conversations, sql`${tokenUsage.conversationId} = ${conversations.id}`)
+      .where(and(dateFilter, eq(conversations.project, r.project!)))
+      .groupBy(tokenUsage.model)
+      .all();
+
+    let totalCost = 0;
+    for (const mRow of perModelTokens) {
+      const costResult = calculateCost(
+        mRow.model,
+        Number(mRow.inputTokens),
+        Number(mRow.outputTokens),
+        Number(mRow.cacheReadTokens),
+        Number(mRow.cacheCreationTokens),
+      );
+      if (costResult) {
+        totalCost += costResult.cost;
+      }
+    }
+
+    // Get top models per project: distinct model names with conversation count
+    const topModelsRows = db
+      .select({
+        model: tokenUsage.model,
+        count: sql<number>`count(distinct ${tokenUsage.conversationId})`,
+      })
+      .from(tokenUsage)
+      .innerJoin(conversations, sql`${tokenUsage.conversationId} = ${conversations.id}`)
+      .where(and(dateFilter, eq(conversations.project, r.project!)))
+      .groupBy(tokenUsage.model)
+      .orderBy(sql`count(distinct ${tokenUsage.conversationId}) DESC`)
+      .all();
+
+    const topModels: ProjectModelEntry[] = topModelsRows.map(tm => ({
+      model: tm.model,
+      count: Number(tm.count),
+    }));
+
+    return {
+      project: projectName,
+      conversationCount: Number(r.conversationCount),
+      lastActive: r.lastActive,
+      totalTokens: totalInput + totalOutput + totalCacheRead + totalCacheCreation,
+      totalCost,
+      totalInput,
+      totalOutput,
+      totalCacheRead,
+      totalCacheCreation,
+      topModels,
+    };
+  });
 }

@@ -90,7 +90,7 @@ describe('Conversation Detail API', () => {
     const body = response.json();
     expect(body.toolCalls).toBeDefined();
     expect(Array.isArray(body.toolCalls)).toBe(true);
-    expect(body.toolCalls.length).toBe(1);
+    expect(body.toolCalls.length).toBe(2);
 
     const tc = body.toolCalls[0];
     expect(tc.name).toBe('Read');
@@ -98,6 +98,11 @@ describe('Conversation Detail API', () => {
     expect(tc.output).toEqual({ content: 'code' });
     expect(tc.status).toBe('completed');
     expect(tc.messageId).toBe('msg-1b');
+
+    const tc2 = body.toolCalls[1];
+    expect(tc2.name).toBe('Write');
+    expect(tc2.status).toBe('completed');
+    expect(tc2.messageId).toBe('msg-1b');
   });
 
   // Test 4: Detail returns tokenSummary with all fields

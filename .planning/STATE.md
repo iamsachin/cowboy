@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Completed 08-03-PLAN.md
-last_updated: "2026-03-04T16:14:38.760Z"
-last_activity: 2026-03-04 -- Completed 08-03 Frontend plans page
+status: in-progress
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-03-04T17:07:33Z"
+last_activity: 2026-03-04 -- Completed 09-01 Settings schema and API
 progress:
   total_phases: 9
   completed_phases: 8
-  total_plans: 21
-  completed_plans: 21
-  percent: 100
+  total_plans: 24
+  completed_plans: 22
+  percent: 92
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-04)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing -- every conversation, tool call, token, and plan across all agents in one place.
-**Current focus:** Phase 8 complete -- Plan tracking fully delivered (extraction, API, frontend)
+**Current focus:** Phase 9 in progress -- Settings API and schema delivered, sync scheduler and frontend next
 
 ## Current Position
 
-Phase: 8 of 9 (Plan Tracking)
-Plan: 3 of 3 in current phase
-Status: 08-03 COMPLETE -- Frontend plans page, detail view, inline plans, sidebar nav
-Last activity: 2026-03-04 -- Completed 08-03 Frontend plans page
+Phase: 9 of 9 (Settings & Remote Sync)
+Plan: 1 of 3 in current phase
+Status: 09-01 COMPLETE -- Settings schema, queries, and API routes
+Last activity: 2026-03-04 -- Completed 09-01 Settings schema and API
 
-Progress: [█████████░] 90%
+Progress: [█████████░] 92%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 19
+- Total plans completed: 22
 - Average duration: 5min
-- Total execution time: 91min
+- Total execution time: 115min
 
 **By Phase:**
 
@@ -65,12 +65,13 @@ Progress: [█████████░] 90%
 | Phase 08 P01 | 9min | 2 tasks | 10 files |
 
 **Recent Trend:**
-- Last 5 plans: 8min, 7min, 2min, 5min, 9min
+- Last 5 plans: 6min, 9min, 9min, 4min
 - Trend: stable
 
 *Updated after each plan completion*
 | Phase 08 P02 | 6min | 2 tasks | 6 files |
 | Phase 08 P03 | 9min | 2 tasks | 8 files |
+| Phase 09 P01 | 4min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -158,6 +159,9 @@ Recent decisions affecting current work:
 - [Phase 08]: Non-singleton usePlans composable following useAdvancedAnalytics pattern
 - [Phase 08]: Plan step unknown status shown as gray circle (not assumed incomplete) per user decision
 - [Phase 08]: Inline plans in conversation detail fetched silently with error swallowing
+- [Phase 09]: Auto-seed singleton uses OS-resolved paths (homedir + join) not empty strings for pre-filled defaults
+- [Phase 09]: Tilde expansion done server-side in routes before DB write and path validation
+- [Phase 09]: sync-now placeholder returns 'Sync not configured' until Plan 02 wires scheduler
 
 ### Pending Todos
 
@@ -169,6 +173,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T16:14:38.757Z
-Stopped at: Completed 08-03-PLAN.md
-Resume file: None
+Last session: 2026-03-04T17:07:33Z
+Stopped at: Completed 09-01-PLAN.md
+Resume file: .planning/phases/09-settings-remote-sync/09-02-PLAN.md

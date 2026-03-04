@@ -74,6 +74,6 @@ const navItems = [
   { path: '/agents', label: 'Agents', icon: Bot, disabled: false },
   { path: '/analytics', label: 'Analytics', icon: BarChart3, disabled: false },
   { path: '/plans', label: 'Plans', icon: ClipboardList, disabled: false },
-  { path: '/settings', label: 'Settings', icon: Settings, disabled: true },
+  { path: '/settings', label: 'Settings', icon: Settings, disabled: false },
 ];
 </script>

@@ -58,6 +58,7 @@
         <TokenChart :data="timeseries" :loading="loading" />
         <CostChart :data="timeseries" :loading="loading" />
         <ConversationsChart :data="timeseries" :loading="loading" />
+        <ModelDistributionChart :data="modelDistribution" />
       </div>
 
       <!-- Conversation Table -->
@@ -74,12 +75,13 @@ import DateRangeFilter from '../components/DateRangeFilter.vue';
 import TokenChart from '../components/TokenChart.vue';
 import CostChart from '../components/CostChart.vue';
 import ConversationsChart from '../components/ConversationsChart.vue';
+import ModelDistributionChart from '../components/ModelDistributionChart.vue';
 import ConversationTable from '../components/ConversationTable.vue';
 import { useDateRange } from '../composables/useDateRange';
 import { useAnalytics } from '../composables/useAnalytics';
 
 const { preset, isCustom } = useDateRange();
-const { overview, timeseries, loading, error } = useAnalytics();
+const { overview, timeseries, modelDistribution, loading, error } = useAnalytics();
 
 const numberFormatter = new Intl.NumberFormat('en-US');
 const currencyFormatter = new Intl.NumberFormat('en-US', {

@@ -1,6 +1,6 @@
 import { ref, watch, onScopeDispose } from 'vue';
 import { autoGranularity } from '@cowboy/shared';
-import type { OverviewStats, TimeSeriesPoint } from '@cowboy/shared';
+import type { OverviewStats, TimeSeriesPoint, ModelDistributionEntry } from '@cowboy/shared';
 import { useDateRange } from './useDateRange';
 import { useWebSocket } from './useWebSocket';
 
@@ -9,6 +9,7 @@ export function useAnalytics() {
 
   const overview = ref<OverviewStats | null>(null);
   const timeseries = ref<TimeSeriesPoint[]>([]);
+  const modelDistribution = ref<ModelDistributionEntry[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
@@ -29,11 +30,18 @@ export function useAnalytics() {
     timeseries.value = await res.json();
   }
 
+  async function fetchModelDistribution(): Promise<void> {
+    const { from, to } = dateRange.value;
+    const res = await fetch(`/api/analytics/model-distribution?from=${from}&to=${to}`);
+    if (!res.ok) throw new Error(`Model distribution fetch failed: ${res.status}`);
+    modelDistribution.value = await res.json();
+  }
+
   async function fetchAll(): Promise<void> {
     loading.value = true;
     error.value = null;
     try {
-      await Promise.all([fetchOverview(), fetchTimeSeries()]);
+      await Promise.all([fetchOverview(), fetchTimeSeries(), fetchModelDistribution()]);
     } catch (e) {
       error.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -60,6 +68,7 @@ export function useAnalytics() {
   return {
     overview,
     timeseries,
+    modelDistribution,
     loading,
     error,
     fetchAll,

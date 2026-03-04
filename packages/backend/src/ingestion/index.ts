@@ -1,18 +1,79 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { db } from '../db/index.js';
-import { conversations, messages, toolCalls, tokenUsage } from '../db/schema.js';
+import { conversations, messages, toolCalls, tokenUsage, plans, planSteps } from '../db/schema.js';
 import { discoverJsonlFiles } from './file-discovery.js';
 import { parseJsonlFile } from './claude-code-parser.js';
-import { normalizeConversation } from './normalizer.js';
+import { normalizeConversation, type NormalizedData } from './normalizer.js';
 import { discoverCursorDb } from './cursor-file-discovery.js';
 import { parseCursorDb, getBubblesForConversation } from './cursor-parser.js';
 import { normalizeCursorConversation } from './cursor-normalizer.js';
+import { extractPlans, inferStepCompletion } from './plan-extractor.js';
+import { generateId } from './id-generator.js';
 import type { IngestionStats, IngestionStatus } from './types.js';
 
 export interface IngestionPluginOptions {
   basePath?: string;
   autoIngest?: boolean;
   onIngestionComplete?: () => void;
+}
+
+/**
+ * Extract plans from assistant messages in a normalized conversation
+ * and insert them into the plans/planSteps tables.
+ * Shared between Claude Code and Cursor ingestion paths.
+ */
+function insertExtractedPlans(
+  tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+  normalizedData: NormalizedData,
+): void {
+  for (const msg of normalizedData.messages) {
+    if (msg.role === 'assistant' && msg.content) {
+      const extracted = extractPlans(msg.content, msg.id);
+
+      // Build completion context from later messages and tool calls
+      const laterMessages = normalizedData.messages
+        .filter(m => m.createdAt > msg.createdAt)
+        .map(m => ({ role: m.role, content: m.content }));
+      const toolCallsInConv = normalizedData.toolCalls
+        .map(tc => ({ name: tc.name, input: tc.input, status: tc.status }));
+      const completionContext = { laterMessages, toolCalls: toolCallsInConv };
+
+      for (const plan of extracted) {
+        // Infer completion for each step
+        const stepsWithStatus = plan.steps.map(s => ({
+          ...s,
+          status: inferStepCompletion(s, completionContext),
+        }));
+        const completedCount = stepsWithStatus.filter(s => s.status === 'complete').length;
+        const planStatus = completedCount === plan.steps.length ? 'complete'
+          : completedCount === 0 ? (stepsWithStatus.some(s => s.status === 'incomplete') ? 'not-started' : 'unknown')
+          : 'partial';
+
+        const planId = generateId(normalizedData.conversation.id, 'plan', msg.id, plan.title);
+        tx.insert(plans).values({
+          id: planId,
+          conversationId: normalizedData.conversation.id,
+          sourceMessageId: msg.id,
+          title: plan.title,
+          totalSteps: plan.steps.length,
+          completedSteps: completedCount,
+          status: planStatus,
+          createdAt: msg.createdAt,
+        }).onConflictDoNothing({ target: plans.id }).run();
+
+        for (const step of stepsWithStatus) {
+          tx.insert(planSteps).values({
+            id: generateId(planId, String(step.stepNumber)),
+            planId,
+            stepNumber: step.stepNumber,
+            content: step.content,
+            status: step.status,
+            createdAt: msg.createdAt,
+          }).onConflictDoNothing({ target: planSteps.id }).run();
+        }
+      }
+    }
+  }
 }
 
 const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
@@ -87,6 +148,9 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
                 .onConflictDoNothing({ target: tokenUsage.id })
                 .run();
             }
+
+            // Extract plans from assistant messages
+            insertExtractedPlans(tx, normalizedData);
           });
 
           stats.conversationsFound++;
@@ -139,6 +203,9 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
                     .onConflictDoNothing({ target: tokenUsage.id })
                     .run();
                 }
+
+                // Extract plans from assistant messages
+                insertExtractedPlans(tx, normalizedData);
               });
 
               stats.conversationsFound++;

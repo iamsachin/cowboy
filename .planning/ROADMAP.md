@@ -13,8 +13,8 @@ Cowboy delivers a unified coding agent analytics dashboard in 9 phases, built le
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Project Foundation** - Scaffold the monorepo with Node.js/Fastify backend, Vue 3/DaisyUI frontend, and SQLite/Drizzle schema (completed 2026-03-03)
-- [ ] **Phase 2: Claude Code Ingestion** - Parse Claude Code JSONL logs into the unified SQLite schema with deduplication
-- [ ] **Phase 3: API + Core Dashboard** - REST API and overview dashboard with token analytics, cost tracking, and date filtering
+- [x] **Phase 2: Claude Code Ingestion** - Parse Claude Code JSONL logs into the unified SQLite schema with deduplication
+- [x] **Phase 3: API + Core Dashboard** - REST API and overview dashboard with token analytics, cost tracking, and date filtering
 - [ ] **Phase 4: Conversation Browser** - Browse, search, and inspect full conversation history with messages and tool calls
 - [ ] **Phase 5: Real-Time Updates** - File watching with chokidar and WebSocket live updates to the dashboard
 - [ ] **Phase 6: Cursor Integration + Agent Comparison** - Parse Cursor data and deliver per-agent pages with side-by-side comparison
@@ -51,9 +51,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md -- Ingestion foundation: TypeScript types, deterministic ID generator, recursive file discovery, and JSONL test fixtures
-- [ ] 02-02-PLAN.md -- JSONL parser with streaming assistant chunk reconstruction and normalizer for unified schema mapping
-- [ ] 02-03-PLAN.md -- Fastify ingestion plugin with API endpoints, per-file transactions, deduplication, and integration tests
+- [x] 02-01-PLAN.md -- Ingestion foundation: TypeScript types, deterministic ID generator, recursive file discovery, and JSONL test fixtures
+- [x] 02-02-PLAN.md -- JSONL parser with streaming assistant chunk reconstruction and normalizer for unified schema mapping
+- [x] 02-03-PLAN.md -- Fastify ingestion plugin with API endpoints, per-file transactions, deduplication, and integration tests
 
 ### Phase 3: API + Core Dashboard
 **Goal**: User opens the browser and sees an overview dashboard with aggregate stats, token usage, estimated costs, and time-series charts, all filterable by date range
@@ -68,9 +68,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md -- Backend analytics API: shared pricing module, Drizzle aggregate queries, three REST endpoints (overview, timeseries, conversations), and integration tests
-- [ ] 03-02-PLAN.md -- Frontend dashboard: Chart.js charts (stacked area tokens, bar cost, bar conversations), KPI cards with trends, date range filter with presets and custom picker
-- [ ] 03-03-PLAN.md -- Conversation table with per-conversation token breakdown, cost/savings display, sorting, pagination, and visual verification checkpoint
+- [x] 03-01-PLAN.md -- Backend analytics API: shared pricing module, Drizzle aggregate queries, three REST endpoints (overview, timeseries, conversations), and integration tests
+- [x] 03-02-PLAN.md -- Frontend dashboard: Chart.js charts (stacked area tokens, bar cost, bar conversations), KPI cards with trends, date range filter with presets and custom picker
+- [x] 03-03-PLAN.md -- Conversation table with per-conversation token breakdown, cost/savings display, sorting, pagination, and visual verification checkpoint
 
 ### Phase 4: Conversation Browser
 **Goal**: User can find any conversation by browsing, filtering, or searching, and drill into full conversation detail with messages, tool calls, and metadata
@@ -169,8 +169,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Project Foundation | 2/2 | Complete   | 2026-03-03 |
-| 2. Claude Code Ingestion | 0/3 | Not started | - |
-| 3. API + Core Dashboard | 0/3 | Not started | - |
+| 2. Claude Code Ingestion | 3/3 | Complete | 2026-03-04 |
+| 3. API + Core Dashboard | 3/3 | Complete | 2026-03-04 |
 | 4. Conversation Browser | 0/2 | Not started | - |
 | 5. Real-Time Updates | 0/2 | Not started | - |
 | 6. Cursor Integration + Agent Comparison | 0/2 | Not started | - |

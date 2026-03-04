@@ -4,7 +4,7 @@
       <component :is="icon" class="w-8 h-8" />
     </div>
     <div class="stat-title text-xs uppercase tracking-wide">{{ title }}</div>
-    <div class="stat-value text-primary">{{ value }}</div>
+    <div class="stat-value text-base-content">{{ value }}</div>
     <div class="stat-desc">
       <template v-if="trend !== undefined && trend !== null">
         <span :class="trendColorClass">

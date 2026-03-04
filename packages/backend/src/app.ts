@@ -1,6 +1,7 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import healthRoutes from './routes/health.js';
 import analyticsRoutes from './routes/analytics.js';
+import planRoutes from './routes/plans.js';
 import ingestionPlugin from './ingestion/index.js';
 import type { IngestionPluginOptions } from './ingestion/index.js';
 import websocketPlugin from './plugins/websocket.js';
@@ -28,6 +29,7 @@ export async function buildApp(opts?: AppOptions): Promise<FastifyInstance> {
   // Register routes under /api prefix
   await app.register(healthRoutes, { prefix: '/api' });
   await app.register(analyticsRoutes, { prefix: '/api' });
+  await app.register(planRoutes, { prefix: '/api' });
   await app.register(ingestionPlugin, {
     prefix: '/api',
     ...opts?.ingestion,

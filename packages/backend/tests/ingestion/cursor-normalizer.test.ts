@@ -28,6 +28,9 @@ function makeBubble(overrides?: Partial<CursorBubble>): CursorBubble {
     modelInfo: null,
     timingInfo: null,
     toolFormerData: null,
+    isCapabilityIteration: false,
+    capabilityType: null,
+    tokenCountUpUntilHere: null,
     ...overrides,
   };
 }

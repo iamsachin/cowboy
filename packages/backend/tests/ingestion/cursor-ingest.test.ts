@@ -247,6 +247,21 @@ describe('Cursor Ingestion Integration', () => {
     expect(gptRow!.output_tokens).toBe(1200);
   });
 
+  it('parser extracts isCapabilityIteration, capabilityType, and tokenCountUpUntilHere fields', () => {
+    const bubbles = getBubblesForConversation(vscdbPath, 'conv-001');
+    // All bubbles should have the new fields with defaults when not present in raw data
+    for (const bubble of bubbles) {
+      expect(bubble).toHaveProperty('isCapabilityIteration');
+      expect(bubble).toHaveProperty('capabilityType');
+      expect(bubble).toHaveProperty('tokenCountUpUntilHere');
+    }
+    // Regular bubbles without these fields in raw data should default appropriately
+    const userBubble = bubbles.find(b => b.type === 1)!;
+    expect(userBubble.isCapabilityIteration).toBe(false);
+    expect(userBubble.capabilityType).toBeNull();
+    expect(userBubble.tokenCountUpUntilHere).toBeNull();
+  });
+
   it('conversations have correct titles derived from first user bubble', () => {
     runCursorIngestion();
 

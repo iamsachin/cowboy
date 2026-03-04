@@ -56,8 +56,8 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Settings & Remote Sync
 
 - [x] **SYNC-01**: User can configure a remote URL endpoint for periodic data POST
-- [ ] **SYNC-02**: User can set POST frequency (e.g., every 5 min, 15 min, 1 hour)
-- [ ] **SYNC-03**: User can choose which data categories to include in each POST
+- [x] **SYNC-02**: User can set POST frequency (e.g., every 5 min, 15 min, 1 hour)
+- [x] **SYNC-03**: User can choose which data categories to include in each POST
 - [x] **SYNC-04**: User can configure log file paths for each agent in settings
 
 ### Real-Time
@@ -140,8 +140,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PLAN-02 | Phase 8: Plan Tracking | Complete |
 | PLAN-03 | Phase 8: Plan Tracking | Complete |
 | SYNC-01 | Phase 9: Settings + Remote Sync | Complete |
-| SYNC-02 | Phase 9: Settings + Remote Sync | Pending |
-| SYNC-03 | Phase 9: Settings + Remote Sync | Pending |
+| SYNC-02 | Phase 9: Settings + Remote Sync | Complete |
+| SYNC-03 | Phase 9: Settings + Remote Sync | Complete |
 | SYNC-04 | Phase 9: Settings + Remote Sync | Complete |
 
 **Coverage:**

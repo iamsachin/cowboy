@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: Completed 09-01-PLAN.md
-last_updated: "2026-03-04T17:07:33Z"
-last_activity: 2026-03-04 -- Completed 09-01 Settings schema and API
+stopped_at: Completed 09-02-PLAN.md
+last_updated: "2026-03-04T17:20:00Z"
+last_activity: 2026-03-04 -- Completed 09-02 Sync scheduler and settings wiring
 progress:
   total_phases: 9
   completed_phases: 8
   total_plans: 24
-  completed_plans: 22
-  percent: 92
+  completed_plans: 23
+  percent: 96
 ---
 
 # Project State
@@ -26,18 +26,18 @@ See: .planning/PROJECT.md (updated 2026-03-04)
 ## Current Position
 
 Phase: 9 of 9 (Settings & Remote Sync)
-Plan: 1 of 3 in current phase
-Status: 09-01 COMPLETE -- Settings schema, queries, and API routes
-Last activity: 2026-03-04 -- Completed 09-01 Settings schema and API
+Plan: 2 of 3 in current phase
+Status: 09-02 COMPLETE -- Sync scheduler, retry, file watcher restart
+Last activity: 2026-03-04 -- Completed 09-02 Sync scheduler and settings wiring
 
-Progress: [█████████░] 92%
+Progress: [█████████░] 96%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 22
+- Total plans completed: 23
 - Average duration: 5min
-- Total execution time: 115min
+- Total execution time: 124min
 
 **By Phase:**
 
@@ -65,13 +65,14 @@ Progress: [█████████░] 92%
 | Phase 08 P01 | 9min | 2 tasks | 10 files |
 
 **Recent Trend:**
-- Last 5 plans: 6min, 9min, 9min, 4min
+- Last 5 plans: 6min, 9min, 9min, 4min, 9min
 - Trend: stable
 
 *Updated after each plan completion*
 | Phase 08 P02 | 6min | 2 tasks | 6 files |
 | Phase 08 P03 | 9min | 2 tasks | 8 files |
 | Phase 09 P01 | 4min | 2 tasks | 9 files |
+| Phase 09 P02 | 9min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -162,6 +163,9 @@ Recent decisions affecting current work:
 - [Phase 09]: Auto-seed singleton uses OS-resolved paths (homedir + join) not empty strings for pre-filled defaults
 - [Phase 09]: Tilde expansion done server-side in routes before DB write and path validation
 - [Phase 09]: sync-now placeholder returns 'Sync not configured' until Plan 02 wires scheduler
+- [Phase 09]: Lazy dynamic import of getSettings in file-watcher to avoid DB side-effect during test module loading
+- [Phase 09]: File watcher uses opts.basePath presence as test-mode signal to skip DB settings lookup
+- [Phase 09]: syncCursor added to updateSyncStatus for incremental sync cursor advancement
 
 ### Pending Todos
 
@@ -173,6 +177,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T17:07:33Z
-Stopped at: Completed 09-01-PLAN.md
-Resume file: .planning/phases/09-settings-remote-sync/09-02-PLAN.md
+Last session: 2026-03-04T17:20:00Z
+Stopped at: Completed 09-02-PLAN.md
+Resume file: .planning/phases/09-settings-remote-sync/09-03-PLAN.md

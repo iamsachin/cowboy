@@ -182,14 +182,33 @@ export function normalizeConversation(
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 
+function stripXmlTags(text: string): string {
+  return text.replace(/<[^>]*>/g, '').trim();
+}
+
 function deriveTitle(parseResult: ParseResult): string | null {
+  // First pass: skip any user message whose trimmed content starts with '<' (XML system messages)
   for (const user of parseResult.userMessages) {
     if (user.content && user.content.trim().length > 0) {
+      if (user.content.trim().startsWith('<')) continue;
       return user.content.length > 100
         ? user.content.substring(0, 100)
         : user.content;
     }
   }
+
+  // Fallback pass: strip XML tags and use first message with >10 chars of cleaned text
+  for (const user of parseResult.userMessages) {
+    if (user.content) {
+      const stripped = stripXmlTags(user.content);
+      if (stripped.length > 10) {
+        return stripped.length > 100
+          ? stripped.substring(0, 100)
+          : stripped;
+      }
+    }
+  }
+
   return null;
 }
 

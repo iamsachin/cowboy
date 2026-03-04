@@ -146,12 +146,29 @@ export function normalizeCursorConversation(
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 
+function stripXmlTags(text: string): string {
+  return text.replace(/<[^>]*>/g, '').trim();
+}
+
 function deriveTitle(bubbles: CursorBubble[]): string | null {
+  // First pass: skip user bubbles whose trimmed text starts with '<' (XML system messages)
   for (const bubble of bubbles) {
     if (bubble.type === 1 && bubble.text && bubble.text.trim().length > 0) {
+      if (bubble.text.trim().startsWith('<')) continue;
       return bubble.text.length > 100 ? bubble.text.substring(0, 100) : bubble.text;
     }
   }
+
+  // Fallback pass: strip XML tags and use first user bubble with >10 chars of cleaned text
+  for (const bubble of bubbles) {
+    if (bubble.type === 1 && bubble.text) {
+      const stripped = stripXmlTags(bubble.text);
+      if (stripped.length > 10) {
+        return stripped.length > 100 ? stripped.substring(0, 100) : stripped;
+      }
+    }
+  }
+
   return null;
 }
 

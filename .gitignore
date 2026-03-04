@@ -1,6 +1,11 @@
 .planning/
+.agents/
+.claude/
+CLAUDE.md
+skills-lock.json
 node_modules
 dist
 data/
 *.db
+*.tsbuildinfo
 .env

@@ -1,5 +1,5 @@
 import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
-import { conversations, tokenUsage } from '../../src/db/schema.js';
+import { conversations, messages, toolCalls, tokenUsage } from '../../src/db/schema.js';
 import * as schema from '../../src/db/schema.js';
 
 /**
@@ -29,6 +29,34 @@ export async function seedAnalyticsData(db: BetterSQLite3Database<typeof schema>
     { id: 'tu-3', conversationId: 'conv-3', model: 'claude-haiku-4-5', inputTokens: 50000, outputTokens: 25000, cacheReadTokens: 10000, cacheCreationTokens: 5000, createdAt: '2026-01-16T09:00:00Z' },
     { id: 'tu-4', conversationId: 'conv-4', model: 'claude-haiku-4-5', inputTokens: 75000, outputTokens: 30000, cacheReadTokens: 15000, cacheCreationTokens: 8000, createdAt: '2026-01-16T15:00:00Z' },
     { id: 'tu-5', conversationId: 'conv-5', model: 'unknown-model', inputTokens: 30000, outputTokens: 15000, cacheReadTokens: 5000, cacheCreationTokens: 3000, createdAt: '2026-01-17T11:00:00Z' },
+  ]).run();
+
+  // Insert messages for conversations
+  db.insert(messages).values([
+    // conv-1: user message + assistant message with code block content
+    { id: 'msg-1a', conversationId: 'conv-1', role: 'user', content: 'How do I build the app?', createdAt: '2026-01-15T10:00:00Z', model: null },
+    { id: 'msg-1b', conversationId: 'conv-1', role: 'assistant', content: 'Here is how you build the app:\n\n```typescript\nfunction buildApp() {\n  return new App();\n}\n```\n\nThis function buildApp initializes and returns a new App instance.', createdAt: '2026-01-15T10:01:00Z', model: 'claude-sonnet-4-5' },
+    // conv-2: user + assistant
+    { id: 'msg-2a', conversationId: 'conv-2', role: 'user', content: 'What is the project structure?', createdAt: '2026-01-15T14:00:00Z', model: null },
+    { id: 'msg-2b', conversationId: 'conv-2', role: 'assistant', content: 'The project uses a monorepo structure with packages for frontend and backend.', createdAt: '2026-01-15T14:01:00Z', model: 'claude-sonnet-4-5' },
+    // conv-3: user + assistant
+    { id: 'msg-3a', conversationId: 'conv-3', role: 'user', content: 'Explain database migrations.', createdAt: '2026-01-16T09:00:00Z', model: null },
+    { id: 'msg-3b', conversationId: 'conv-3', role: 'assistant', content: 'Database migrations are handled by Drizzle Kit. Run pnpm db:migrate to apply pending migrations.', createdAt: '2026-01-16T09:01:00Z', model: 'claude-haiku-4-5' },
+  ]).run();
+
+  // Insert tool calls for conv-1
+  db.insert(toolCalls).values([
+    {
+      id: 'tc-1',
+      messageId: 'msg-1b',
+      conversationId: 'conv-1',
+      name: 'Read',
+      input: JSON.stringify({ path: 'file.ts' }),
+      output: JSON.stringify({ content: 'code' }),
+      status: 'completed',
+      duration: 150,
+      createdAt: '2026-01-15T10:00:30Z',
+    },
   ]).run();
 }
 

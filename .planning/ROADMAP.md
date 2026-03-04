@@ -81,11 +81,12 @@ Plans:
   2. User can search conversations by content or metadata and see matching results
   3. Clicking a conversation shows the full detail view with messages (role, content, timestamps), tool calls (name, inputs, outputs), and code blocks
   4. Each conversation clearly displays which agent and model produced it
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [ ] 04-01-PLAN.md -- Backend API: extend shared types, add agent/project/search filters to conversation list, add conversation detail endpoint with messages/tool calls/token summary, integration tests
+- [ ] 04-02-PLAN.md -- Frontend conversation browser: filter bar with agent/project dropdowns and search, compact table rows with agent badges, clickable rows to detail, Overview table rows also clickable
+- [ ] 04-03-PLAN.md -- Frontend conversation detail: chat bubble layout, inline collapsible tool call cards, syntax-highlighted code blocks with highlight.js, metadata header, 404 handling
 
 ### Phase 5: Real-Time Updates
 **Goal**: Dashboard updates live as the user works with coding agents, with no manual refresh needed
@@ -171,7 +172,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 1. Project Foundation | 2/2 | Complete   | 2026-03-03 |
 | 2. Claude Code Ingestion | 3/3 | Complete | 2026-03-04 |
 | 3. API + Core Dashboard | 3/3 | Complete | 2026-03-04 |
-| 4. Conversation Browser | 0/2 | Not started | - |
+| 4. Conversation Browser | 0/3 | Not started | - |
 | 5. Real-Time Updates | 0/2 | Not started | - |
 | 6. Cursor Integration + Agent Comparison | 0/2 | Not started | - |
 | 7. Advanced Analytics | 0/3 | Not started | - |

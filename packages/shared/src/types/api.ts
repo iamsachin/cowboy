@@ -35,6 +35,8 @@ export interface TimeSeriesPoint {
 export interface ConversationRow {
   id: string;
   date: string;
+  agent: string;
+  title: string | null;
   project: string | null;
   model: string | null;
   inputTokens: number;
@@ -50,4 +52,57 @@ export interface ConversationListResponse {
   total: number;
   page: number;
   limit: number;
+}
+
+export interface MessageRow {
+  id: string;
+  role: string;
+  content: string | null;
+  createdAt: string;
+  model: string | null;
+}
+
+export interface ToolCallRow {
+  id: string;
+  messageId: string;
+  name: string;
+  input: unknown;
+  output: unknown;
+  status: string | null;
+  duration: number | null;
+  createdAt: string;
+}
+
+export interface ConversationDetailResponse {
+  conversation: {
+    id: string;
+    agent: string;
+    project: string | null;
+    title: string | null;
+    createdAt: string;
+    updatedAt: string;
+    model: string | null;
+  };
+  messages: MessageRow[];
+  toolCalls: ToolCallRow[];
+  tokenSummary: {
+    inputTokens: number;
+    outputTokens: number;
+    cacheReadTokens: number;
+    cacheCreationTokens: number;
+    cost: number | null;
+    savings: number | null;
+  };
+}
+
+export interface SearchConversationRow extends ConversationRow {
+  snippet: string | null;
+}
+
+export interface SearchConversationListResponse {
+  rows: SearchConversationRow[];
+  total: number;
+  page: number;
+  limit: number;
+  query: string;
 }

@@ -18,9 +18,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Conversation Browser** - Browse, search, and inspect full conversation history with messages and tool calls (completed 2026-03-04)
 - [x] **Phase 5: Real-Time Updates** - File watching with chokidar and WebSocket live updates to the dashboard
 - [x] **Phase 6: Cursor Integration + Agent Comparison** - Parse Cursor data and deliver per-agent pages with side-by-side comparison
-- [ ] **Phase 7: Advanced Analytics** - Cost projections, tool call analytics, activity heatmap, model distribution, per-project grouping
-- [ ] **Phase 8: Plan Tracking** - Heuristic plan extraction from conversations with completion status and statistics
-- [ ] **Phase 9: Settings + Remote Sync** - Settings page with log path config, remote POST endpoint, frequency, and payload selection
+- [x] **Phase 7: Advanced Analytics** - Cost projections, tool call analytics, activity heatmap, model distribution, per-project grouping
+- [x] **Phase 8: Plan Tracking** - Heuristic plan extraction from conversations with completion status and statistics
+- [x] **Phase 9: Settings + Remote Sync** - Settings page with log path config, remote POST endpoint, frequency, and payload selection
 
 ## Phase Details
 
@@ -130,9 +130,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 07-01-PLAN.md -- Backend API: shared types for tool/heatmap/project analytics, Drizzle aggregate queries, three new REST endpoints (tool-stats, heatmap, project-stats), integration tests
-- [ ] 07-02-PLAN.md -- Cost projection: extend CostChart with dashed projection line, confidence band (Filler plugin), moving average computation, symmetric forward projection
-- [ ] 07-03-PLAN.md -- Frontend Analytics page: activity heatmap (CSS Grid), tool stats chart + table, expandable project table, useAdvancedAnalytics composable, sidebar enablement
+- [x] 07-01-PLAN.md -- Backend API: shared types for tool/heatmap/project analytics, Drizzle aggregate queries, three new REST endpoints (tool-stats, heatmap, project-stats), integration tests
+- [x] 07-02-PLAN.md -- Cost projection: extend CostChart with dashed projection line, confidence band (Filler plugin), moving average computation, symmetric forward projection
+- [x] 07-03-PLAN.md -- Frontend Analytics page: activity heatmap (CSS Grid), tool stats chart + table, expandable project table, useAdvancedAnalytics composable, sidebar enablement
 
 ### Phase 8: Plan Tracking
 **Goal**: User can see multi-step plans extracted from agent conversations with completion tracking and aggregate statistics
@@ -145,9 +145,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 08-01-PLAN.md -- Plan extractor engine: shared types, DB schema (plans/planSteps tables), heuristic extraction (numbered/checkbox/step patterns), completion inference, ingestion pipeline integration, unit + integration tests
-- [ ] 08-02-PLAN.md -- Plan API: Drizzle query layer (list/detail/stats/timeseries/by-conversation), Fastify routes with filters and pagination, route registration, integration tests
-- [ ] 08-03-PLAN.md -- Frontend Plans page with KPIs/charts/table, plan detail with step list, inline plans in conversation detail, usePlans composable, sidebar and router wiring
+- [x] 08-01-PLAN.md -- Plan extractor engine: shared types, DB schema (plans/planSteps tables), heuristic extraction (numbered/checkbox/step patterns), completion inference, ingestion pipeline integration, unit + integration tests
+- [x] 08-02-PLAN.md -- Plan API: Drizzle query layer (list/detail/stats/timeseries/by-conversation), Fastify routes with filters and pagination, route registration, integration tests
+- [x] 08-03-PLAN.md -- Frontend Plans page with KPIs/charts/table, plan detail with step list, inline plans in conversation detail, usePlans composable, sidebar and router wiring
 
 ### Phase 9: Settings + Remote Sync
 **Goal**: User can configure the application (log paths, remote sync endpoint, frequency, payload scope) through a settings page
@@ -161,9 +161,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 09-01-PLAN.md -- Settings schema, query layer, API routes (GET/PUT settings, path validation, test connection), and integration tests
-- [ ] 09-02-PLAN.md -- Sync scheduler plugin with incremental payload, retry with exponential backoff, file watcher restart wiring
-- [ ] 09-03-PLAN.md -- Frontend Settings page with Agent Configuration and Remote Sync sections, useSettings composable, sidebar enablement
+- [x] 09-01-PLAN.md -- Settings schema, query layer, API routes (GET/PUT settings, path validation, test connection), and integration tests
+- [x] 09-02-PLAN.md -- Sync scheduler plugin with incremental payload, retry with exponential backoff, file watcher restart wiring
+- [x] 09-03-PLAN.md -- Frontend Settings page with Agent Configuration and Remote Sync sections, useSettings composable, sidebar enablement
 
 ## Progress
 
@@ -178,6 +178,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 4. Conversation Browser | 3/3 | Complete | 2026-03-04 |
 | 5. Real-Time Updates | 2/2 | Complete | 2026-03-04 |
 | 6. Cursor Integration + Agent Comparison | 2/2 | Complete | 2026-03-04 |
-| 7. Advanced Analytics | 0/3 | Not started | - |
-| 8. Plan Tracking | 0/3 | Not started | - |
-| 9. Settings + Remote Sync | 0/3 | Not started | - |
+| 7. Advanced Analytics | 3/3 | Complete | 2026-03-04 |
+| 8. Plan Tracking | 3/3 | Complete | 2026-03-04 |
+| 9. Settings + Remote Sync | 3/3 | Complete | 2026-03-04 |

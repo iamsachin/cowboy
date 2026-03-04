@@ -22,13 +22,13 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **TOKEN-02**: User can view estimated cost per conversation based on model pricing
 - [x] **TOKEN-03**: User can view aggregate token usage and cost across all conversations
 - [ ] **TOKEN-04**: User can view cost trend analysis with forward spending projection
-- [ ] **TOKEN-05**: User can view model distribution breakdown (which models used, how often)
+- [x] **TOKEN-05**: User can view model distribution breakdown (which models used, how often)
 
 ### Tool Call Analytics
 
-- [ ] **TOOL-01**: User can view all tool calls within a conversation (name, inputs, outputs)
-- [ ] **TOOL-02**: User can view tool call success/failure rates per tool name
-- [ ] **TOOL-03**: User can view tool call frequency and duration statistics
+- [x] **TOOL-01**: User can view all tool calls within a conversation (name, inputs, outputs)
+- [x] **TOOL-02**: User can view tool call success/failure rates per tool name
+- [x] **TOOL-03**: User can view tool call frequency and duration statistics
 
 ### Dashboard & Visualization
 
@@ -37,8 +37,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DASH-03**: User can filter all views by date range (presets + custom picker)
 - [x] **DASH-04**: User can view per-agent dashboard pages (Claude Code, Cursor independently)
 - [x] **DASH-05**: User can compare agents side-by-side (tokens, cost, tool calls, conversation counts)
-- [ ] **DASH-06**: User can view activity heatmap showing daily usage patterns (GitHub contribution graph style)
-- [ ] **DASH-07**: User can view per-project analytics grouped by codebase directory
+- [x] **DASH-06**: User can view activity heatmap showing daily usage patterns (GitHub contribution graph style)
+- [x] **DASH-07**: User can view per-project analytics grouped by codebase directory
 
 ### Conversation Browser
 
@@ -130,12 +130,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DASH-04 | Phase 6: Cursor Integration + Agent Comparison | Complete |
 | DASH-05 | Phase 6: Cursor Integration + Agent Comparison | Complete |
 | TOKEN-04 | Phase 7: Advanced Analytics | Pending |
-| TOKEN-05 | Phase 7: Advanced Analytics | Pending |
-| TOOL-01 | Phase 7: Advanced Analytics | Pending |
-| TOOL-02 | Phase 7: Advanced Analytics | Pending |
-| TOOL-03 | Phase 7: Advanced Analytics | Pending |
-| DASH-06 | Phase 7: Advanced Analytics | Pending |
-| DASH-07 | Phase 7: Advanced Analytics | Pending |
+| TOKEN-05 | Phase 7: Advanced Analytics | Complete |
+| TOOL-01 | Phase 7: Advanced Analytics | Complete |
+| TOOL-02 | Phase 7: Advanced Analytics | Complete |
+| TOOL-03 | Phase 7: Advanced Analytics | Complete |
+| DASH-06 | Phase 7: Advanced Analytics | Complete |
+| DASH-07 | Phase 7: Advanced Analytics | Complete |
 | PLAN-01 | Phase 8: Plan Tracking | Pending |
 | PLAN-02 | Phase 8: Plan Tracking | Pending |
 | PLAN-03 | Phase 8: Plan Tracking | Pending |

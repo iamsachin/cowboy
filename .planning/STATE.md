@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Phase 6 fully delivered -- Cursor ingestion, agent-filtered API, frontend agent pages, comparison view
-stopped_at: Completed 06-02-PLAN.md (Phase 6 fully complete)
-last_updated: "2026-03-04T12:12:50.931Z"
-last_activity: 2026-03-04 -- Completed 06-02 Frontend agent pages + comparison view
+status: Phase 7 in progress -- Advanced analytics backend endpoints delivered (tool-stats, heatmap, project-stats)
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-03-04T12:53:28Z"
+last_activity: 2026-03-04 -- Completed 07-01 Advanced analytics backend API
 progress:
   total_phases: 9
   completed_phases: 6
-  total_plans: 15
-  completed_plans: 15
-  percent: 100
+  total_plans: 18
+  completed_plans: 16
+  percent: 89
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-04)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing -- every conversation, tool call, token, and plan across all agents in one place.
-**Current focus:** Phase 6 complete -- Cursor ingestion + frontend agent pages + comparison view all delivered
+**Current focus:** Phase 7 in progress -- Advanced analytics backend endpoints delivered
 
 ## Current Position
 
-Phase: 6 of 9 (Cursor Integration + Agent Comparison) -- COMPLETE
-Plan: 2 of 2 in current phase -- COMPLETE
-Status: Phase 6 fully delivered -- Cursor ingestion, agent-filtered API, frontend agent pages, comparison view
-Last activity: 2026-03-04 -- Completed 06-02 Frontend agent pages + comparison view
+Phase: 7 of 9 (Advanced Analytics)
+Plan: 1 of 3 in current phase -- COMPLETE
+Status: Phase 7 in progress -- tool-stats, heatmap, project-stats API endpoints delivered
+Last activity: 2026-03-04 -- Completed 07-01 Advanced analytics backend API
 
-Progress: [##########] 100%
+Progress: [########--] 89%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
+- Total plans completed: 16
 - Average duration: 5min
-- Total execution time: 68min
+- Total execution time: 75min
 
 **By Phase:**
 
@@ -58,9 +58,10 @@ Progress: [##########] 100%
 | Phase 05 P02 | 3min | 2 tasks | 6 files |
 | Phase 06 P01 | 7min | 2 tasks | 14 files |
 | Phase 06 P02 | 8min | 3 tasks | 18 files |
+| Phase 07 P01 | 7min | 2 tasks | 9 files |
 
 **Recent Trend:**
-- Last 5 plans: 3min, 6min, 3min, 7min, 8min
+- Last 5 plans: 6min, 3min, 7min, 8min, 7min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -133,6 +134,10 @@ Recent decisions affecting current work:
 - [Phase 06]: useAgentComparison calls API directly rather than composing useAgentAnalytics to avoid watcher overhead
 - [Phase 06]: Charts show "No data" placeholder instead of infinite spinner on empty datasets
 - [Phase 06]: ModelDistributionChart added to Overview page in addition to per-agent pages
+- [Phase 07]: P95 duration computed in JavaScript via sorted array index (SQLite has no PERCENTILE function)
+- [Phase 07]: Tool success checks both 'success' and 'completed' status values for forward compatibility
+- [Phase 07]: Project cost calculated per-model via secondary query for accuracy across mixed-model projects
+- [Phase 07]: topModels uses count(distinct conversationId) per model for accurate model distribution
 
 ### Pending Todos
 
@@ -144,6 +149,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T12:08:00Z
-Stopped at: Completed 06-02-PLAN.md (Phase 6 fully complete)
-Resume file: .planning/phases/06-cursor-integration-agent-comparison/06-02-SUMMARY.md
+Last session: 2026-03-04T12:53:28Z
+Stopped at: Completed 07-01-PLAN.md
+Resume file: .planning/phases/07-advanced-analytics/07-01-SUMMARY.md

@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in-progress
-stopped_at: Completed 02-03 Ingestion plugin with full pipeline and integration tests
-last_updated: "2026-03-03T23:12:05Z"
-last_activity: 2026-03-04 -- Completed Phase 2 (Claude Code Ingestion) -- all 3 plans delivered
+status: executing
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-04T07:12:19Z"
+last_activity: 2026-03-04 -- Completed 03-01 Analytics API endpoints with pricing module and tests
 progress:
   total_phases: 9
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
-  percent: 80
+  total_plans: 6
+  completed_plans: 6
+  percent: 83
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-04)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing -- every conversation, tool call, token, and plan across all agents in one place.
-**Current focus:** Phase 2 complete: Claude Code Ingestion (all 3 plans delivered). Ready for Phase 3.
+**Current focus:** Phase 3: API + Core Dashboard (Plan 1 of 3 complete)
 
 ## Current Position
 
-Phase: 2 of 9 (Claude Code Ingestion) -- COMPLETE
-Plan: 3 of 3 in current phase (all complete)
-Status: Phase 02 Complete, ready for Phase 03
-Last activity: 2026-03-04 -- Completed 02-03 Ingestion plugin with full pipeline and integration tests
+Phase: 3 of 9 (API + Core Dashboard)
+Plan: 1 of 3 in current phase
+Status: Executing Phase 03 -- Plan 01 complete
+Last activity: 2026-03-04 -- Completed 03-01 Analytics API endpoints with pricing module and tests
 
-Progress: [########░░] 80%
+Progress: [########░░] 83%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: 4min
-- Total execution time: 22min
+- Total execution time: 27min
 
 **By Phase:**
 
@@ -48,9 +48,10 @@ Progress: [########░░] 80%
 | Phase 02 P01 | 3min | 2 tasks | 11 files |
 | Phase 02 P02 | 4min | 2 tasks | 4 files |
 | Phase 02 P03 | 3min | 2 tasks | 5 files |
+| Phase 03 P01 | 5min | 3 tasks | 13 files |
 
 **Recent Trend:**
-- Last 5 plans: 4min, 8min, 3min, 4min, 3min
+- Last 5 plans: 8min, 3min, 4min, 3min, 5min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -83,6 +84,10 @@ Recent decisions affecting current work:
 - [Phase 02]: Auto-ingest uses onReady + setImmediate for non-blocking boot-time ingestion
 - [Phase 02]: buildApp accepts AppOptions for test isolation of basePath and autoIngest
 - [Phase 02]: Per-file transactions with onConflictDoNothing for atomic dedup per JSONL file
+- [Phase 03]: Server-side cost calculation in query layer using calculateCost from @cowboy/shared
+- [Phase 03]: Prior trend period ends one day before current period start to prevent data overlap
+- [Phase 03]: Time-series groups by model first then aggregates per-period for accurate cost calculation
+- [Phase 03]: Date range filtering appends T23:59:59Z to 'to' date for inclusive day boundary
 
 ### Pending Todos
 
@@ -94,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-03T23:12:05Z
-Stopped at: Completed 02-03-PLAN.md (Phase 02 complete)
-Resume file: .planning/phases/02-claude-code-ingestion/02-03-SUMMARY.md
+Last session: 2026-03-04T07:12:19Z
+Stopped at: Completed 03-01-PLAN.md
+Resume file: .planning/phases/03-api-core-dashboard/03-01-SUMMARY.md

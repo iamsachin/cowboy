@@ -18,9 +18,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Token & Cost Analytics
 
-- [ ] **TOKEN-01**: User can view token usage per conversation (input, output, cache_read, cache_creation)
-- [ ] **TOKEN-02**: User can view estimated cost per conversation based on model pricing
-- [ ] **TOKEN-03**: User can view aggregate token usage and cost across all conversations
+- [x] **TOKEN-01**: User can view token usage per conversation (input, output, cache_read, cache_creation)
+- [x] **TOKEN-02**: User can view estimated cost per conversation based on model pricing
+- [x] **TOKEN-03**: User can view aggregate token usage and cost across all conversations
 - [ ] **TOKEN-04**: User can view cost trend analysis with forward spending projection
 - [ ] **TOKEN-05**: User can view model distribution breakdown (which models used, how often)
 
@@ -32,9 +32,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Dashboard & Visualization
 
-- [ ] **DASH-01**: User sees an overview dashboard with KPI cards (total tokens, cost, conversations, active days)
-- [ ] **DASH-02**: User can view time-series charts for usage trends (daily/weekly/monthly)
-- [ ] **DASH-03**: User can filter all views by date range (presets + custom picker)
+- [x] **DASH-01**: User sees an overview dashboard with KPI cards (total tokens, cost, conversations, active days)
+- [x] **DASH-02**: User can view time-series charts for usage trends (daily/weekly/monthly)
+- [x] **DASH-03**: User can filter all views by date range (presets + custom picker)
 - [ ] **DASH-04**: User can view per-agent dashboard pages (Claude Code, Cursor independently)
 - [ ] **DASH-05**: User can compare agents side-by-side (tokens, cost, tool calls, conversation counts)
 - [ ] **DASH-06**: User can view activity heatmap showing daily usage patterns (GitHub contribution graph style)
@@ -113,12 +113,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INGEST-03 | Phase 2: Claude Code Ingestion | Complete |
 | INGEST-05 | Phase 2: Claude Code Ingestion | Complete |
 | INGEST-06 | Phase 2: Claude Code Ingestion | Complete |
-| DASH-01 | Phase 3: API + Core Dashboard | Pending |
-| DASH-02 | Phase 3: API + Core Dashboard | Pending |
-| DASH-03 | Phase 3: API + Core Dashboard | Pending |
-| TOKEN-01 | Phase 3: API + Core Dashboard | Pending |
-| TOKEN-02 | Phase 3: API + Core Dashboard | Pending |
-| TOKEN-03 | Phase 3: API + Core Dashboard | Pending |
+| DASH-01 | Phase 3: API + Core Dashboard | Complete |
+| DASH-02 | Phase 3: API + Core Dashboard | Complete |
+| DASH-03 | Phase 3: API + Core Dashboard | Complete |
+| TOKEN-01 | Phase 3: API + Core Dashboard | Complete |
+| TOKEN-02 | Phase 3: API + Core Dashboard | Complete |
+| TOKEN-03 | Phase 3: API + Core Dashboard | Complete |
 | CONV-01 | Phase 4: Conversation Browser | Pending |
 | CONV-02 | Phase 4: Conversation Browser | Pending |
 | CONV-03 | Phase 4: Conversation Browser | Pending |

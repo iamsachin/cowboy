@@ -39,7 +39,7 @@
       <!-- Metadata header bar -->
       <div class="bg-base-200 rounded-lg p-4 mb-6">
         <h1 class="text-xl font-bold mb-3">
-          {{ data.conversation.title || 'Untitled Conversation' }}
+          {{ displayTitle }}
         </h1>
         <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
           <!-- Agent badge -->
@@ -124,6 +124,7 @@ import type { PlanDetailResponse } from '@cowboy/shared';
 import { useConversationDetail } from '../composables/useConversationDetail';
 import ConversationDetail from '../components/ConversationDetail.vue';
 import PlanStepList from '../components/PlanStepList.vue';
+import { cleanTitle } from '../utils/content-sanitizer';
 
 const route = useRoute();
 const id = route.params.id as string;
@@ -152,13 +153,11 @@ const totalTokens = computed(() => {
   return s.inputTokens + s.outputTokens + s.cacheReadTokens + s.cacheCreationTokens;
 });
 
+const displayTitle = computed(() => cleanTitle(data.value?.conversation.title || ''));
+
 // Set document title
 watchEffect(() => {
-  if (data.value?.conversation.title) {
-    document.title = `${data.value.conversation.title} - Cowboy`;
-  } else {
-    document.title = 'Conversation Detail - Cowboy';
-  }
+  document.title = `${displayTitle.value} - Cowboy`;
 });
 
 const numberFormatter = new Intl.NumberFormat();

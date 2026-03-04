@@ -30,6 +30,7 @@
 import { computed } from 'vue';
 import type { MessageRow } from '@cowboy/shared';
 import CodeBlock from './CodeBlock.vue';
+import { stripXmlTags } from '../utils/content-sanitizer';
 
 interface ContentBlock {
   type: 'text' | 'code';
@@ -50,7 +51,7 @@ function parseContent(raw: string): ContentBlock[] {
   while ((match = regex.exec(raw)) !== null) {
     // Text before the code block
     if (match.index > lastIndex) {
-      const text = raw.slice(lastIndex, match.index).trim();
+      const text = stripXmlTags(raw.slice(lastIndex, match.index));
       if (text) {
         blocks.push({ type: 'text', content: text });
       }
@@ -65,15 +66,18 @@ function parseContent(raw: string): ContentBlock[] {
 
   // Remaining text after last code block
   if (lastIndex < raw.length) {
-    const text = raw.slice(lastIndex).trim();
+    const text = stripXmlTags(raw.slice(lastIndex));
     if (text) {
       blocks.push({ type: 'text', content: text });
     }
   }
 
   // If no blocks were created, return the whole content as text
-  if (blocks.length === 0 && raw.trim()) {
-    blocks.push({ type: 'text', content: raw });
+  if (blocks.length === 0) {
+    const cleaned = stripXmlTags(raw);
+    if (cleaned) {
+      blocks.push({ type: 'text', content: cleaned });
+    }
   }
 
   return blocks;

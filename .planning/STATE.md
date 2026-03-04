@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-04)
 Phase: 9 of 9 (Settings & Remote Sync)
 Plan: 3 of 3 in current phase
 Status: 09-03 COMPLETE -- Frontend Settings page with useSettings composable
-Last activity: 2026-03-04 -- Completed 09-03 Frontend Settings page
+Last activity: 2026-03-04 - Completed quick task 2: Add Data Management UI to Settings page
 
 Progress: [██████████] 100%
 
@@ -176,8 +176,15 @@ None yet.
 
 None.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | Fix Cursor conversations not reading tokens and content properly | 2026-03-04 | 3c1796c | [1-fix-cursor-conversations-not-reading-tok](./quick/1-fix-cursor-conversations-not-reading-tok/) |
+| 2 | Add Data Management UI to Settings page (clear-db, refresh-db, db-stats) | 2026-03-04 | 932824d | [2-add-a-setting-ui-that-has-buttons-to-cle](./quick/2-add-a-setting-ui-that-has-buttons-to-cle/) |
+
 ## Session Continuity
 
-Last session: 2026-03-04T18:04:32Z
-Stopped at: Completed quick task 1 -- Fix Cursor conversations not reading token/content
+Last session: 2026-03-04T18:24:27Z
+Stopped at: Completed quick task 2 -- Data Management UI with clear/refresh/stats
 Resume file: N/A -- Project milestone v1.0 complete

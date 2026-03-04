@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-03-04T11:50:44Z"
-last_activity: 2026-03-04 -- Completed 06-01 Cursor ingestion + agent API filtering
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-03-04T12:08:00Z"
+last_activity: 2026-03-04 -- Completed 06-02 Frontend agent pages + comparison view (Phase 6 complete)
 progress:
   total_phases: 9
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 15
-  completed_plans: 14
-  percent: 93
+  completed_plans: 15
+  percent: 100
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-04)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing -- every conversation, tool call, token, and plan across all agents in one place.
-**Current focus:** Phase 6 in progress -- Cursor ingestion backend complete, frontend agent pages next
+**Current focus:** Phase 6 complete -- Cursor ingestion + frontend agent pages + comparison view all delivered
 
 ## Current Position
 
-Phase: 6 of 9 (Cursor Integration + Agent Comparison)
-Plan: 1 of 2 in current phase -- COMPLETE
-Status: 06-01 complete -- Cursor ingestion pipeline, agent-filtered API, model pricing all delivered
-Last activity: 2026-03-04 -- Completed 06-01 Cursor ingestion + agent API filtering
+Phase: 6 of 9 (Cursor Integration + Agent Comparison) -- COMPLETE
+Plan: 2 of 2 in current phase -- COMPLETE
+Status: Phase 6 fully delivered -- Cursor ingestion, agent-filtered API, frontend agent pages, comparison view
+Last activity: 2026-03-04 -- Completed 06-02 Frontend agent pages + comparison view
 
-Progress: [#########-] 93%
+Progress: [##########] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: 4min
-- Total execution time: 60min
+- Total plans completed: 15
+- Average duration: 5min
+- Total execution time: 68min
 
 **By Phase:**
 
@@ -57,9 +57,10 @@ Progress: [#########-] 93%
 | Phase 05 P01 | 6min | 2 tasks | 10 files |
 | Phase 05 P02 | 3min | 2 tasks | 6 files |
 | Phase 06 P01 | 7min | 2 tasks | 14 files |
+| Phase 06 P02 | 8min | 3 tasks | 18 files |
 
 **Recent Trend:**
-- Last 5 plans: 3min, 3min, 6min, 3min, 7min
+- Last 5 plans: 3min, 6min, 3min, 7min, 8min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -127,6 +128,11 @@ Recent decisions affecting current work:
 - [Phase 06]: Cursor cacheReadTokens/cacheCreationTokens always 0 (not exposed in vscdb)
 - [Phase 06]: File watcher uses 3s debounce for Cursor vs 1s for Claude Code (Cursor writes more frequently)
 - [Phase 06]: Static project name 'Cursor' for all Cursor conversations (no per-project directory)
+- [Phase 06]: Compare tab as default on AgentsPage for immediate cross-agent visibility
+- [Phase 06]: useAgentAnalytics is non-singleton (each tab creates own instance) unlike global useAnalytics
+- [Phase 06]: useAgentComparison calls API directly rather than composing useAgentAnalytics to avoid watcher overhead
+- [Phase 06]: Charts show "No data" placeholder instead of infinite spinner on empty datasets
+- [Phase 06]: ModelDistributionChart added to Overview page in addition to per-agent pages
 
 ### Pending Todos
 
@@ -138,6 +144,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T11:50:44Z
-Stopped at: Completed 06-01-PLAN.md
-Resume file: .planning/phases/06-cursor-integration-agent-comparison/06-01-SUMMARY.md
+Last session: 2026-03-04T12:08:00Z
+Stopped at: Completed 06-02-PLAN.md (Phase 6 fully complete)
+Resume file: .planning/phases/06-cursor-integration-agent-comparison/06-02-SUMMARY.md

@@ -16,8 +16,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Claude Code Ingestion** - Parse Claude Code JSONL logs into the unified SQLite schema with deduplication
 - [x] **Phase 3: API + Core Dashboard** - REST API and overview dashboard with token analytics, cost tracking, and date filtering
 - [x] **Phase 4: Conversation Browser** - Browse, search, and inspect full conversation history with messages and tool calls (completed 2026-03-04)
-- [ ] **Phase 5: Real-Time Updates** - File watching with chokidar and WebSocket live updates to the dashboard
-- [ ] **Phase 6: Cursor Integration + Agent Comparison** - Parse Cursor data and deliver per-agent pages with side-by-side comparison
+- [x] **Phase 5: Real-Time Updates** - File watching with chokidar and WebSocket live updates to the dashboard
+- [x] **Phase 6: Cursor Integration + Agent Comparison** - Parse Cursor data and deliver per-agent pages with side-by-side comparison
 - [ ] **Phase 7: Advanced Analytics** - Cost projections, tool call analytics, activity heatmap, model distribution, per-project grouping
 - [ ] **Phase 8: Plan Tracking** - Heuristic plan extraction from conversations with completion status and statistics
 - [ ] **Phase 9: Settings + Remote Sync** - Settings page with log path config, remote POST endpoint, frequency, and payload selection
@@ -114,8 +114,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 06-01-PLAN.md -- Backend Cursor ingestion pipeline (parser, normalizer, file discovery), API agent filter on overview/timeseries/model-distribution endpoints, Cursor model pricing, file watcher extension, tests
-- [ ] 06-02-PLAN.md -- Frontend Agents page with tabbed layout (Claude Code / Cursor / Compare), per-agent composables, comparison components, model distribution chart, agent badges in conversation table, sidebar enable
+- [x] 06-01-PLAN.md -- Backend Cursor ingestion pipeline (parser, normalizer, file discovery), API agent filter on overview/timeseries/model-distribution endpoints, Cursor model pricing, file watcher extension, tests
+- [x] 06-02-PLAN.md -- Frontend Agents page with tabbed layout (Claude Code / Cursor / Compare), per-agent composables, comparison components, model distribution chart, agent badges in conversation table, sidebar enable
 
 ### Phase 7: Advanced Analytics
 **Goal**: User has deep analytical views including cost projections, tool call effectiveness, usage patterns, model distribution, and per-project breakdowns
@@ -174,7 +174,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 3. API + Core Dashboard | 3/3 | Complete | 2026-03-04 |
 | 4. Conversation Browser | 3/3 | Complete | 2026-03-04 |
 | 5. Real-Time Updates | 2/2 | Complete | 2026-03-04 |
-| 6. Cursor Integration + Agent Comparison | 0/2 | Not started | - |
+| 6. Cursor Integration + Agent Comparison | 2/2 | Complete | 2026-03-04 |
 | 7. Advanced Analytics | 0/3 | Not started | - |
 | 8. Plan Tracking | 0/1 | Not started | - |
 | 9. Settings + Remote Sync | 0/2 | Not started | - |

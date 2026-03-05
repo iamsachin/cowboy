@@ -55,7 +55,7 @@ completed: 2026-03-05
 - **Duration:** ~5 min
 - **Started:** 2026-03-05T13:36:46Z
 - **Completed:** 2026-03-05T13:42:00Z
-- **Tasks:** 2 complete, 1 awaiting human verification
+- **Tasks:** 3 complete (all tasks including human verification)
 - **Files modified:** 4
 
 ## Accomplishments
@@ -72,6 +72,7 @@ Each task was committed atomically:
 1. **Task 1: Create SystemMessageIndicator, SlashCommandChip, and ClearDivider** - `2f89d44` (feat)
 2. **Task 1 (fix): Layout correction for SystemMessageIndicator** - `128eabe` (fix)
 3. **Task 2: Wire new turn types into ConversationDetail.vue** - `497b655` (feat)
+4. **Task 3: Human verification of visual changes** - approved 2026-03-05 (all browser checks passed)
 
 ## Files Created/Modified
 
@@ -115,8 +116,8 @@ None - no external service configuration required.
 
 - All three new turn types have dedicated Vue components
 - ConversationDetail.vue renders all five GroupedTurn variants without dropping any messages
-- Task 3 (human-verify) requires browser verification before phase closure
-- Phase 16 is the final phase of milestone v1.2
+- All tasks including human verification are complete
+- Phase 16 is the final phase of milestone v1.2 — milestone v1.2 is now complete
 
 ---
 *Phase: 16-message-display*

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex justify-center my-1">
+  <div class="flex flex-col items-center my-1 w-full">
     <!-- Collapsed indicator (default) -->
     <div
       class="cursor-pointer select-none flex items-center gap-2 px-3 py-1 rounded-full bg-base-300/50 text-base-content/40 text-xs hover:bg-base-300/70 transition-colors"
@@ -12,11 +12,11 @@
       <span>{{ summaryLabel }}</span>
     </div>
 
-    <!-- Expanded content (shown below the indicator) -->
+    <!-- Expanded content (shown below the indicator, in-flow) -->
     <Transition name="fade">
       <div
         v-if="expanded"
-        class="absolute mt-6 z-10 w-full max-w-xl bg-base-200 border border-base-300 rounded-lg shadow-lg overflow-hidden"
+        class="mt-2 w-full max-w-xl bg-base-200 border border-base-300 rounded-lg overflow-hidden"
       >
         <div
           v-for="(msg, idx) in group.messages"

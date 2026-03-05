@@ -8,6 +8,8 @@
       <TurnCard
         v-else
         :turn="turn"
+        :expanded="true"
+        @toggle="() => {}"
       />
     </template>
   </div>

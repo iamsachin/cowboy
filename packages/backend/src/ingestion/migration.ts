@@ -9,9 +9,13 @@
  * Idempotent: safe to run on every ingestion cycle.
  */
 
+import path from 'node:path';
 import { eq, isNull, and, sql } from 'drizzle-orm';
 import { conversations, messages, tokenUsage } from '../db/schema.js';
 import { shouldSkipForTitle } from './title-utils.js';
+import { generateId } from './id-generator.js';
+import { parseCursorDb, getBubblesForConversation } from './cursor-parser.js';
+import { discoverCursorDb } from './cursor-file-discovery.js';
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import type * as schema from '../db/schema.js';
 
@@ -208,6 +212,156 @@ export function fixConversationModels(database: Database): number {
   return fixedCount;
 }
 
+// ── Cursor project fix ──────────────────────────────────────────────────
+
+/**
+ * Fix cursor conversations that have the hardcoded 'Cursor' project name.
+ * Reads workspace paths from the Cursor state.vscdb and derives real project names.
+ * Returns the number of conversations updated.
+ */
+export function fixCursorProjects(database: Database, cursorDbPath?: string | null): number {
+  if (!cursorDbPath) return 0;
+
+  // Get conversations with hardcoded 'Cursor' project
+  const cursorConvs = database
+    .select({ id: conversations.id })
+    .from(conversations)
+    .where(and(eq(conversations.agent, 'cursor'), eq(conversations.project, 'Cursor')))
+    .all();
+
+  if (cursorConvs.length === 0) return 0;
+
+  // Parse Cursor DB to get workspace paths
+  let cursorData;
+  try {
+    cursorData = parseCursorDb(cursorDbPath);
+  } catch {
+    return 0;
+  }
+
+  // Build map: generateId('cursor', composerId) -> workspacePath
+  const idToWorkspace = new Map<string, string>();
+  for (const conv of cursorData) {
+    if (conv.workspacePath) {
+      const id = generateId('cursor', conv.composerId);
+      idToWorkspace.set(id, conv.workspacePath);
+    }
+  }
+
+  let fixedCount = 0;
+
+  for (const conv of cursorConvs) {
+    const workspacePath = idToWorkspace.get(conv.id);
+    if (!workspacePath) continue;
+
+    const projectName = path.basename(workspacePath);
+    if (!projectName) continue;
+
+    database
+      .update(conversations)
+      .set({ project: projectName })
+      .where(eq(conversations.id, conv.id))
+      .run();
+    fixedCount++;
+  }
+
+  return fixedCount;
+}
+
+// ── Cursor message content fix ──────────────────────────────────────────
+
+/**
+ * Fix assistant messages with null/empty content in cursor conversations.
+ * If Cursor DB is available, tries to re-derive content from bubble data.
+ * Otherwise falls back to "Executed tool call".
+ * Returns the number of messages updated.
+ */
+export function fixCursorMessageContent(database: Database, cursorDbPath?: string | null): number {
+  // Find cursor conversation IDs
+  const cursorConvIds = database
+    .select({ id: conversations.id })
+    .from(conversations)
+    .where(eq(conversations.agent, 'cursor'))
+    .all()
+    .map((c) => c.id);
+
+  if (cursorConvIds.length === 0) return 0;
+
+  // Find assistant messages with null/empty content in cursor conversations
+  const emptyMessages = database
+    .select({ id: messages.id, conversationId: messages.conversationId })
+    .from(messages)
+    .where(
+      and(
+        eq(messages.role, 'assistant'),
+        sql`(${messages.content} IS NULL OR ${messages.content} = '')`,
+        sql`${messages.conversationId} IN (${sql.raw(cursorConvIds.map((id) => `'${id}'`).join(','))})`,
+      ),
+    )
+    .all();
+
+  if (emptyMessages.length === 0) return 0;
+
+  // If we have a Cursor DB, try to re-derive content from bubbles
+  let cursorData: ReturnType<typeof parseCursorDb> | null = null;
+  if (cursorDbPath) {
+    try {
+      cursorData = parseCursorDb(cursorDbPath);
+    } catch {
+      cursorData = null;
+    }
+  }
+
+  // Build a map of composerId -> conversationId for reverse lookup
+  const convIdToComposerId = new Map<string, string>();
+  if (cursorData) {
+    for (const conv of cursorData) {
+      const id = generateId('cursor', conv.composerId);
+      convIdToComposerId.set(id, conv.composerId);
+    }
+  }
+
+  let fixedCount = 0;
+
+  for (const msg of emptyMessages) {
+    let content: string | null = null;
+
+    // Try to re-derive from Cursor DB
+    if (cursorDbPath && cursorData) {
+      const composerId = convIdToComposerId.get(msg.conversationId);
+      if (composerId) {
+        try {
+          const bubbles = getBubblesForConversation(cursorDbPath, composerId);
+          // Find the matching bubble by checking if generateId(conversationId, bubbleId) == msg.id
+          for (const bubble of bubbles) {
+            const candidateId = generateId(msg.conversationId, bubble.bubbleId);
+            if (candidateId === msg.id && bubble.text?.trim()) {
+              content = bubble.text;
+              break;
+            }
+          }
+        } catch {
+          // Cursor DB read failed, fall through to fallback
+        }
+      }
+    }
+
+    // Fallback: set a reasonable placeholder
+    if (!content) {
+      content = 'Executed tool call';
+    }
+
+    database
+      .update(messages)
+      .set({ content })
+      .where(eq(messages.id, msg.id))
+      .run();
+    fixedCount++;
+  }
+
+  return fixedCount;
+}
+
 // ── Main migration runner ──────────────────────────────────────────────
 
 /**
@@ -216,8 +370,14 @@ export function fixConversationModels(database: Database): number {
  */
 export function runDataQualityMigration(
   database: Database,
-): { titlesFixed: number; modelsFixed: number } {
+): { titlesFixed: number; modelsFixed: number; cursorProjectsFixed: number; cursorMessagesFixed: number } {
   const titlesFixed = fixConversationTitles(database);
   const modelsFixed = fixConversationModels(database);
-  return { titlesFixed, modelsFixed };
+
+  // Cursor-specific fixes
+  const cursorDbPath = discoverCursorDb();
+  const cursorProjectsFixed = fixCursorProjects(database, cursorDbPath);
+  const cursorMessagesFixed = fixCursorMessageContent(database, cursorDbPath);
+
+  return { titlesFixed, modelsFixed, cursorProjectsFixed, cursorMessagesFixed };
 }

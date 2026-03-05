@@ -550,6 +550,7 @@ describe('migration', () => {
           composerId,
           createdAt: Date.now(),
           lastUpdatedAt: Date.now(),
+          name: 'Test conversation with enough padding to exceed the 100 character length filter requirement',
           // No workspacePath field
         }),
       );
@@ -709,6 +710,7 @@ describe('migration', () => {
           composerId,
           createdAt: Date.now(),
           lastUpdatedAt: Date.now(),
+          name: 'Test conversation with enough data to exceed the 100 character length filter in parseCursorDb',
         }),
       );
       mockDb.prepare('INSERT INTO cursorDiskKV (key, value) VALUES (?, ?)').run(

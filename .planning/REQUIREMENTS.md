@@ -26,8 +26,8 @@ Requirements for Data Quality & Display Fixes milestone. Each maps to roadmap ph
 
 ### Message Display
 
-- [ ] **MSG-01**: System-injected content (caveats, skill instructions, objective blocks) stored as role=user is visually distinguished from actual user messages
-- [ ] **MSG-02**: Slash commands (`/clear`, `/gsd:*`) are styled distinctly from regular messages
+- [x] **MSG-01**: System-injected content (caveats, skill instructions, objective blocks) stored as role=user is visually distinguished from actual user messages
+- [x] **MSG-02**: Slash commands (`/clear`, `/gsd:*`) are styled distinctly from regular messages
 
 ## Future Requirements
 
@@ -55,8 +55,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CURSOR-01 | Phase 15 | Complete |
 | CURSOR-02 | Phase 15 | Complete |
 | CURSOR-03 | Phase 15 | Complete |
-| MSG-01 | Phase 16 | Pending |
-| MSG-02 | Phase 16 | Pending |
+| MSG-01 | Phase 16 | Complete |
+| MSG-02 | Phase 16 | Complete |
 
 **Coverage:**
 - v1.2 requirements: 10 total

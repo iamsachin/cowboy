@@ -81,7 +81,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. System-injected content (caveats, skill instructions, objective blocks) that is stored as role=user appears visually distinct from actual user messages (different styling, label, or visual treatment)
   2. Slash commands (/clear, /gsd:*, etc.) render with distinct styling that differentiates them from regular conversational messages
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 - [ ] 16-01-PLAN.md — Extend turn grouping model with system message, slash command, and /clear turn types (TDD)
 - [ ] 16-02-PLAN.md — Create UI components and wire into ConversationDetail.vue
@@ -105,4 +105,4 @@ Plans:
 | 13. Visual Polish | v1.1 | 1/1 | Complete | 2026-03-05 |
 | 14. Ingestion Quality | v1.2 | 2/2 | Complete | 2026-03-05 |
 | 15. Cursor Data Quality | v1.2 | 2/2 | Complete | 2026-03-05 |
-| 16. Message Display | v1.2 | 0/2 | Not started | - |
+| 16. Message Display | 1/2 | In Progress|  | - |

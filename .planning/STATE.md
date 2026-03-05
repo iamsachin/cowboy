@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Data Quality & Display Fixes
 status: in-progress
-stopped_at: Completed 15-02 cursor data quality migration
-last_updated: "2026-03-05T12:55:00Z"
-last_activity: 2026-03-05 -- Completed 15-02 cursor data quality migration
+stopped_at: Completed 16-01-PLAN.md
+last_updated: "2026-03-05T13:35:28.099Z"
+last_activity: 2026-03-05 -- Completed 16-01 turn grouping extension
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 6
+  completed_plans: 5
   percent: 100
 ---
 
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-05)
 
 ## Current Position
 
-Phase: 15 of 16 (Cursor Data Quality) -- COMPLETE
-Plan: 2 of 2 complete
-Status: Phase 15 complete
-Last activity: 2026-03-05 -- Completed 15-02 cursor data quality migration
+Phase: 16 of 16 (Message Display) -- IN PROGRESS
+Plan: 1 of 2 complete
+Status: Plan 16-01 complete, Plan 16-02 pending
+Last activity: 2026-03-05 -- Completed 16-01 turn grouping extension (SystemGroup, SlashCommandTurn, ClearDividerTurn)
 
-Progress: [############] 100% (16/16 phases complete for v1.2)
+Progress: [██████████] 97% (29/30 plans complete for v1.2)
 
 ## Performance Metrics
 
@@ -50,6 +50,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase 15]: Workspace path extracted from composerData with fallback chain for project derivation
 - [Phase 15]: Cursor migration uses generateId reverse-lookup to map DB IDs back to Cursor composerIds/bubbleIds
 - [Phase 15]: Null assistant content falls back to 'Executed tool call' when Cursor DB unavailable
+- [Phase 16-message-display]: System message detection order mirrors content-sanitizer.ts precedence: isClearCommand before isSlashCommand before isSystemInjected
+- [Phase 16-message-display]: groupTurns pendingSystem accumulator merges consecutive system-injected messages into SystemGroup with per-message category labels
 
 ### Pending Todos
 
@@ -61,6 +63,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-05T12:55:00Z
-Stopped at: Completed 15-02-PLAN.md
-Resume file: Phase 15 complete
+Last session: 2026-03-05T13:35:28.097Z
+Stopped at: Completed 16-01-PLAN.md
+Resume file: None

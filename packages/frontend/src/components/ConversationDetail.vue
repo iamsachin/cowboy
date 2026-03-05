@@ -29,6 +29,18 @@
         :tokenUsageByMessage="tokenUsageByMessage"
         @toggle="toggle(turnKey(turn))"
       />
+      <SystemMessageIndicator
+        v-else-if="turn.type === 'system-group'"
+        :group="turn"
+      />
+      <SlashCommandChip
+        v-else-if="turn.type === 'slash-command'"
+        :turn="turn"
+      />
+      <ClearDivider
+        v-else-if="turn.type === 'clear-divider'"
+        :turn="turn"
+      />
     </template>
   </div>
 </template>
@@ -39,9 +51,11 @@ import { ChevronsDown, ChevronsUp } from 'lucide-vue-next';
 import type { MessageRow, ToolCallRow, MessageTokenUsage } from '@cowboy/shared';
 import { groupTurns, type GroupedTurn } from '../composables/useGroupedTurns';
 import { useCollapseState } from '../composables/useCollapseState';
-import { isSystemInjected, isClearCommand } from '../utils/content-sanitizer';
 import ChatMessage from './ChatMessage.vue';
 import AssistantGroupCard from './AssistantGroupCard.vue';
+import SystemMessageIndicator from './SystemMessageIndicator.vue';
+import SlashCommandChip from './SlashCommandChip.vue';
+import ClearDivider from './ClearDivider.vue';
 
 const props = defineProps<{
   messages: MessageRow[];
@@ -49,44 +63,28 @@ const props = defineProps<{
   tokenUsageByMessage?: Record<string, MessageTokenUsage>;
 }>();
 
-// Filter to messages after the last /clear command (context reset boundary)
-const activeMessages = computed(() => {
-  const sorted = [...props.messages].sort(
+// Sort all messages — groupTurns handles all classification internally
+const sortedMessages = computed(() =>
+  [...props.messages].sort(
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-  );
-
-  // Find the last /clear message index
-  let clearIdx = -1;
-  for (let i = sorted.length - 1; i >= 0; i--) {
-    if (sorted[i].role === 'user' && isClearCommand(sorted[i].content)) {
-      clearIdx = i;
-      break;
-    }
-  }
-
-  if (clearIdx === -1) return props.messages;
-
-  // Include the /clear message itself (it's a user command worth showing)
-  return sorted.slice(clearIdx);
-});
-
-// Remove system-injected user messages before grouping so they don't create
-// false group boundaries between consecutive assistant turns
-const filteredMessages = computed(() =>
-  activeMessages.value.filter(m => m.role !== 'user' || !isSystemInjected(m.content))
+  )
 );
 
-// Filter tool calls to only those belonging to active messages
+// Filter tool calls to only those belonging to the message set
 const activeToolCalls = computed(() => {
-  const messageIds = new Set(activeMessages.value.map(m => m.id));
+  const messageIds = new Set(props.messages.map(m => m.id));
   return props.toolCalls.filter(tc => messageIds.has(tc.messageId));
 });
 
-const turns = computed(() => groupTurns(filteredMessages.value, activeToolCalls.value));
+const turns = computed(() => groupTurns(sortedMessages.value, activeToolCalls.value));
 
 function turnKey(turn: GroupedTurn): string {
   if (turn.type === 'user') return turn.message.id;
-  return turn.turns[0].message.id;
+  if (turn.type === 'assistant-group') return turn.turns[0].message.id;
+  if (turn.type === 'system-group') return turn.messages[0].id;
+  if (turn.type === 'slash-command') return turn.message.id;
+  // clear-divider
+  return turn.message.id;
 }
 
 const { isExpanded, toggle, expandAll, collapseAll, expandedCount } = useCollapseState();

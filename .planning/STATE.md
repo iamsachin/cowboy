@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Data Quality & Display Fixes
-status: executing
-stopped_at: Completed 14-02-PLAN.md
-last_updated: "2026-03-05T12:11:00.000Z"
-last_activity: 2026-03-05 -- Completed 14-02 data quality migration
+status: in-progress
+stopped_at: Completed 15-01 cursor data quality fixes
+last_updated: "2026-03-05T12:45:45Z"
+last_activity: 2026-03-05 -- Completed 15-01 cursor data quality fixes
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 88
+  total_plans: 4
+  completed_plans: 3
+  percent: 94
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-05)
 
 ## Current Position
 
-Phase: 14 of 16 (Ingestion Quality) -- COMPLETE
-Plan: 2 of 2 complete
-Status: Phase 14 complete
-Last activity: 2026-03-05 -- Completed 14-02 data quality migration
+Phase: 15 of 16 (Cursor Data Quality) -- IN PROGRESS
+Plan: 1 of 2 complete
+Status: Executing phase 15
+Last activity: 2026-03-05 -- Completed 15-01 cursor data quality fixes
 
-Progress: [###########.] 88% (14/16 phases)
+Progress: [############] 94% (15/16 phases)
 
 ## Performance Metrics
 
@@ -46,6 +46,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase 14]: Shared title-utils module for cross-normalizer skip logic
 - [Phase 14]: Cursor 'default' model replaced with 'unknown' at both conversation and per-message level
 - [Phase 14]: Idempotent startup migration runs every ingestion cycle (no one-time flag needed)
+- [Phase 15]: Tool-only assistant bubbles produce grouped summary messages instead of being skipped
+- [Phase 15]: Workspace path extracted from composerData with fallback chain for project derivation
 
 ### Pending Todos
 
@@ -57,6 +59,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-05T12:11:00.000Z
-Stopped at: Completed 14-02-PLAN.md
-Resume file: None
+Last session: 2026-03-05T12:45:45Z
+Stopped at: Completed 15-01-PLAN.md
+Resume file: .planning/phases/15-cursor-data-quality/15-02-PLAN.md

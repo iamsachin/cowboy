@@ -20,9 +20,9 @@ Requirements for Data Quality & Display Fixes milestone. Each maps to roadmap ph
 
 ### Cursor Data Quality
 
-- [ ] **CURSOR-01**: Cursor assistant responses display actual content instead of "Empty response"
-- [ ] **CURSOR-02**: Cursor agent appears in the conversation filter dropdown
-- [ ] **CURSOR-03**: Cursor project shows workspace path instead of literal "Cursor"
+- [x] **CURSOR-01**: Cursor assistant responses display actual content instead of "Empty response"
+- [x] **CURSOR-02**: Cursor agent appears in the conversation filter dropdown
+- [x] **CURSOR-03**: Cursor project shows workspace path instead of literal "Cursor"
 
 ### Message Display
 
@@ -52,9 +52,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TITLE-03 | Phase 14 | Complete |
 | MODEL-01 | Phase 14 | Complete |
 | MODEL-02 | Phase 14 | Complete |
-| CURSOR-01 | Phase 15 | Pending |
-| CURSOR-02 | Phase 15 | Pending |
-| CURSOR-03 | Phase 15 | Pending |
+| CURSOR-01 | Phase 15 | Complete |
+| CURSOR-02 | Phase 15 | Complete |
+| CURSOR-03 | Phase 15 | Complete |
 | MSG-01 | Phase 16 | Pending |
 | MSG-02 | Phase 16 | Pending |
 

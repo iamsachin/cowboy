@@ -1,0 +1,80 @@
+<template>
+  <div class="flex justify-center my-1">
+    <!-- Collapsed indicator (default) -->
+    <div
+      class="cursor-pointer select-none flex items-center gap-2 px-3 py-1 rounded-full bg-base-300/50 text-base-content/40 text-xs hover:bg-base-300/70 transition-colors"
+      @click="expanded = !expanded"
+    >
+      <ChevronDown
+        class="w-3 h-3 shrink-0 transition-transform"
+        :class="{ 'rotate-180': expanded }"
+      />
+      <span>{{ summaryLabel }}</span>
+    </div>
+
+    <!-- Expanded content (shown below the indicator) -->
+    <Transition name="fade">
+      <div
+        v-if="expanded"
+        class="absolute mt-6 z-10 w-full max-w-xl bg-base-200 border border-base-300 rounded-lg shadow-lg overflow-hidden"
+      >
+        <div
+          v-for="(msg, idx) in group.messages"
+          :key="msg.id"
+          class="px-3 py-2 border-b border-base-300 last:border-0"
+        >
+          <div class="flex items-center gap-1.5 mb-1">
+            <span class="badge badge-ghost badge-xs">{{ categoryLabel(group.categories[idx]) }}</span>
+          </div>
+          <div class="max-h-40 overflow-y-auto text-xs text-base-content/60 whitespace-pre-wrap break-words">
+            {{ stripXmlTags(msg.content || '') }}
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { ChevronDown } from 'lucide-vue-next';
+import type { SystemGroup, SystemMessageCategory } from '../composables/useGroupedTurns';
+import { stripXmlTags } from '../utils/content-sanitizer';
+
+const props = defineProps<{
+  group: SystemGroup;
+}>();
+
+const expanded = ref(false);
+
+const categoryLabels: Record<SystemMessageCategory, string> = {
+  'system-reminder': 'System reminder',
+  'skill-instruction': 'Skill instruction',
+  'objective': 'Objective',
+  'system-caveat': 'System caveat',
+  'other': 'System',
+};
+
+function categoryLabel(category: SystemMessageCategory): string {
+  return categoryLabels[category] ?? 'System';
+}
+
+const summaryLabel = computed(() => {
+  const count = props.group.count;
+  const uniqueCategories = [...new Set(props.group.categories)];
+  const hints = uniqueCategories.map(c => categoryLabels[c]).join(', ');
+  const noun = count === 1 ? 'system message' : 'system messages';
+  return `${count} ${noun} (${hints})`;
+});
+</script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

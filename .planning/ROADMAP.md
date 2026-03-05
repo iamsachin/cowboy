@@ -42,7 +42,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 ### v1.2 Data Quality & Display Fixes (In Progress)
 
 - [x] **Phase 14: Ingestion Quality** - Fix title extraction and model attribution during backend ingestion (completed 2026-03-05)
-- [ ] **Phase 15: Cursor Data Quality** - Fix Cursor assistant responses, agent filter, and project path display
+- [x] **Phase 15: Cursor Data Quality** - Fix Cursor assistant responses, agent filter, and project path display (completed 2026-03-05)
 - [ ] **Phase 16: Message Display** - Visually distinguish system-injected messages and slash commands
 
 ## Phase Details
@@ -69,7 +69,7 @@ Plans:
   1. Cursor assistant messages show their actual response content in the conversation detail view instead of "Empty response"
   2. The conversation filter dropdown includes "cursor" as a selectable agent alongside "claude-code"
   3. Cursor conversations display the workspace directory path as the project name instead of the literal string "Cursor"
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 15-01-PLAN.md — Fix normalizer content extraction, workspace path derivation, and agent filter dropdown
 - [ ] 15-02-PLAN.md — Startup migration for existing Cursor project names and message content
@@ -101,5 +101,5 @@ Plans:
 | 12. Token Enrichment | v1.1 | 2/2 | Complete | 2026-03-05 |
 | 13. Visual Polish | v1.1 | 1/1 | Complete | 2026-03-05 |
 | 14. Ingestion Quality | v1.2 | 2/2 | Complete | 2026-03-05 |
-| 15. Cursor Data Quality | 1/2 | In Progress|  | - |
+| 15. Cursor Data Quality | 2/2 | Complete   | 2026-03-05 | - |
 | 16. Message Display | v1.2 | 0/? | Not started | - |

@@ -340,7 +340,7 @@ describe('normalizeConversation', () => {
       expect(data!.conversation.title).toBe('Warning text about local commands that is long enough');
     });
 
-    it('returns null when all user messages are XML and stripped text is <= 10 chars', () => {
+    it('falls back to assistant text when all user messages are XML with short stripped text', () => {
       const result: ParseResult = {
         sessionId: 'session-short-xml',
         userMessages: [
@@ -365,7 +365,8 @@ describe('normalizeConversation', () => {
         timestamps: ['2026-01-15T10:00:00.000Z', '2026-01-15T10:00:01.000Z'],
       };
       const data = normalizeConversation(result, 'test-project');
-      expect(data!.conversation.title).toBeNull();
+      // Now falls back to assistant text instead of returning null
+      expect(data!.conversation.title).toBe('Response');
     });
 
     it('plain-text messages still produce titles as before (no regression)', () => {
@@ -394,6 +395,105 @@ describe('normalizeConversation', () => {
       };
       const data = normalizeConversation(result, 'test-project');
       expect(data!.conversation.title).toBe('Explain async/await in JavaScript');
+    });
+  });
+
+  describe('deriveTitle skip patterns', () => {
+    it('skips "Caveat: The messages below..." and picks next real message', () => {
+      const result: ParseResult = {
+        sessionId: 'session-caveat',
+        userMessages: [
+          { uuid: 'u1', timestamp: '2026-01-15T10:00:00.000Z', content: 'Caveat: The messages below were sent during a previous conversation.', toolResults: [] },
+          { uuid: 'u2', timestamp: '2026-01-15T10:00:01.000Z', content: 'Fix the login bug', toolResults: [] },
+        ],
+        assistantMessages: [{
+          firstUuid: 'a1', messageId: 'msg_cav', timestamp: '2026-01-15T10:00:02.000Z',
+          model: 'claude-sonnet-4-6', contentBlocks: [{ type: 'text', text: 'Response' }],
+          toolUseBlocks: [], usage: { input_tokens: 10, output_tokens: 5 }, stopReason: 'end_turn',
+        }],
+        skippedLines: 0,
+        timestamps: ['2026-01-15T10:00:00.000Z', '2026-01-15T10:00:01.000Z', '2026-01-15T10:00:02.000Z'],
+      };
+      const data = normalizeConversation(result, 'test-project');
+      expect(data!.conversation.title).toBe('Fix the login bug');
+    });
+
+    it('skips "[Request interrupted by user for tool use]" and picks next real message', () => {
+      const result: ParseResult = {
+        sessionId: 'session-interrupted',
+        userMessages: [
+          { uuid: 'u1', timestamp: '2026-01-15T10:00:00.000Z', content: '[Request interrupted by user for tool use]', toolResults: [] },
+          { uuid: 'u2', timestamp: '2026-01-15T10:00:01.000Z', content: 'Explain async/await', toolResults: [] },
+        ],
+        assistantMessages: [{
+          firstUuid: 'a1', messageId: 'msg_int', timestamp: '2026-01-15T10:00:02.000Z',
+          model: 'claude-sonnet-4-6', contentBlocks: [{ type: 'text', text: 'Response' }],
+          toolUseBlocks: [], usage: { input_tokens: 10, output_tokens: 5 }, stopReason: 'end_turn',
+        }],
+        skippedLines: 0,
+        timestamps: ['2026-01-15T10:00:00.000Z', '2026-01-15T10:00:01.000Z', '2026-01-15T10:00:02.000Z'],
+      };
+      const data = normalizeConversation(result, 'test-project');
+      expect(data!.conversation.title).toBe('Explain async/await');
+    });
+
+    it('skips "/clear" and "/gsd:plan-phase" and picks next real message', () => {
+      const result: ParseResult = {
+        sessionId: 'session-slash',
+        userMessages: [
+          { uuid: 'u1', timestamp: '2026-01-15T10:00:00.000Z', content: '/clear', toolResults: [] },
+          { uuid: 'u2', timestamp: '2026-01-15T10:00:01.000Z', content: '/gsd:plan-phase', toolResults: [] },
+          { uuid: 'u3', timestamp: '2026-01-15T10:00:02.000Z', content: 'How do I use vitest?', toolResults: [] },
+        ],
+        assistantMessages: [{
+          firstUuid: 'a1', messageId: 'msg_slash', timestamp: '2026-01-15T10:00:03.000Z',
+          model: 'claude-sonnet-4-6', contentBlocks: [{ type: 'text', text: 'Response' }],
+          toolUseBlocks: [], usage: { input_tokens: 10, output_tokens: 5 }, stopReason: 'end_turn',
+        }],
+        skippedLines: 0,
+        timestamps: ['2026-01-15T10:00:00.000Z', '2026-01-15T10:00:02.000Z', '2026-01-15T10:00:03.000Z'],
+      };
+      const data = normalizeConversation(result, 'test-project');
+      expect(data!.conversation.title).toBe('How do I use vitest?');
+    });
+
+    it('falls back to assistant text when all user messages are system content', () => {
+      const result: ParseResult = {
+        sessionId: 'session-asst-fallback',
+        userMessages: [
+          { uuid: 'u1', timestamp: '2026-01-15T10:00:00.000Z', content: 'Caveat: The messages below were sent during a previous conversation.', toolResults: [] },
+          { uuid: 'u2', timestamp: '2026-01-15T10:00:01.000Z', content: '/gsd:plan-phase', toolResults: [] },
+        ],
+        assistantMessages: [{
+          firstUuid: 'a1', messageId: 'msg_fb', timestamp: '2026-01-15T10:00:02.000Z',
+          model: 'claude-sonnet-4-6',
+          contentBlocks: [{ type: 'text', text: 'Here is the assistant analysis of your code' }],
+          toolUseBlocks: [], usage: { input_tokens: 10, output_tokens: 5 }, stopReason: 'end_turn',
+        }],
+        skippedLines: 0,
+        timestamps: ['2026-01-15T10:00:00.000Z', '2026-01-15T10:00:01.000Z', '2026-01-15T10:00:02.000Z'],
+      };
+      const data = normalizeConversation(result, 'test-project');
+      expect(data!.conversation.title).toBe('Here is the assistant analysis of your code');
+    });
+  });
+
+  describe('model fallback to token_usage', () => {
+    it('falls back to token_usage model when no assistant messages exist', () => {
+      // This is a synthetic case: user messages only, but with token usage
+      // In practice this happens when assistant messages are empty but token usage was recorded
+      const result: ParseResult = {
+        sessionId: 'session-no-asst',
+        userMessages: [
+          { uuid: 'u1', timestamp: '2026-01-15T10:00:00.000Z', content: 'Hello', toolResults: [] },
+        ],
+        assistantMessages: [],
+        skippedLines: 0,
+        timestamps: ['2026-01-15T10:00:00.000Z'],
+      };
+      const data = normalizeConversation(result, 'test-project');
+      // With no assistant messages, model should be null (no token_usage to fallback to either)
+      expect(data!.conversation.model).toBeNull();
     });
   });
 

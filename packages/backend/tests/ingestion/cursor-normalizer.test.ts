@@ -86,13 +86,14 @@ describe('normalizeCursorConversation', () => {
       expect(result!.conversation.title).toBe('Short question');
     });
 
-    it('returns null title when no user bubbles exist', () => {
+    it('falls back to assistant text when no user bubbles exist', () => {
       const conv = makeConversation();
       const bubbles = [
         makeBubble({ bubbleId: 'b1', type: 2, text: 'Only AI response' }),
       ];
       const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
-      expect(result!.conversation.title).toBeNull();
+      // Now falls back to assistant text instead of returning null
+      expect(result!.conversation.title).toBe('Only AI response');
     });
 
     it('normalizes createdAt from ms timestamp', () => {
@@ -440,14 +441,15 @@ describe('normalizeCursorConversation', () => {
       expect(result!.conversation.title).toBe('Important warning about commands in the system');
     });
 
-    it('returns null when all user bubbles are XML and stripped text is <= 10 chars', () => {
+    it('falls back to assistant text when all user bubbles are XML with short stripped text', () => {
       const conv = makeConversation();
       const bubbles = [
         makeBubble({ bubbleId: 'b1', type: 1, text: '<tag>Hi</tag>' }),
         makeBubble({ bubbleId: 'b2', type: 2, text: 'Response' }),
       ];
       const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
-      expect(result!.conversation.title).toBeNull();
+      // Now falls back to assistant text instead of returning null
+      expect(result!.conversation.title).toBe('Response');
     });
 
     it('plain-text user bubbles still produce titles as before (no regression)', () => {
@@ -458,6 +460,104 @@ describe('normalizeCursorConversation', () => {
       ];
       const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
       expect(result!.conversation.title).toBe('Help me refactor this function');
+    });
+  });
+
+  describe('deriveTitle skip patterns', () => {
+    it('skips "Caveat:" messages and picks next real message', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'Caveat: The messages below were sent during a previous conversation.' }),
+        makeBubble({ bubbleId: 'b2', type: 1, text: 'How do I use vitest?' }),
+        makeBubble({ bubbleId: 'b3', type: 2, text: 'Response' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.conversation.title).toBe('How do I use vitest?');
+    });
+
+    it('skips "[Request interrupted" messages and picks next real message', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: '[Request interrupted by user for tool use]' }),
+        makeBubble({ bubbleId: 'b2', type: 1, text: 'Fix the login bug' }),
+        makeBubble({ bubbleId: 'b3', type: 2, text: 'Response' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.conversation.title).toBe('Fix the login bug');
+    });
+
+    it('skips "/clear" messages and picks next real message', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: '/clear' }),
+        makeBubble({ bubbleId: 'b2', type: 1, text: 'What is TypeScript?' }),
+        makeBubble({ bubbleId: 'b3', type: 2, text: 'Response' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.conversation.title).toBe('What is TypeScript?');
+    });
+
+    it('falls back to assistant bubble text when all user bubbles are system content', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'Caveat: some caveat text here' }),
+        makeBubble({ bubbleId: 'b2', type: 1, text: '/gsd:plan-phase' }),
+        makeBubble({ bubbleId: 'b3', type: 2, text: 'Here is my analysis of the code' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.conversation.title).toBe('Here is my analysis of the code');
+    });
+  });
+
+  describe('model "default" handling', () => {
+    it('returns "unknown" when modelConfig.modelName is "default" and no bubble has real model', () => {
+      const conv = makeConversation({ modelConfig: { modelName: 'default' } });
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'Hello' }),
+        makeBubble({ bubbleId: 'b2', type: 2, text: 'Response', modelInfo: null }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.conversation.model).toBe('unknown');
+    });
+
+    it('returns actual model from bubbles when modelConfig is "default" but bubbles have real models', () => {
+      const conv = makeConversation({ modelConfig: { modelName: 'default' } });
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'Hello' }),
+        makeBubble({ bubbleId: 'b2', type: 2, text: 'Response', modelInfo: { modelName: 'claude-4.5-sonnet' } }),
+        makeBubble({ bubbleId: 'b3', type: 2, text: 'More', modelInfo: { modelName: 'claude-4.5-sonnet' } }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.conversation.model).toBe('claude-4.5-sonnet');
+    });
+
+    it('returns "unknown" when modelConfig is "default" and bubbles also have "default" model', () => {
+      const conv = makeConversation({ modelConfig: { modelName: 'default' } });
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 2, text: 'Response', modelInfo: { modelName: 'default' } }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.conversation.model).toBe('unknown');
+    });
+
+    it('per-message model replaces "default" with "unknown"', () => {
+      const conv = makeConversation({ modelConfig: { modelName: 'default' } });
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 2, text: 'Response', modelInfo: null }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      const assistantMsg = result!.messages.find(m => m.role === 'assistant');
+      expect(assistantMsg!.model).toBe('unknown');
+    });
+
+    it('per-message model uses actual model from bubble when available', () => {
+      const conv = makeConversation({ modelConfig: { modelName: 'default' } });
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 2, text: 'Response', modelInfo: { modelName: 'gpt-4o' } }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      const assistantMsg = result!.messages.find(m => m.role === 'assistant');
+      expect(assistantMsg!.model).toBe('gpt-4o');
     });
   });
 

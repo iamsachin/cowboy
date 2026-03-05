@@ -1,4 +1,5 @@
 import { generateId } from './id-generator.js';
+import { shouldSkipForTitle } from './title-utils.js';
 import type { NormalizedData } from './normalizer.js';
 import type { CursorConversation, CursorBubble } from './cursor-parser.js';
 
@@ -60,8 +61,9 @@ export function normalizeCursorConversation(
 
     const messageId = generateId(conversationId, bubble.bubbleId);
     const bubbleTimestamp = deriveBubbleTimestamp(bubble, conv);
+    const rawModel = bubble.modelInfo?.modelName ?? conv.modelConfig?.modelName ?? null;
     const bubbleModel = role === 'assistant'
-      ? (bubble.modelInfo?.modelName ?? conv.modelConfig?.modelName ?? null)
+      ? (rawModel === 'default' ? 'unknown' : rawModel)
       : null;
 
     normalizedMessages.push({
@@ -96,7 +98,8 @@ export function normalizeCursorConversation(
     // Only record if there are actual token counts and the bubble has a corresponding message
     if ((inputTokens > 0 || outputTokens > 0) && hasMessage) {
       const messageId = generateId(conversationId, bubble.bubbleId);
-      const bubbleModel = bubble.modelInfo?.modelName ?? conv.modelConfig?.modelName ?? 'unknown';
+      const rawTokenModel = bubble.modelInfo?.modelName ?? conv.modelConfig?.modelName ?? 'unknown';
+      const bubbleModel = rawTokenModel === 'default' ? 'unknown' : rawTokenModel;
       const bubbleTimestamp = deriveBubbleTimestamp(bubble, conv);
 
       normalizedTokenUsage.push({
@@ -114,7 +117,8 @@ export function normalizeCursorConversation(
       // Use differential of cumulative token count as output token estimate
       const estimatedOutputTokens = bubble.tokenCountUpUntilHere - prevCumulativeTokens;
       const messageId = generateId(conversationId, bubble.bubbleId);
-      const bubbleModel = bubble.modelInfo?.modelName ?? conv.modelConfig?.modelName ?? 'unknown';
+      const rawTokenModel = bubble.modelInfo?.modelName ?? conv.modelConfig?.modelName ?? 'unknown';
+      const bubbleModel = rawTokenModel === 'default' ? 'unknown' : rawTokenModel;
       const bubbleTimestamp = deriveBubbleTimestamp(bubble, conv);
 
       normalizedTokenUsage.push({
@@ -151,17 +155,17 @@ function stripXmlTags(text: string): string {
 }
 
 function deriveTitle(bubbles: CursorBubble[]): string | null {
-  // First pass: skip user bubbles whose trimmed text starts with '<' (XML system messages)
+  // First pass: skip user bubbles matching skip patterns (XML, caveats, slash commands, etc.)
   for (const bubble of bubbles) {
     if (bubble.type === 1 && bubble.text && bubble.text.trim().length > 0) {
-      if (bubble.text.trim().startsWith('<')) continue;
+      if (shouldSkipForTitle(bubble.text)) continue;
       return bubble.text.length > 100 ? bubble.text.substring(0, 100) : bubble.text;
     }
   }
 
-  // Fallback pass: strip XML tags and use first user bubble with >10 chars of cleaned text
+  // Second pass: strip XML tags from XML user bubbles and use first with >10 chars
   for (const bubble of bubbles) {
-    if (bubble.type === 1 && bubble.text) {
+    if (bubble.type === 1 && bubble.text && bubble.text.trim().startsWith('<')) {
       const stripped = stripXmlTags(bubble.text);
       if (stripped.length > 10) {
         return stripped.length > 100 ? stripped.substring(0, 100) : stripped;
@@ -169,17 +173,26 @@ function deriveTitle(bubbles: CursorBubble[]): string | null {
     }
   }
 
+  // Third pass: fall back to first assistant bubble with text
+  for (const bubble of bubbles) {
+    if (bubble.type === 2 && bubble.text && bubble.text.trim().length > 0) {
+      return bubble.text.length > 100 ? bubble.text.substring(0, 100) : bubble.text;
+    }
+  }
+
   return null;
 }
 
 function deriveModel(conv: CursorConversation, bubbles: CursorBubble[]): string | null {
-  // Try modelConfig first
-  if (conv.modelConfig?.modelName) return conv.modelConfig.modelName;
+  // Try modelConfig first, but skip if it's "default"
+  if (conv.modelConfig?.modelName && conv.modelConfig.modelName !== 'default') {
+    return conv.modelConfig.modelName;
+  }
 
-  // Fall back to most common model across AI bubbles
+  // Fall back to most common model across AI bubbles (skip "default")
   const models = new Map<string, number>();
   for (const bubble of bubbles) {
-    if (bubble.type === 2 && bubble.modelInfo?.modelName) {
+    if (bubble.type === 2 && bubble.modelInfo?.modelName && bubble.modelInfo.modelName !== 'default') {
       const m = bubble.modelInfo.modelName;
       models.set(m, (models.get(m) ?? 0) + 1);
     }
@@ -193,6 +206,12 @@ function deriveModel(conv: CursorConversation, bubbles: CursorBubble[]): string 
       bestCount = c;
     }
   }
+
+  // If no real model found and we had a "default" config, return "unknown"
+  if (best === null && conv.modelConfig?.modelName === 'default') {
+    return 'unknown';
+  }
+
   return best;
 }
 

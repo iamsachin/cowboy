@@ -1,5 +1,6 @@
 import { generateId } from './id-generator.js';
 import { deriveProjectName } from './file-discovery.js';
+import { shouldSkipForTitle } from './title-utils.js';
 import type { ContentBlock, ToolUseBlock } from './types.js';
 import type {
   ParseResult,
@@ -86,8 +87,9 @@ export function normalizeConversation(
   const createdAt = sortedTimestamps[0];
   const updatedAt = sortedTimestamps[sortedTimestamps.length - 1];
 
-  // Model: most frequent model from assistant messages
-  const model = deriveMostCommonModel(parseResult.assistantMessages);
+  // Model: computed after tokenUsage is built (see below)
+  // Placeholder — will be set after tokenUsage array
+  let model: string | null = null;
 
   const conversation = {
     id: conversationId,
@@ -177,6 +179,11 @@ export function normalizeConversation(
     });
   }
 
+  // Model: most frequent model from assistant messages, with token_usage fallback
+  model = deriveMostCommonModel(parseResult.assistantMessages)
+    ?? deriveMostCommonModelFromTokenUsage(tokenUsage);
+  conversation.model = model;
+
   return { conversation, messages, toolCalls, tokenUsage };
 }
 
@@ -187,25 +194,35 @@ function stripXmlTags(text: string): string {
 }
 
 function deriveTitle(parseResult: ParseResult): string | null {
-  // First pass: skip any user message whose trimmed content starts with '<' (XML system messages)
+  // First pass: skip any user message matching skip patterns (XML, caveats, slash commands, etc.)
   for (const user of parseResult.userMessages) {
     if (user.content && user.content.trim().length > 0) {
-      if (user.content.trim().startsWith('<')) continue;
+      if (shouldSkipForTitle(user.content)) continue;
       return user.content.length > 100
         ? user.content.substring(0, 100)
         : user.content;
     }
   }
 
-  // Fallback pass: strip XML tags and use first message with >10 chars of cleaned text
+  // Second pass: strip XML tags from XML messages and use first with >10 chars of cleaned text
   for (const user of parseResult.userMessages) {
-    if (user.content) {
+    if (user.content && user.content.trim().startsWith('<')) {
       const stripped = stripXmlTags(user.content);
       if (stripped.length > 10) {
         return stripped.length > 100
           ? stripped.substring(0, 100)
           : stripped;
       }
+    }
+  }
+
+  // Third pass: fall back to first assistant message text content
+  for (const assistant of parseResult.assistantMessages) {
+    const { content } = extractAssistantContent(assistant.contentBlocks);
+    if (content && content.trim().length > 0) {
+      return content.length > 100
+        ? content.substring(0, 100)
+        : content;
     }
   }
 
@@ -220,6 +237,29 @@ function deriveMostCommonModel(
   const counts = new Map<string, number>();
   for (const msg of assistantMessages) {
     counts.set(msg.model, (counts.get(msg.model) ?? 0) + 1);
+  }
+
+  let maxModel: string | null = null;
+  let maxCount = 0;
+  for (const [model, count] of counts) {
+    if (count > maxCount) {
+      maxModel = model;
+      maxCount = count;
+    }
+  }
+  return maxModel;
+}
+
+function deriveMostCommonModelFromTokenUsage(
+  tokenUsage: NormalizedData['tokenUsage'],
+): string | null {
+  if (tokenUsage.length === 0) return null;
+
+  const counts = new Map<string, number>();
+  for (const tu of tokenUsage) {
+    if (tu.model) {
+      counts.set(tu.model, (counts.get(tu.model) ?? 0) + 1);
+    }
   }
 
   let maxModel: string | null = null;

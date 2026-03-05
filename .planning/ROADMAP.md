@@ -32,7 +32,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 10: Data Grouping Foundation** - Turn types and messageId-based grouping logic with unit tests (completed 2026-03-04)
 - [x] **Phase 11: Core Collapsible UI** - AssistantResponseBlock with progressive disclosure, summary headers, and expand/collapse all (completed 2026-03-05)
-- [ ] **Phase 12: Token Enrichment** - Backend per-message token data and cost-per-turn display in summary headers
+- [x] **Phase 12: Token Enrichment** - Backend per-message token data and cost-per-turn display in summary headers (completed 2026-03-05)
 - [ ] **Phase 13: Visual Polish** - Tool call type icons and color-coded model name badges
 
 ## Phase Details
@@ -260,5 +260,5 @@ Phases execute in numeric order: 10 -> 11 -> 12 -> 13
 | 9. Settings + Remote Sync | v1.0 | 3/3 | Complete | 2026-03-04 |
 | 10. Data Grouping Foundation | v1.1 | 2/2 | Complete | 2026-03-04 |
 | 11. Core Collapsible UI | v1.1 | 3/3 | Complete | 2026-03-05 |
-| 12. Token Enrichment | 1/2 | In Progress|  | - |
+| 12. Token Enrichment | 2/2 | Complete   | 2026-03-05 | - |
 | 13. Visual Polish | v1.1 | 0/1 | Not started | - |

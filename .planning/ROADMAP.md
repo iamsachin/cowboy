@@ -41,7 +41,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 ### v1.2 Data Quality & Display Fixes (In Progress)
 
-- [ ] **Phase 14: Ingestion Quality** - Fix title extraction and model attribution during backend ingestion
+- [x] **Phase 14: Ingestion Quality** - Fix title extraction and model attribution during backend ingestion (completed 2026-03-05)
 - [ ] **Phase 15: Cursor Data Quality** - Fix Cursor assistant responses, agent filter, and project path display
 - [ ] **Phase 16: Message Display** - Visually distinguish system-injected messages and slash commands
 
@@ -56,10 +56,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Conversations with only slash commands or system messages before real content still get a meaningful title from the first substantive user message
   3. Conversations that previously showed NULL model now display the most common model derived from their messages or token usage data
   4. Cursor conversations with "default" model show the actual resolved model name or "unknown" instead of the literal string "default"
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans executed
 Plans:
-- [ ] 14-01-PLAN.md — Shared title skip logic, normalizer updates, and model fallback chains
-- [ ] 14-02-PLAN.md — Startup migration to fix existing conversation titles and models
+- [x] 14-01-PLAN.md — Shared title skip logic, normalizer updates, and model fallback chains
+- [x] 14-02-PLAN.md — Startup migration to fix existing conversation titles and models
 
 ### Phase 15: Cursor Data Quality
 **Goal**: Cursor conversations display complete, accurate data comparable to Claude Code conversations
@@ -97,6 +97,6 @@ Plans:
 | 11. Core Collapsible UI | v1.1 | 3/3 | Complete | 2026-03-05 |
 | 12. Token Enrichment | v1.1 | 2/2 | Complete | 2026-03-05 |
 | 13. Visual Polish | v1.1 | 1/1 | Complete | 2026-03-05 |
-| 14. Ingestion Quality | 1/2 | In Progress|  | - |
+| 14. Ingestion Quality | v1.2 | 2/2 | Complete | 2026-03-05 |
 | 15. Cursor Data Quality | v1.2 | 0/? | Not started | - |
 | 16. Message Display | v1.2 | 0/? | Not started | - |

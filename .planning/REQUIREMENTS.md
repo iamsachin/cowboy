@@ -39,7 +39,7 @@ None currently deferred.
 |---------|--------|
 | Cursor tool call extraction | Cursor doesn't expose structured tool call data in its storage |
 | Cursor cache token tracking | Cursor doesn't expose cache read/creation token counts |
-| Re-ingestion of existing data | Title/model fixes apply during ingestion; existing data requires manual re-parse or migration |
+| ~~Re-ingestion of existing data~~ | ~~Addressed by 14-02 startup migration that retroactively fixes existing data~~ |
 
 ## Traceability
 
@@ -65,4 +65,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-03-05*
-*Last updated: 2026-03-05 after roadmap creation*
+*Last updated: 2026-03-05 after phase 14 completion*

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Data Quality & Display Fixes
 status: executing
-stopped_at: Completed 14-01-PLAN.md
-last_updated: "2026-03-05T12:06:41.366Z"
-last_activity: 2026-03-05 -- Completed 14-01 title skip logic and model attribution
+stopped_at: Completed 14-02-PLAN.md
+last_updated: "2026-03-05T12:11:00.000Z"
+last_activity: 2026-03-05 -- Completed 14-02 data quality migration
 progress:
   total_phases: 3
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 81
+  completed_plans: 2
+  percent: 88
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-05)
 
 ## Current Position
 
-Phase: 14 of 16 (Ingestion Quality)
-Plan: 1 of 1 complete
-Status: Executing phase 14
-Last activity: 2026-03-05 -- Completed 14-01 title skip logic and model attribution
+Phase: 14 of 16 (Ingestion Quality) -- COMPLETE
+Plan: 2 of 2 complete
+Status: Phase 14 complete
+Last activity: 2026-03-05 -- Completed 14-02 data quality migration
 
-Progress: [##########..] 81% (13/16 phases)
+Progress: [###########.] 88% (14/16 phases)
 
 ## Performance Metrics
 
@@ -45,6 +45,7 @@ Progress: [##########..] 81% (13/16 phases)
 Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase 14]: Shared title-utils module for cross-normalizer skip logic
 - [Phase 14]: Cursor 'default' model replaced with 'unknown' at both conversation and per-message level
+- [Phase 14]: Idempotent startup migration runs every ingestion cycle (no one-time flag needed)
 
 ### Pending Todos
 
@@ -56,6 +57,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-05T12:06:41.363Z
-Stopped at: Completed 14-01-PLAN.md
+Last session: 2026-03-05T12:11:00.000Z
+Stopped at: Completed 14-02-PLAN.md
 Resume file: None

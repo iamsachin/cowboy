@@ -1,4 +1,10 @@
 import type { MessageRow, ToolCallRow } from '@cowboy/shared';
+import {
+  isSystemInjected,
+  isSlashCommand,
+  isClearCommand,
+  extractCommandText,
+} from '../utils/content-sanitizer';
 
 export interface UserTurn {
   type: 'user';
@@ -22,20 +28,75 @@ export interface AssistantGroup {
   lastTimestamp: string;
 }
 
+/** Category label for a system-injected message. */
+export type SystemMessageCategory =
+  | 'system-reminder'
+  | 'skill-instruction'
+  | 'objective'
+  | 'system-caveat'
+  | 'other';
+
+/** One or more consecutive system-injected user messages collapsed into a single indicator. */
+export interface SystemGroup {
+  type: 'system-group';
+  messages: MessageRow[];
+  categories: SystemMessageCategory[];
+  count: number;
+}
+
+/** A user-initiated slash command (e.g. /gsd:execute-phase 11). */
+export interface SlashCommandTurn {
+  type: 'slash-command';
+  message: MessageRow;
+  commandText: string;
+}
+
+/** A /clear command — rendered as a full-width context-reset divider. */
+export interface ClearDividerTurn {
+  type: 'clear-divider';
+  message: MessageRow;
+}
+
 export type Turn = UserTurn | AssistantTurn;
-export type GroupedTurn = UserTurn | AssistantGroup;
+export type GroupedTurn =
+  | UserTurn
+  | AssistantGroup
+  | SystemGroup
+  | SlashCommandTurn
+  | ClearDividerTurn;
 
 /**
- * Groups flat messages[] and toolCalls[] into ordered Turn[] array,
- * then merges consecutive assistant turns into AssistantGroup blocks.
+ * Classify a system-injected message by examining its content.
+ *
+ * Priority:
+ * 1. Contains `<system-reminder` → 'system-reminder'
+ * 2. Contains `<objective>` or `<execution_context>` → 'objective'
+ * 3. Contains `<context>` with `<files_to_read>` or `<process>` → 'skill-instruction'
+ * 4. Contains `Caveat:` → 'system-caveat'
+ * 5. Otherwise → 'other'
+ */
+export function classifySystemMessage(content: string): SystemMessageCategory {
+  if (/<system-reminder/.test(content)) return 'system-reminder';
+  if (/<objective>/.test(content) || /<execution_context>/.test(content)) return 'objective';
+  if (/<context>/.test(content) && (/<files_to_read>/.test(content) || /<process>/.test(content))) {
+    return 'skill-instruction';
+  }
+  if (/Caveat:/.test(content)) return 'system-caveat';
+  return 'other';
+}
+
+/**
+ * Groups flat messages[] and toolCalls[] into ordered GroupedTurn[] array.
  *
  * Algorithm:
  * 1. Index tool calls by messageId, identifying orphans
  * 2. Sort messages by createdAt
- * 3. Walk messages: user -> UserTurn, assistant -> AssistantTurn with linked tool calls
+ * 3. Walk messages: classify user messages into UserTurn / SlashCommandTurn /
+ *    ClearDividerTurn / SystemGroup; group assistant messages into AssistantGroup
  * 4. Sort tool calls within each turn by createdAt
  * 5. Attach orphans to nearest preceding assistant turn by timestamp
  * 6. Merge consecutive assistant turns into AssistantGroup
+ * 7. Merge consecutive system-injected messages into SystemGroup
  *
  * Pure function -- no Vue reactivity dependency.
  */
@@ -65,11 +126,12 @@ export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[]): Gr
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   );
 
-  // 3. Build flat turns
+  // 3. Build flat turns (include only assistant turns — user turns handled below)
   const flatTurns: Turn[] = [];
   for (const msg of sorted) {
     if (msg.role === 'user') {
-      flatTurns.push({ type: 'user', message: msg });
+      // Placeholder so orphan attachment still works against assistant turns
+      // User-role messages are handled in the grouping pass below
     } else {
       const tcs = tcByMsg.get(msg.id) || [];
       tcs.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
@@ -99,9 +161,18 @@ export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[]): Gr
     }
   }
 
-  // 5. Merge consecutive assistant turns into groups
+  // Build an indexed map of assistant turns for the grouping pass
+  const assistantTurnByMsgId = new Map<string, AssistantTurn>();
+  for (const turn of flatTurns) {
+    if (turn.type === 'assistant') {
+      assistantTurnByMsgId.set(turn.message.id, turn);
+    }
+  }
+
+  // 5. Walk sorted messages and produce GroupedTurns
   const grouped: GroupedTurn[] = [];
   let pendingAssistant: AssistantTurn[] = [];
+  let pendingSystem: MessageRow[] = [];
 
   function flushAssistant(): void {
     if (pendingAssistant.length === 0) return;
@@ -120,15 +191,68 @@ export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[]): Gr
     pendingAssistant = [];
   }
 
-  for (const turn of flatTurns) {
-    if (turn.type === 'user') {
+  function flushSystem(): void {
+    if (pendingSystem.length === 0) return;
+    const msgs = pendingSystem;
+    const categories: SystemMessageCategory[] = msgs.map(m =>
+      classifySystemMessage(m.content || '')
+    );
+    grouped.push({
+      type: 'system-group',
+      messages: msgs,
+      categories,
+      count: msgs.length,
+    });
+    pendingSystem = [];
+  }
+
+  for (const msg of sorted) {
+    if (msg.role === 'user') {
+      const content = msg.content;
+
+      // Check for /clear first
+      if (isClearCommand(content)) {
+        flushAssistant();
+        flushSystem();
+        grouped.push({ type: 'clear-divider', message: msg });
+        continue;
+      }
+
+      // Check for other slash commands
+      if (isSlashCommand(content)) {
+        flushAssistant();
+        flushSystem();
+        grouped.push({
+          type: 'slash-command',
+          message: msg,
+          commandText: extractCommandText(content || ''),
+        });
+        continue;
+      }
+
+      // Check for system-injected content
+      if (isSystemInjected(content)) {
+        flushAssistant();
+        pendingSystem.push(msg);
+        continue;
+      }
+
+      // Regular user message
       flushAssistant();
-      grouped.push(turn);
+      flushSystem();
+      grouped.push({ type: 'user', message: msg });
     } else {
-      pendingAssistant.push(turn);
+      // Assistant message
+      flushSystem();
+      const turn = assistantTurnByMsgId.get(msg.id);
+      if (turn) {
+        pendingAssistant.push(turn);
+      }
     }
   }
+
   flushAssistant();
+  flushSystem();
 
   return grouped;
 }

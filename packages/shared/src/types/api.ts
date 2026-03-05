@@ -74,6 +74,14 @@ export interface ToolCallRow {
   createdAt: string;
 }
 
+export interface MessageTokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadTokens: number;
+  cacheCreationTokens: number;
+  cost: number | null;
+}
+
 export interface ConversationDetailResponse {
   conversation: {
     id: string;
@@ -94,6 +102,7 @@ export interface ConversationDetailResponse {
     cost: number | null;
     savings: number | null;
   };
+  tokenUsageByMessage: Record<string, MessageTokenUsage>;
 }
 
 export interface ModelDistributionEntry {

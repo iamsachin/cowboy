@@ -135,6 +135,73 @@ describe('Conversation Detail API', () => {
     expect(response.statusCode).toBe(404);
   });
 
+  // Test: tokenUsageByMessage contains per-message token data
+  it('GET /api/analytics/conversations/conv-1 response contains tokenUsageByMessage object', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/analytics/conversations/conv-1',
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = response.json();
+    expect(body.tokenUsageByMessage).toBeDefined();
+    expect(typeof body.tokenUsageByMessage).toBe('object');
+  });
+
+  // Test: tokenUsageByMessage has correct token counts for assistant message
+  it('tokenUsageByMessage[msg-1b] has correct token counts', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/analytics/conversations/conv-1',
+    });
+
+    const body = response.json();
+    const msgTokens = body.tokenUsageByMessage['msg-1b'];
+    expect(msgTokens).toBeDefined();
+    expect(msgTokens.inputTokens).toBe(100000);
+    expect(msgTokens.outputTokens).toBe(50000);
+    expect(msgTokens.cacheReadTokens).toBe(20000);
+    expect(msgTokens.cacheCreationTokens).toBe(10000);
+  });
+
+  // Test: tokenUsageByMessage has server-calculated cost
+  it('tokenUsageByMessage[msg-1b].cost is a number greater than 0', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/analytics/conversations/conv-1',
+    });
+
+    const body = response.json();
+    const msgTokens = body.tokenUsageByMessage['msg-1b'];
+    expect(msgTokens).toBeDefined();
+    expect(typeof msgTokens.cost).toBe('number');
+    expect(msgTokens.cost).toBeGreaterThan(0);
+  });
+
+  // Test: tokenUsageByMessage does NOT contain user messages (no tokenUsage rows)
+  it('tokenUsageByMessage does NOT contain keys for user messages', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/analytics/conversations/conv-1',
+    });
+
+    const body = response.json();
+    expect(body.tokenUsageByMessage['msg-1a']).toBeUndefined();
+  });
+
+  // Test: unknown-model has cost === null
+  it('conv-5 unknown-model has tokenUsageByMessage[msg-5b].cost === null', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/analytics/conversations/conv-5',
+    });
+
+    const body = response.json();
+    const msgTokens = body.tokenUsageByMessage['msg-5b'];
+    expect(msgTokens).toBeDefined();
+    expect(msgTokens.cost).toBeNull();
+  });
+
   // Test 9: Detail response includes agent field (CONV-04)
   it('detail response conversation object includes agent field', async () => {
     const response = await app.inject({

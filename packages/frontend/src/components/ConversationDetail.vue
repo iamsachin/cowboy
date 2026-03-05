@@ -26,6 +26,7 @@
         v-else-if="turn.type === 'assistant-group'"
         :group="turn"
         :expanded="isExpanded(turnKey(turn))"
+        :tokenUsageByMessage="tokenUsageByMessage"
         @toggle="toggle(turnKey(turn))"
       />
     </template>
@@ -35,7 +36,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { ChevronsDown, ChevronsUp } from 'lucide-vue-next';
-import type { MessageRow, ToolCallRow } from '@cowboy/shared';
+import type { MessageRow, ToolCallRow, MessageTokenUsage } from '@cowboy/shared';
 import { groupTurns, type GroupedTurn } from '../composables/useGroupedTurns';
 import { useCollapseState } from '../composables/useCollapseState';
 import { isSystemInjected, isClearCommand } from '../utils/content-sanitizer';
@@ -45,6 +46,7 @@ import AssistantGroupCard from './AssistantGroupCard.vue';
 const props = defineProps<{
   messages: MessageRow[];
   toolCalls: ToolCallRow[];
+  tokenUsageByMessage?: Record<string, MessageTokenUsage>;
 }>();
 
 // Filter to messages after the last /clear command (context reset boundary)

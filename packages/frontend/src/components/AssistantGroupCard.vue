@@ -24,6 +24,12 @@
           v-if="duration"
           class="text-base-content/50"
         >{{ duration }}</span>
+        <span v-if="groupTokens" class="text-base-content/50">
+          {{ formatTokenCount(groupTokens.inputTokens) }} in / {{ formatTokenCount(groupTokens.outputTokens) }} out
+        </span>
+        <span v-if="groupTokens?.cost != null" class="text-success/70">
+          {{ formatTurnCost(groupTokens.cost) }}
+        </span>
         <span class="text-base-content/40 ml-auto">{{ formatTime(group.firstTimestamp) }}</span>
       </div>
 
@@ -72,6 +78,12 @@
             :toolCall="tc"
           />
         </div>
+
+        <!-- Per-turn token info -->
+        <div v-if="getTurnTokens(turn)" class="text-xs text-base-content/40 mt-1">
+          {{ formatTokenCount(getTurnTokens(turn)!.inputTokens) }} in / {{ formatTokenCount(getTurnTokens(turn)!.outputTokens) }} out
+          <span v-if="getTurnTokens(turn)!.cost != null"> &middot; {{ formatTurnCost(getTurnTokens(turn)!.cost!) }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -80,16 +92,19 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Brain, ChevronDown } from 'lucide-vue-next';
+import type { MessageTokenUsage } from '@cowboy/shared';
 import type { AssistantGroup, AssistantTurn } from '../composables/useGroupedTurns';
 import { parseContent, formatTime } from '../utils/content-parser';
 import { stripXmlTags } from '../utils/content-sanitizer';
 import { getPreviewSnippet, formatMs } from '../utils/turn-helpers';
+import { formatTokenCount, formatTurnCost } from '../utils/format-tokens';
 import CodeBlock from './CodeBlock.vue';
 import ToolCallRowComponent from './ToolCallRow.vue';
 
 const props = defineProps<{
   group: AssistantGroup;
   expanded: boolean;
+  tokenUsageByMessage?: Record<string, MessageTokenUsage>;
 }>();
 
 defineEmits<{
@@ -111,6 +126,36 @@ const duration = computed(() => {
   const ms = end - start;
   if (ms <= 0) return null;
   return formatMs(ms);
+});
+
+function getTurnTokens(turn: AssistantTurn): MessageTokenUsage | null {
+  return props.tokenUsageByMessage?.[turn.message.id] ?? null;
+}
+
+const groupTokens = computed(() => {
+  if (!props.tokenUsageByMessage) return null;
+  let inputTokens = 0;
+  let outputTokens = 0;
+  let cacheReadTokens = 0;
+  let cacheCreationTokens = 0;
+  let cost: number | null = null;
+  let found = false;
+
+  for (const turn of props.group.turns) {
+    const usage = props.tokenUsageByMessage[turn.message.id];
+    if (usage) {
+      found = true;
+      inputTokens += usage.inputTokens;
+      outputTokens += usage.outputTokens;
+      cacheReadTokens += usage.cacheReadTokens;
+      cacheCreationTokens += usage.cacheCreationTokens;
+      if (usage.cost != null) {
+        cost = (cost ?? 0) + usage.cost;
+      }
+    }
+  }
+
+  return found ? { inputTokens, outputTokens, cacheReadTokens, cacheCreationTokens, cost } : null;
 });
 
 function getTurnContent(turn: AssistantTurn) {

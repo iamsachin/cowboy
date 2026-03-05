@@ -12,6 +12,7 @@ export interface CursorConversation {
   usageData: Record<string, { costInCents: number; amount: number }> | null;
   modelConfig: { modelName?: string } | null;
   fullConversationHeadersOnly: Array<{ bubbleId: string; type: number }>;
+  workspacePath: string | null;
 }
 
 export interface CursorBubble {
@@ -61,6 +62,7 @@ export function parseCursorDb(dbPath: string): CursorConversation[] {
           usageData: data?.usageData ?? null,
           modelConfig: data?.modelConfig ?? null,
           fullConversationHeadersOnly: data?.fullConversationHeadersOnly ?? [],
+          workspacePath: data?.workspacePath ?? data?.workspaceFolder ?? data?.rootDir ?? data?.context?.workspacePath ?? null,
         });
       } catch {
         // Skip rows with invalid JSON

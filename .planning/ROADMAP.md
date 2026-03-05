@@ -56,7 +56,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Conversations with only slash commands or system messages before real content still get a meaningful title from the first substantive user message
   3. Conversations that previously showed NULL model now display the most common model derived from their messages or token usage data
   4. Cursor conversations with "default" model show the actual resolved model name or "unknown" instead of the literal string "default"
-**Plans:** 2/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 14-01-PLAN.md — Shared title skip logic, normalizer updates, and model fallback chains
 - [x] 14-02-PLAN.md — Startup migration to fix existing conversation titles and models
@@ -69,7 +69,10 @@ Plans:
   1. Cursor assistant messages show their actual response content in the conversation detail view instead of "Empty response"
   2. The conversation filter dropdown includes "cursor" as a selectable agent alongside "claude-code"
   3. Cursor conversations display the workspace directory path as the project name instead of the literal string "Cursor"
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 15-01-PLAN.md — Fix normalizer content extraction, workspace path derivation, and agent filter dropdown
+- [ ] 15-02-PLAN.md — Startup migration for existing Cursor project names and message content
 
 ### Phase 16: Message Display
 **Goal**: Users can distinguish system-injected content from their own messages and recognize slash commands at a glance
@@ -98,5 +101,5 @@ Plans:
 | 12. Token Enrichment | v1.1 | 2/2 | Complete | 2026-03-05 |
 | 13. Visual Polish | v1.1 | 1/1 | Complete | 2026-03-05 |
 | 14. Ingestion Quality | v1.2 | 2/2 | Complete | 2026-03-05 |
-| 15. Cursor Data Quality | v1.2 | 0/? | Not started | - |
+| 15. Cursor Data Quality | v1.2 | 0/2 | Not started | - |
 | 16. Message Display | v1.2 | 0/? | Not started | - |

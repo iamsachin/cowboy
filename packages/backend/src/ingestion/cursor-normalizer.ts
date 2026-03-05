@@ -43,17 +43,49 @@ export function normalizeCursorConversation(
   const normalizedMessages: NormalizedData['messages'] = [];
   const includedBubbleIds = new Set<string>();
 
-  for (const bubble of bubbles) {
+  // Group consecutive tool-only assistant bubbles and emit summary messages
+  let i = 0;
+  while (i < bubbles.length) {
+    const bubble = bubbles[i];
     const role = bubble.type === 1 ? 'user' : bubble.type === 2 ? 'assistant' : null;
-    if (!role) continue;
+    if (!role) { i++; continue; }
 
-    // Skip tool-call-only assistant bubbles with no text content.
-    // These are capability iterations (file reads, edits, etc.) that
-    // should not appear as empty chat messages.
-    // Check both isCapabilityIteration and toolFormerData since the former
-    // is often missing/false in real Cursor data while toolFormerData is reliable.
-    if (role === 'assistant' && !bubble.text?.trim() &&
-        (bubble.isCapabilityIteration || bubble.toolFormerData)) {
+    // Check if this is a tool-only assistant bubble (no text, has capability/tool flags)
+    const isToolOnly = role === 'assistant' && !bubble.text?.trim() &&
+        (bubble.isCapabilityIteration || bubble.toolFormerData);
+
+    if (isToolOnly) {
+      // Collect consecutive tool-only bubbles into a group
+      let toolCount = 0;
+      const firstToolBubble = bubble;
+      while (i < bubbles.length) {
+        const b = bubbles[i];
+        const r = b.type === 1 ? 'user' : b.type === 2 ? 'assistant' : null;
+        if (r === 'assistant' && !b.text?.trim() && (b.isCapabilityIteration || b.toolFormerData)) {
+          toolCount++;
+          i++;
+        } else {
+          break;
+        }
+      }
+
+      // Emit a single summary message for the group
+      const summaryContent = `Executed ${toolCount} tool call${toolCount !== 1 ? 's' : ''}`;
+      const messageId = generateId(conversationId, firstToolBubble.bubbleId);
+      const bubbleTimestamp = deriveBubbleTimestamp(firstToolBubble, conv);
+      const rawModel = firstToolBubble.modelInfo?.modelName ?? conv.modelConfig?.modelName ?? null;
+      const bubbleModel = rawModel === 'default' ? 'unknown' : rawModel;
+
+      includedBubbleIds.add(firstToolBubble.bubbleId);
+      normalizedMessages.push({
+        id: messageId,
+        conversationId,
+        role: 'assistant',
+        content: summaryContent,
+        thinking: null,
+        createdAt: bubbleTimestamp,
+        model: bubbleModel,
+      });
       continue;
     }
 
@@ -75,6 +107,7 @@ export function normalizeCursorConversation(
       createdAt: bubbleTimestamp,
       model: bubbleModel,
     });
+    i++;
   }
 
   // ── Tool calls ────────────────────────────────────────────────────────

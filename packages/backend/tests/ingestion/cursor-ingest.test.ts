@@ -211,13 +211,13 @@ describe('Cursor Ingestion Integration', () => {
   it('ingests Cursor conversations from vscdb into the database', () => {
     const stats = runCursorIngestion();
     expect(stats.conversationsFound).toBe(2);
-    expect(stats.messagesParsed).toBe(4); // 2 convs x 2 bubbles each
+    expect(stats.messagesParsed).toBe(5); // conv-001: user + tool-summary + assistant = 3, conv-002: user + assistant = 2
 
     const convCount = testDb.get<{ count: number }>(sql`SELECT COUNT(*) as count FROM conversations`)!.count;
     expect(convCount).toBe(2);
 
     const msgCount = testDb.get<{ count: number }>(sql`SELECT COUNT(*) as count FROM messages`)!.count;
-    expect(msgCount).toBe(4);
+    expect(msgCount).toBe(5);
   });
 
   it('sets agent to "cursor" for all ingested conversations', () => {
@@ -242,21 +242,24 @@ describe('Cursor Ingestion Integration', () => {
     runCursorIngestion();
 
     const tuCount = testDb.get<{ count: number }>(sql`SELECT COUNT(*) as count FROM token_usage`)!.count;
-    // 2 from real tokenCount (b2 claude, b4 gpt-4o)
-    // Tool-call bubble (b1-tool) is filtered from messages so its cumulative tokens are not recorded
-    expect(tuCount).toBe(2);
+    // 3: b1-tool (cumulative 300), b2 (real 1500/800), b4 (real 2000/1200)
+    // Tool-call bubble now produces summary message, so its cumulative tokens are recorded
+    expect(tuCount).toBe(3);
 
-    const tuRows = sqlite.prepare('SELECT model, input_tokens, output_tokens FROM token_usage ORDER BY model').all() as Array<{
+    const tuRows = sqlite.prepare('SELECT model, input_tokens, output_tokens FROM token_usage ORDER BY input_tokens DESC').all() as Array<{
       model: string;
       input_tokens: number;
       output_tokens: number;
     }>;
 
-    // claude-4.5-sonnet conversation
-    const claudeRow = tuRows.find(r => r.model === 'claude-4.5-sonnet');
-    expect(claudeRow).toBeDefined();
-    expect(claudeRow!.input_tokens).toBe(1500);
-    expect(claudeRow!.output_tokens).toBe(800);
+    // claude-4.5-sonnet: real token record (b2)
+    const claudeRealRow = tuRows.find(r => r.model === 'claude-4.5-sonnet' && r.input_tokens === 1500);
+    expect(claudeRealRow).toBeDefined();
+    expect(claudeRealRow!.output_tokens).toBe(800);
+
+    // claude-4.5-sonnet: cumulative token record from tool summary (b1-tool, 300 output)
+    const claudeCumulativeRow = tuRows.find(r => r.model === 'claude-4.5-sonnet' && r.output_tokens === 300);
+    expect(claudeCumulativeRow).toBeDefined();
 
     // gpt-4o conversation
     const gptRow = tuRows.find(r => r.model === 'gpt-4o');
@@ -288,7 +291,7 @@ describe('Cursor Ingestion Integration', () => {
     expect(titles[1].title).toBe('Refactor the API routes to use controllers');
   });
 
-  it('filters out tool-call bubbles with no text content', () => {
+  it('produces tool activity summaries for tool-call bubbles with no text content', () => {
     runCursorIngestion();
 
     // No message should have null/empty content from a tool-call bubble
@@ -297,11 +300,18 @@ describe('Cursor Ingestion Integration', () => {
     ).get() as { count: number };
     expect(emptyMessages.count).toBe(0);
 
-    // Conv-001 should have 2 messages (user + assistant with text), not 3
+    // Conv-001 should have 3 messages (user + tool summary + assistant with text)
     const conv1Messages = sqlite.prepare(
       "SELECT COUNT(*) as count FROM messages m JOIN conversations c ON m.conversation_id = c.id WHERE c.title LIKE '%login bug%'"
     ).get() as { count: number };
-    expect(conv1Messages.count).toBe(2);
+    expect(conv1Messages.count).toBe(3);
+
+    // The tool summary message should contain "tool call"
+    const toolSummary = sqlite.prepare(
+      "SELECT content FROM messages m JOIN conversations c ON m.conversation_id = c.id WHERE c.title LIKE '%login bug%' AND m.content LIKE '%tool call%'"
+    ).get() as { content: string } | undefined;
+    expect(toolSummary).toBeDefined();
+    expect(toolSummary!.content).toContain('tool call');
   });
 
   it('foreign key integrity is maintained', () => {

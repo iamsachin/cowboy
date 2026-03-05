@@ -14,6 +14,7 @@ function makeConversation(overrides?: Partial<CursorConversation>): CursorConver
     usageData: null,
     modelConfig: { modelName: 'claude-4.5-sonnet' },
     fullConversationHeadersOnly: [],
+    workspacePath: null,
     ...overrides,
   };
 }
@@ -285,8 +286,8 @@ describe('normalizeCursorConversation', () => {
     });
   });
 
-  describe('tool-call bubble filtering', () => {
-    it('skips type 2 bubbles with isCapabilityIteration=true and no text', () => {
+  describe('tool-call bubble handling', () => {
+    it('produces tool summary for type 2 bubbles with isCapabilityIteration=true and no text', () => {
       const conv = makeConversation();
       const bubbles = [
         makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
@@ -294,10 +295,10 @@ describe('normalizeCursorConversation', () => {
         makeBubble({ bubbleId: 'b3', type: 2, text: 'Here is the answer', isCapabilityIteration: false }),
       ];
       const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
-      expect(result!.messages).toHaveLength(2); // user + assistant with text
+      expect(result!.messages).toHaveLength(3); // user + tool summary + assistant with text
       expect(result!.messages[0].role).toBe('user');
-      expect(result!.messages[1].role).toBe('assistant');
-      expect(result!.messages[1].content).toBe('Here is the answer');
+      expect(result!.messages[1].content).toContain('tool call');
+      expect(result!.messages[2].content).toBe('Here is the answer');
     });
 
     it('keeps type 2 bubbles with isCapabilityIteration=true but WITH text', () => {
@@ -321,7 +322,7 @@ describe('normalizeCursorConversation', () => {
       expect(result!.messages).toHaveLength(2); // both kept (backward compat)
     });
 
-    it('skips type 2 bubbles with toolFormerData and no text even when isCapabilityIteration is false', () => {
+    it('produces tool summary for type 2 bubbles with toolFormerData and no text', () => {
       const conv = makeConversation();
       const bubbles = [
         makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
@@ -335,8 +336,9 @@ describe('normalizeCursorConversation', () => {
         makeBubble({ bubbleId: 'b3', type: 2, text: 'Actual response' }),
       ];
       const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
-      expect(result!.messages).toHaveLength(2); // user + assistant with text
-      expect(result!.messages[1].content).toBe('Actual response');
+      expect(result!.messages).toHaveLength(3); // user + tool summary + assistant with text
+      expect(result!.messages[1].content).toContain('tool call');
+      expect(result!.messages[2].content).toBe('Actual response');
     });
 
     it('does not filter type 1 (user) bubbles regardless of content', () => {
@@ -558,6 +560,87 @@ describe('normalizeCursorConversation', () => {
       const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
       const assistantMsg = result!.messages.find(m => m.role === 'assistant');
       expect(assistantMsg!.model).toBe('gpt-4o');
+    });
+  });
+
+  describe('assistant content extraction', () => {
+    it('produces message with text content (not null) for assistant bubble with text', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({ bubbleId: 'b2', type: 2, text: 'Here is my detailed response about the code' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      const assistantMsg = result!.messages.find(m => m.role === 'assistant');
+      expect(assistantMsg).toBeDefined();
+      expect(assistantMsg!.content).toBe('Here is my detailed response about the code');
+      expect(assistantMsg!.content).not.toBeNull();
+    });
+
+    it('produces tool activity summary for empty assistant bubble with capability iteration', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({ bubbleId: 'b2', type: 2, text: '', isCapabilityIteration: true, capabilityType: 1 }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      // Should NOT skip entirely -- should produce a message with tool activity summary
+      const assistantMsgs = result!.messages.filter(m => m.role === 'assistant');
+      expect(assistantMsgs).toHaveLength(1);
+      expect(assistantMsgs[0].content).toContain('tool');
+      expect(assistantMsgs[0].content).not.toBeNull();
+    });
+
+    it('produces tool activity summary for empty assistant bubble with toolFormerData', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          isCapabilityIteration: false,
+          toolFormerData: { additionalData: { tool: 5 } },
+        }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      const assistantMsgs = result!.messages.filter(m => m.role === 'assistant');
+      expect(assistantMsgs).toHaveLength(1);
+      expect(assistantMsgs[0].content).toContain('tool');
+      expect(assistantMsgs[0].content).not.toBeNull();
+    });
+
+    it('groups consecutive tool-only assistant bubbles into a single summary message', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({ bubbleId: 'b2', type: 2, text: '', isCapabilityIteration: true, capabilityType: 1 }),
+        makeBubble({ bubbleId: 'b3', type: 2, text: '', isCapabilityIteration: true, capabilityType: 2 }),
+        makeBubble({ bubbleId: 'b4', type: 2, text: '', isCapabilityIteration: true, capabilityType: 1 }),
+        makeBubble({ bubbleId: 'b5', type: 2, text: 'Here is the answer' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      // Should have: user, one grouped tool summary, assistant with text
+      const assistantMsgs = result!.messages.filter(m => m.role === 'assistant');
+      expect(assistantMsgs).toHaveLength(2); // grouped tool summary + real response
+      expect(assistantMsgs[0].content).toMatch(/3 tool/);
+      expect(assistantMsgs[1].content).toBe('Here is the answer');
+    });
+  });
+
+  describe('workspace path derivation', () => {
+    it('extracts workspace path from conversation and uses last segment as project', () => {
+      const conv = makeConversation({ workspacePath: '/Users/sachin/Desktop/myapp' } as any);
+      const bubbles = [makeBubble()];
+      const result = normalizeCursorConversation(conv, bubbles, 'myapp');
+      expect(result!.conversation.project).toBe('myapp');
+    });
+
+    it('falls back to Cursor when workspacePath is null', () => {
+      const conv = makeConversation({ workspacePath: null } as any);
+      const bubbles = [makeBubble()];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.conversation.project).toBe('Cursor');
     });
   });
 

@@ -10,6 +10,7 @@ import { normalizeCursorConversation } from './cursor-normalizer.js';
 import { extractPlans, inferStepCompletion } from './plan-extractor.js';
 import { generateId } from './id-generator.js';
 import { runDataQualityMigration } from './migration.js';
+import { basename } from 'node:path';
 import type { IngestionStats, IngestionStatus } from './types.js';
 
 export interface IngestionPluginOptions {
@@ -185,7 +186,8 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
           for (const conv of cursorConversations) {
             try {
               const bubbles = getBubblesForConversation(cursorDbPath, conv.composerId);
-              const normalizedData = normalizeCursorConversation(conv, bubbles, 'Cursor');
+              const cursorProject = conv.workspacePath ? basename(conv.workspacePath) : 'Cursor';
+              const normalizedData = normalizeCursorConversation(conv, bubbles, cursorProject);
               if (!normalizedData) continue;
 
               db.transaction((tx) => {

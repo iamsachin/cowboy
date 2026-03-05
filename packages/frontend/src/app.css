@@ -15,6 +15,18 @@
   color: oklch(0.98 0 0);
 }
 
+/* Model name badges — soft tint with oklch colors */
+.badge-model-opus    { background-color: oklch(0.35 0.12 280); color: oklch(0.80 0.12 280); }
+.badge-model-sonnet  { background-color: oklch(0.35 0.12 320); color: oklch(0.80 0.12 320); }
+.badge-model-haiku   { background-color: oklch(0.35 0.12 160); color: oklch(0.80 0.12 160); }
+.badge-model-gpt4o   { background-color: oklch(0.35 0.12 145); color: oklch(0.80 0.12 145); }
+.badge-model-gpt4    { background-color: oklch(0.35 0.12 145); color: oklch(0.80 0.12 145); }
+.badge-model-gpt35   { background-color: oklch(0.35 0.10 200); color: oklch(0.80 0.10 200); }
+.badge-model-o1      { background-color: oklch(0.35 0.12 80);  color: oklch(0.80 0.12 80); }
+.badge-model-o3      { background-color: oklch(0.35 0.12 55);  color: oklch(0.80 0.12 55); }
+.badge-model-gemini  { background-color: oklch(0.35 0.12 250); color: oklch(0.80 0.12 250); }
+.badge-model-deepseek { background-color: oklch(0.35 0.12 220); color: oklch(0.80 0.12 220); }
+
 /* Override highlight.js background so the DaisyUI container provides it */
 .hljs {
   background: transparent !important;

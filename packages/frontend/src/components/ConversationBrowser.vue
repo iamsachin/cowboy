@@ -8,7 +8,7 @@
         @change="setAgent(($event.target as HTMLSelectElement).value)"
       >
         <option value="">All Agents</option>
-        <option value="claude-code">Claude Code</option>
+        <option v-for="a in AGENTS" :key="a" :value="a">{{ AGENT_LABELS[a] || a }}</option>
       </select>
 
       <select
@@ -157,6 +157,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useConversationBrowser } from '../composables/useConversationBrowser';
 import AgentBadge from './AgentBadge.vue';
+import { AGENTS, AGENT_LABELS } from '../utils/agent-constants';
 
 const router = useRouter();
 

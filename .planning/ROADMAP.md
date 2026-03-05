@@ -33,7 +33,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 10: Data Grouping Foundation** - Turn types and messageId-based grouping logic with unit tests (completed 2026-03-04)
 - [x] **Phase 11: Core Collapsible UI** - AssistantResponseBlock with progressive disclosure, summary headers, and expand/collapse all (completed 2026-03-05)
 - [x] **Phase 12: Token Enrichment** - Backend per-message token data and cost-per-turn display in summary headers (completed 2026-03-05)
-- [ ] **Phase 13: Visual Polish** - Tool call type icons and color-coded model name badges
+- [x] **Phase 13: Visual Polish** - Tool call type icons and color-coded model name badges (completed 2026-03-05)
 
 ## Phase Details
 
@@ -226,8 +226,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 12-01-PLAN.md -- Backend: MessageTokenUsage shared type, per-message token aggregation query, seed fixture update, integration tests
-- [ ] 12-02-PLAN.md -- Frontend: token formatting utilities, prop drilling tokenUsageByMessage, AssistantGroupCard header display, visual verification
+- [x] 12-01-PLAN.md -- Backend: MessageTokenUsage shared type, per-message token aggregation query, seed fixture update, integration tests
+- [x] 12-02-PLAN.md -- Frontend: token formatting utilities, prop drilling tokenUsageByMessage, AssistantGroupCard header display, visual verification
 
 ### Phase 13: Visual Polish
 **Goal**: Tool calls and model names are visually differentiated with icons and color coding for quick scanning
@@ -236,10 +236,10 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Each tool call row displays a distinct icon matching its type (Read=file, Bash=terminal, Edit=pencil, Write=file-plus, Grep=search, Glob=folder-search, Agent=bot, WebSearch=globe)
   2. Model name badges in summary headers are color-coded by model (visually distinct colors for different model names)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 13-01: TBD
+- [ ] 13-01-PLAN.md -- Tool icon/color utilities, model label/badge utilities with CSS classes, component updates (ToolCallRow, AssistantGroupCard, TurnCard)
 
 ## Progress
 
@@ -260,5 +260,5 @@ Phases execute in numeric order: 10 -> 11 -> 12 -> 13
 | 9. Settings + Remote Sync | v1.0 | 3/3 | Complete | 2026-03-04 |
 | 10. Data Grouping Foundation | v1.1 | 2/2 | Complete | 2026-03-04 |
 | 11. Core Collapsible UI | v1.1 | 3/3 | Complete | 2026-03-05 |
-| 12. Token Enrichment | 2/2 | Complete   | 2026-03-05 | - |
-| 13. Visual Polish | v1.1 | 0/1 | Not started | - |
+| 12. Token Enrichment | v1.1 | 2/2 | Complete | 2026-03-05 |
+| 13. Visual Polish | 1/1 | Complete   | 2026-03-05 | - |

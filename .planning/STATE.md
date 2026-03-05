@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Conversation View Polish
-status: executing
-stopped_at: Completed 12-02-PLAN.md
-last_updated: "2026-03-05T09:20:16.026Z"
-last_activity: 2026-03-05 -- Plan 01 complete (per-message token data)
+status: completed
+stopped_at: Completed 13-01-PLAN.md
+last_updated: "2026-03-05T09:48:28.614Z"
+last_activity: 2026-03-05 -- Plan 02 complete (frontend token display)
 progress:
   total_phases: 13
-  completed_phases: 12
-  total_plans: 31
-  completed_plans: 31
+  completed_phases: 13
+  total_plans: 32
+  completed_plans: 32
   percent: 100
 ---
 
@@ -52,6 +52,7 @@ Progress: [██████████] 100% (31/31 plans)
 *Updated after each plan completion*
 | Phase 12 P01 | 5min | 1 tasks | 5 files |
 | Phase 12 P02 | 19min | 2 tasks | 4 files |
+| Phase 13 P01 | 2min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,8 @@ Recent decisions affecting current work:
 - [Phase 12]: SUM GROUP BY messageId for per-message token aggregation, WHERE messageId IS NOT NULL
 - [Phase 12]: text-base-content/50 for token counts, text-success/70 for cost display styling
 - [Phase 12]: Graceful omission via v-if guards for absent token data (no zeros or N/A)
+- [Phase 13]: Substring matching with ordered matchers (gpt-4o before gpt-4) for model label resolution
+- [Phase 13]: oklch(0.35 chroma hue) bg / oklch(0.80 chroma hue) text for soft-tint badge styling
 
 ### Pending Todos
 
@@ -91,6 +94,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-05T09:20:16.023Z
-Stopped at: Completed 12-02-PLAN.md
+Last session: 2026-03-05T09:48:28.611Z
+Stopped at: Completed 13-01-PLAN.md
 Resume file: None

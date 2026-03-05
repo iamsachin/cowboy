@@ -20,8 +20,8 @@ Requirements for conversation view polish milestone. Each maps to roadmap phases
 
 - [x] **META-01**: User sees per-turn input/output/cache token counts in the response block summary header
 - [x] **META-02**: User sees estimated cost per assistant turn in the summary header
-- [ ] **META-03**: User sees distinct icons per tool call type (Read=file, Bash=terminal, Edit=pencil, Write=file-plus, Grep=search, Glob=folder-search, Agent=bot, WebSearch=globe)
-- [ ] **META-04**: User sees color-coded model name badges in the summary header
+- [x] **META-03**: User sees distinct icons per tool call type (Read=file, Bash=terminal, Edit=pencil, Write=file-plus, Grep=search, Glob=folder-search, Agent=bot, WebSearch=globe)
+- [x] **META-04**: User sees color-coded model name badges in the summary header
 
 ### UX Controls
 
@@ -67,8 +67,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GROUP-06 | Phase 11 | Complete |
 | META-01 | Phase 12 | Complete |
 | META-02 | Phase 12 | Complete |
-| META-03 | Phase 13 | Pending |
-| META-04 | Phase 13 | Pending |
+| META-03 | Phase 13 | Complete |
+| META-04 | Phase 13 | Complete |
 | UX-01 | Phase 11 | Complete |
 
 **Coverage:**

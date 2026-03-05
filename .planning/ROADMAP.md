@@ -223,11 +223,11 @@ Plans:
   1. Each assistant response block summary header displays input, output, and cache token counts for that specific turn
   2. Each assistant response block summary header displays an estimated cost for that turn based on token counts and model pricing
   3. Token counts come from actual backend data (tokenUsage table joined by messageId), not fabricated or divided conversation-level totals
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 12-01: TBD
-- [ ] 12-02: TBD
+- [ ] 12-01-PLAN.md -- Backend: MessageTokenUsage shared type, per-message token aggregation query, seed fixture update, integration tests
+- [ ] 12-02-PLAN.md -- Frontend: token formatting utilities, prop drilling tokenUsageByMessage, AssistantGroupCard header display, visual verification
 
 ### Phase 13: Visual Polish
 **Goal**: Tool calls and model names are visually differentiated with icons and color coding for quick scanning
@@ -260,5 +260,5 @@ Phases execute in numeric order: 10 -> 11 -> 12 -> 13
 | 9. Settings + Remote Sync | v1.0 | 3/3 | Complete | 2026-03-04 |
 | 10. Data Grouping Foundation | v1.1 | 2/2 | Complete | 2026-03-04 |
 | 11. Core Collapsible UI | v1.1 | 3/3 | Complete | 2026-03-05 |
-| 12. Token Enrichment | v1.1 | 0/2 | Not started | - |
+| 12. Token Enrichment | 1/2 | In Progress|  | - |
 | 13. Visual Polish | v1.1 | 0/1 | Not started | - |

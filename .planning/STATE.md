@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Conversation View Polish
 status: executing
-stopped_at: Phase 11 complete (human verification approved)
-last_updated: "2026-03-05T07:00:00Z"
-last_activity: 2026-03-05 -- Phase 11 complete, human verification approved
+stopped_at: Completed 12-01-PLAN.md
+last_updated: "2026-03-05T08:58:19.475Z"
+last_activity: 2026-03-05 -- Plan 01 complete (per-message token data)
 progress:
   total_phases: 13
   completed_phases: 11
-  total_plans: 29
-  completed_plans: 29
-  percent: 100
+  total_plans: 31
+  completed_plans: 30
+  percent: 97
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-05)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing -- every conversation, tool call, token, and plan across all agents in one place.
-**Current focus:** Phase 12 - Token Enrichment (next)
+**Current focus:** Phase 12 - Token Enrichment (Plan 01 complete, Plan 02 next)
 
 ## Current Position
 
-Phase: 11 of 13 (Core Collapsible UI) -- COMPLETE
-Plan: 3 of 3 in current phase (Plan 03 complete)
-Status: Phase 11 complete
-Last activity: 2026-03-05 -- Phase 11 complete, human verification approved
+Phase: 12 of 13 (Token Enrichment)
+Plan: 1 of 2 in current phase (Plan 01 complete)
+Status: Executing Phase 12
+Last activity: 2026-03-05 -- Plan 01 complete (per-message token data)
 
-Progress: [██████████] 100% (29/29 plans)
+Progress: [██████████] 97% (30/31 plans)
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Progress: [██████████] 100% (29/29 plans)
 - Trend: Stable
 
 *Updated after each plan completion*
+| Phase 12 P01 | 5min | 1 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,10 @@ Recent decisions affecting current work:
 - [11-02]: Native details/summary for ToolCallRow I/O expansion, matching existing thinking section pattern
 - [11-03]: Toolbar only renders when totalAssistantTurns > 0 to avoid empty toolbar
 - [11-03]: Collapse state resets naturally via Vue component lifecycle -- new conversation = new component instance
+- [12-01]: SUM GROUP BY messageId aggregation for per-message tokens (not LIMIT 1)
+- [12-01]: Filter WHERE messageId IS NOT NULL to exclude orphan tokenUsage records
+- [12-01]: Seed fixture insert order: conversations -> messages -> tokenUsage -> toolCalls (FK compliance)
+- [Phase 12]: SUM GROUP BY messageId for per-message token aggregation, WHERE messageId IS NOT NULL
 
 ### Pending Todos
 
@@ -79,10 +84,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 12: Confirm tokenUsage table schema and join pattern before writing backend query
+None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-05T07:00:00Z
-Stopped at: Phase 11 complete -- ready for Phase 12 planning
-Resume file: .planning/phases/11-core-collapsible-ui/11-03-SUMMARY.md
+Last session: 2026-03-05T08:58:18.459Z
+Stopped at: Completed 12-01-PLAN.md
+Resume file: None

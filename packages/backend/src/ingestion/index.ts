@@ -9,6 +9,7 @@ import { parseCursorDb, getBubblesForConversation } from './cursor-parser.js';
 import { normalizeCursorConversation } from './cursor-normalizer.js';
 import { extractPlans, inferStepCompletion } from './plan-extractor.js';
 import { generateId } from './id-generator.js';
+import { runDataQualityMigration } from './migration.js';
 import type { IngestionStats, IngestionStatus } from './types.js';
 
 export interface IngestionPluginOptions {
@@ -104,6 +105,16 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
       skippedLines: 0,
       duration: 0,
     };
+
+    // One-time data quality migration for existing conversations
+    try {
+      const migrationResult = runDataQualityMigration(db);
+      if (migrationResult.titlesFixed > 0 || migrationResult.modelsFixed > 0) {
+        app.log.info({ migrationResult }, 'Data quality migration applied');
+      }
+    } catch (err) {
+      app.log.error({ err }, 'Data quality migration failed (non-fatal)');
+    }
 
     try {
       const files = await discoverJsonlFiles(basePath);

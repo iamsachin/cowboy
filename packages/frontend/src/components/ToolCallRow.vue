@@ -2,7 +2,7 @@
   <div class="text-xs">
     <!-- Compact row: always visible -->
     <div class="flex items-center gap-2 py-1 px-2 rounded bg-base-300/50">
-      <Wrench class="w-3.5 h-3.5 text-info shrink-0" />
+      <component :is="toolIcon.icon" class="w-3.5 h-3.5 shrink-0" :class="toolIcon.colorClass" />
       <span class="truncate">{{ toolCall.name }}</span>
       <span
         v-if="toolCall.status === 'completed'"
@@ -72,14 +72,16 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Wrench, Copy, Check } from 'lucide-vue-next';
+import { Copy, Check } from 'lucide-vue-next';
 import type { ToolCallRow } from '@cowboy/shared';
 import { truncateOutput } from '../utils/turn-helpers';
+import { getToolIcon } from '../utils/tool-icons';
 
 const props = defineProps<{
   toolCall: ToolCallRow;
 }>();
 
+const toolIcon = computed(() => getToolIcon(props.toolCall.name));
 const showFullOutput = ref(false);
 const copiedInput = ref(false);
 const copiedOutput = ref(false);

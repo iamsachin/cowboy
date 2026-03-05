@@ -12,8 +12,9 @@
         />
         <span
           v-if="group.model"
-          class="badge badge-sm badge-ghost"
-        >{{ group.model }}</span>
+          class="badge badge-sm"
+          :class="modelBadge.cssClass"
+        >{{ modelBadge.label }}</span>
         <span class="text-base-content/50">
           {{ group.toolCallCount }} tool call{{ group.toolCallCount === 1 ? '' : 's' }}
         </span>
@@ -98,6 +99,7 @@ import { parseContent, formatTime } from '../utils/content-parser';
 import { stripXmlTags } from '../utils/content-sanitizer';
 import { getPreviewSnippet, formatMs } from '../utils/turn-helpers';
 import { formatTokenCount, formatTurnCost } from '../utils/format-tokens';
+import { getModelBadge } from '../utils/model-labels';
 import CodeBlock from './CodeBlock.vue';
 import ToolCallRowComponent from './ToolCallRow.vue';
 
@@ -110,6 +112,8 @@ const props = defineProps<{
 defineEmits<{
   toggle: [];
 }>();
+
+const modelBadge = computed(() => getModelBadge(props.group.model));
 
 const previewSnippet = computed(() => {
   // Use first turn with content for preview

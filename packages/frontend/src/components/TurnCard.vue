@@ -13,8 +13,9 @@
         />
         <span
           v-if="turn.message.model"
-          class="badge badge-sm badge-ghost"
-        >{{ turn.message.model }}</span>
+          class="badge badge-sm"
+          :class="modelBadge.cssClass"
+        >{{ modelBadge.label }}</span>
         <span
           v-if="turn.toolCalls.length > 0"
           class="text-base-content/50"
@@ -80,6 +81,7 @@ import type { AssistantTurn, Turn } from '../composables/useGroupedTurns';
 import { parseContent, formatTime } from '../utils/content-parser';
 import { stripXmlTags } from '../utils/content-sanitizer';
 import { getPreviewSnippet, calculateDuration } from '../utils/turn-helpers';
+import { getModelBadge } from '../utils/model-labels';
 import CodeBlock from './CodeBlock.vue';
 import ToolCallRowComponent from './ToolCallRow.vue';
 
@@ -92,6 +94,8 @@ const props = defineProps<{
 defineEmits<{
   toggle: [];
 }>();
+
+const modelBadge = computed(() => getModelBadge(props.turn.message.model));
 
 const parsedContent = computed(() => {
   if (props.turn.message.content == null) return [];

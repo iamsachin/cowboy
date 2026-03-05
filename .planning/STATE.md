@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Data Quality & Display Fixes
-status: in-progress
-stopped_at: Completed 16-01-PLAN.md
-last_updated: "2026-03-05T13:35:28.099Z"
-last_activity: 2026-03-05 -- Completed 16-01 turn grouping extension
+status: completed
+stopped_at: "Checkpoint 16-02: awaiting human verification of visual changes"
+last_updated: "2026-03-05T13:39:40.832Z"
+last_activity: 2026-03-05 -- Completed 16-01 turn grouping extension (SystemGroup, SlashCommandTurn, ClearDividerTurn)
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
-  percent: 100
+  completed_plans: 6
+  percent: 97
 ---
 
 # Project State
@@ -52,6 +52,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase 15]: Null assistant content falls back to 'Executed tool call' when Cursor DB unavailable
 - [Phase 16-message-display]: System message detection order mirrors content-sanitizer.ts precedence: isClearCommand before isSlashCommand before isSystemInjected
 - [Phase 16-message-display]: groupTurns pendingSystem accumulator merges consecutive system-injected messages into SystemGroup with per-message category labels
+- [Phase 16-message-display]: SystemMessageIndicator uses in-flow flex-col expansion (not absolute dropdown) to avoid z-index issues inside conversation scroll container
+- [Phase 16-message-display]: ConversationDetail.vue removes filteredMessages and /clear slicing — groupTurns handles all classification; system messages are no longer silently dropped
 
 ### Pending Todos
 
@@ -63,6 +65,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-05T13:35:28.097Z
-Stopped at: Completed 16-01-PLAN.md
+Last session: 2026-03-05T13:39:28.293Z
+Stopped at: Checkpoint 16-02: awaiting human verification of visual changes
 Resume file: None

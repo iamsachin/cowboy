@@ -43,7 +43,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 14: Ingestion Quality** - Fix title extraction and model attribution during backend ingestion (completed 2026-03-05)
 - [x] **Phase 15: Cursor Data Quality** - Fix Cursor assistant responses, agent filter, and project path display (completed 2026-03-05)
-- [ ] **Phase 16: Message Display** - Visually distinguish system-injected messages and slash commands
+- [x] **Phase 16: Message Display** - Visually distinguish system-injected messages and slash commands (completed 2026-03-05)
 
 ## Phase Details
 
@@ -81,7 +81,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. System-injected content (caveats, skill instructions, objective blocks) that is stored as role=user appears visually distinct from actual user messages (different styling, label, or visual treatment)
   2. Slash commands (/clear, /gsd:*, etc.) render with distinct styling that differentiates them from regular conversational messages
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 16-01-PLAN.md — Extend turn grouping model with system message, slash command, and /clear turn types (TDD)
 - [ ] 16-02-PLAN.md — Create UI components and wire into ConversationDetail.vue
@@ -105,4 +105,4 @@ Plans:
 | 13. Visual Polish | v1.1 | 1/1 | Complete | 2026-03-05 |
 | 14. Ingestion Quality | v1.2 | 2/2 | Complete | 2026-03-05 |
 | 15. Cursor Data Quality | v1.2 | 2/2 | Complete | 2026-03-05 |
-| 16. Message Display | 1/2 | In Progress|  | - |
+| 16. Message Display | 2/2 | Complete   | 2026-03-05 | - |

@@ -2,7 +2,7 @@ import { db } from '../index.js';
 import { conversations, messages, toolCalls, tokenUsage } from '../schema.js';
 import { sql, and, gte, lte, eq, like, or } from 'drizzle-orm';
 import { calculateCost } from '@cowboy/shared';
-import type { OverviewStats, TimeSeriesPoint, ConversationRow, ConversationListResponse, ConversationDetailResponse, ToolStatsRow, HeatmapDay, ProjectStatsRow, ProjectModelEntry } from '@cowboy/shared';
+import type { OverviewStats, TimeSeriesPoint, ConversationRow, ConversationListResponse, ConversationDetailResponse, MessageTokenUsage, ToolStatsRow, HeatmapDay, ProjectStatsRow, ProjectModelEntry } from '@cowboy/shared';
 import type { Granularity } from '@cowboy/shared';
 
 /**
@@ -502,6 +502,40 @@ export function getConversationDetail(conversationId: string): ConversationDetai
     }
   }
 
+  // Per-message token aggregation
+  const perMessageTokenRows = db
+    .select({
+      messageId: tokenUsage.messageId,
+      model: tokenUsage.model,
+      inputTokens: sql<number>`sum(${tokenUsage.inputTokens})`,
+      outputTokens: sql<number>`sum(${tokenUsage.outputTokens})`,
+      cacheReadTokens: sql<number>`sum(${tokenUsage.cacheReadTokens})`,
+      cacheCreationTokens: sql<number>`sum(${tokenUsage.cacheCreationTokens})`,
+    })
+    .from(tokenUsage)
+    .where(and(eq(tokenUsage.conversationId, conversationId), sql`${tokenUsage.messageId} IS NOT NULL`))
+    .groupBy(tokenUsage.messageId)
+    .all();
+
+  const tokenUsageByMessage: Record<string, MessageTokenUsage> = {};
+  for (const row of perMessageTokenRows) {
+    const msgId = row.messageId as string;
+    const input = Number(row.inputTokens);
+    const output = Number(row.outputTokens);
+    const cacheRead = Number(row.cacheReadTokens);
+    const cacheCreation = Number(row.cacheCreationTokens);
+
+    const costResult = calculateCost(row.model, input, output, cacheRead, cacheCreation);
+
+    tokenUsageByMessage[msgId] = {
+      inputTokens: input,
+      outputTokens: output,
+      cacheReadTokens: cacheRead,
+      cacheCreationTokens: cacheCreation,
+      cost: costResult?.cost ?? null,
+    };
+  }
+
   return {
     conversation: {
       id: conv.id,
@@ -522,6 +556,7 @@ export function getConversationDetail(conversationId: string): ConversationDetai
       cost: hasCost ? totalCost : null,
       savings: hasCost ? totalSavings : null,
     },
+    tokenUsageByMessage,
   };
 }
 

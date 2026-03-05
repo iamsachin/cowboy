@@ -22,16 +22,7 @@ export async function seedAnalyticsData(db: BetterSQLite3Database<typeof schema>
     { id: 'conv-5', agent: 'claude-code', project: 'project-alpha', title: 'Conv 5', createdAt: '2026-01-17T11:00:00Z', updatedAt: '2026-01-17T11:30:00Z', model: 'unknown-model' },
   ]).run();
 
-  // Insert token usage (one record per conversation for simplicity)
-  db.insert(tokenUsage).values([
-    { id: 'tu-1', conversationId: 'conv-1', model: 'claude-sonnet-4-5', inputTokens: 100000, outputTokens: 50000, cacheReadTokens: 20000, cacheCreationTokens: 10000, createdAt: '2026-01-15T10:00:00Z' },
-    { id: 'tu-2', conversationId: 'conv-2', model: 'claude-sonnet-4-5', inputTokens: 200000, outputTokens: 100000, cacheReadTokens: 40000, cacheCreationTokens: 20000, createdAt: '2026-01-15T14:00:00Z' },
-    { id: 'tu-3', conversationId: 'conv-3', model: 'claude-haiku-4-5', inputTokens: 50000, outputTokens: 25000, cacheReadTokens: 10000, cacheCreationTokens: 5000, createdAt: '2026-01-16T09:00:00Z' },
-    { id: 'tu-4', conversationId: 'conv-4', model: 'claude-haiku-4-5', inputTokens: 75000, outputTokens: 30000, cacheReadTokens: 15000, cacheCreationTokens: 8000, createdAt: '2026-01-16T15:00:00Z' },
-    { id: 'tu-5', conversationId: 'conv-5', model: 'unknown-model', inputTokens: 30000, outputTokens: 15000, cacheReadTokens: 5000, cacheCreationTokens: 3000, createdAt: '2026-01-17T11:00:00Z' },
-  ]).run();
-
-  // Insert messages for conversations
+  // Insert messages for conversations (before tokenUsage due to FK on messageId)
   db.insert(messages).values([
     // conv-1: user message + assistant message with code block content
     { id: 'msg-1a', conversationId: 'conv-1', role: 'user', content: 'How do I build the app?', createdAt: '2026-01-15T10:00:00Z', model: null },
@@ -48,6 +39,15 @@ export async function seedAnalyticsData(db: BetterSQLite3Database<typeof schema>
     // conv-5: user + assistant
     { id: 'msg-5a', conversationId: 'conv-5', role: 'user', content: 'Run tests.', createdAt: '2026-01-17T11:00:00Z', model: null },
     { id: 'msg-5b', conversationId: 'conv-5', role: 'assistant', content: 'All tests pass.', createdAt: '2026-01-17T11:01:00Z', model: 'unknown-model' },
+  ]).run();
+
+  // Insert token usage (one record per conversation, keyed to assistant messages)
+  db.insert(tokenUsage).values([
+    { id: 'tu-1', conversationId: 'conv-1', messageId: 'msg-1b', model: 'claude-sonnet-4-5', inputTokens: 100000, outputTokens: 50000, cacheReadTokens: 20000, cacheCreationTokens: 10000, createdAt: '2026-01-15T10:00:00Z' },
+    { id: 'tu-2', conversationId: 'conv-2', messageId: 'msg-2b', model: 'claude-sonnet-4-5', inputTokens: 200000, outputTokens: 100000, cacheReadTokens: 40000, cacheCreationTokens: 20000, createdAt: '2026-01-15T14:00:00Z' },
+    { id: 'tu-3', conversationId: 'conv-3', messageId: 'msg-3b', model: 'claude-haiku-4-5', inputTokens: 50000, outputTokens: 25000, cacheReadTokens: 10000, cacheCreationTokens: 5000, createdAt: '2026-01-16T09:00:00Z' },
+    { id: 'tu-4', conversationId: 'conv-4', messageId: 'msg-4b', model: 'claude-haiku-4-5', inputTokens: 75000, outputTokens: 30000, cacheReadTokens: 15000, cacheCreationTokens: 8000, createdAt: '2026-01-16T15:00:00Z' },
+    { id: 'tu-5', conversationId: 'conv-5', messageId: 'msg-5b', model: 'unknown-model', inputTokens: 30000, outputTokens: 15000, cacheReadTokens: 5000, cacheCreationTokens: 3000, createdAt: '2026-01-17T11:00:00Z' },
   ]).run();
 
   // Insert tool calls across conversations with varied tools, statuses, and durations

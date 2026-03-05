@@ -26,6 +26,74 @@ export function stripXmlTags(text: string): string {
 }
 
 /**
+ * Detect if a user message is a slash command (e.g. /clear, /gsd:execute-phase 11).
+ *
+ * These contain `<command-name>/something</command-name>` in raw content.
+ */
+export function isSlashCommand(content: string | null): boolean {
+  if (!content) return false;
+  return /<command-name>/.test(content);
+}
+
+/**
+ * Extract clean command text from a slash command message.
+ *
+ * Raw: `<command-name>/gsd:execute-phase</command-name><command-args>11</command-args>`
+ * Returns: `/gsd:execute-phase 11`
+ */
+export function extractCommandText(content: string): string {
+  const nameMatch = content.match(/<command-name>(.*?)<\/command-name>/);
+  const argsMatch = content.match(/<command-args>(.*?)<\/command-args>/s);
+
+  const name = nameMatch?.[1]?.trim() || '';
+  const args = argsMatch?.[1]?.trim() || '';
+
+  return args ? `${name} ${args}` : name;
+}
+
+/**
+ * Detect if a "user" message is actually system-injected content.
+ *
+ * Claude Code injects messages with role='user' that contain system prompts,
+ * command metadata, and reminders wrapped in XML tags. These should be hidden
+ * from the conversation view since the user didn't type them.
+ *
+ * Slash commands (/clear, /gsd:*) are NOT system-injected — they are user actions.
+ */
+export function isSystemInjected(content: string | null): boolean {
+  if (!content) return true;
+  const trimmed = content.trim();
+  if (!trimmed) return true;
+
+  // Slash commands are user actions, not system-injected
+  if (isSlashCommand(trimmed)) return false;
+
+  // Image attachments are user actions
+  if (/\[Image: source:/.test(trimmed)) return false;
+
+  // Messages that start with XML-tagged system content
+  if (/^<(system-reminder|local-command|antml:)/.test(trimmed)) return true;
+
+  // Skill/command expanded prompts — contain structured XML sections
+  if (/<(objective|execution_context|context|process|success_criteria|files_to_read)>/.test(trimmed)) return true;
+
+  // After stripping tags, if nothing meaningful remains, it's system content
+  const cleaned = stripXmlTags(trimmed);
+  if (!cleaned || !cleaned.trim()) return true;
+
+  return false;
+}
+
+/**
+ * Detect if a user message represents a /clear command.
+ */
+export function isClearCommand(content: string | null): boolean {
+  if (!content) return false;
+  if (!isSlashCommand(content)) return false;
+  return extractCommandText(content).startsWith('/clear');
+}
+
+/**
  * Clean a conversation title for display.
  *
  * Applies XML tag stripping, handles empty results, and truncates long titles.

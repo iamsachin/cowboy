@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 ### v1.1 Conversation View Polish
 
 - [x] **Phase 10: Data Grouping Foundation** - Turn types and messageId-based grouping logic with unit tests (completed 2026-03-04)
-- [ ] **Phase 11: Core Collapsible UI** - AssistantResponseBlock with progressive disclosure, summary headers, and expand/collapse all
+- [x] **Phase 11: Core Collapsible UI** - AssistantResponseBlock with progressive disclosure, summary headers, and expand/collapse all (completed 2026-03-05)
 - [ ] **Phase 12: Token Enrichment** - Backend per-message token data and cost-per-turn display in summary headers
 - [ ] **Phase 13: Visual Polish** - Tool call type icons and color-coded model name badges
 
@@ -195,8 +195,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 10-01-PLAN.md -- TDD: groupTurns pure function with Turn types, orphan handling, consecutive separation, and content-parser utility extraction
-- [ ] 10-02-PLAN.md -- TurnCard + ToolCallRow components, refactor ConversationDetail for grouped rendering, simplify ChatMessage to user-only
+- [x] 10-01-PLAN.md -- TDD: groupTurns pure function with Turn types, orphan handling, consecutive separation, and content-parser utility extraction
+- [x] 10-02-PLAN.md -- TurnCard + ToolCallRow components, refactor ConversationDetail for grouped rendering, simplify ChatMessage to user-only
 
 ### Phase 11: Core Collapsible UI
 **Goal**: Users can progressively disclose assistant turn details through a two-level collapsible interface with summary headers
@@ -211,9 +211,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 11-01-PLAN.md -- TDD: useCollapseState composable (reactive Map) and turn-helpers utilities (preview snippet, duration calc, truncation)
-- [ ] 11-02-PLAN.md -- TurnCard collapsed/expanded summary header and ToolCallRow expandable I/O detail with copy/truncation
-- [ ] 11-03-PLAN.md -- ConversationDetail sticky toolbar with expand/collapse-all, collapse state wiring to TurnCards, visual verification
+- [x] 11-01-PLAN.md -- TDD: useCollapseState composable (reactive Map) and turn-helpers utilities (preview snippet, duration calc, truncation)
+- [x] 11-02-PLAN.md -- TurnCard collapsed/expanded summary header and ToolCallRow expandable I/O detail with copy/truncation
+- [x] 11-03-PLAN.md -- ConversationDetail sticky toolbar with expand/collapse-all, collapse state wiring to TurnCards, visual verification
 
 ### Phase 12: Token Enrichment
 **Goal**: Users see accurate per-turn token counts and estimated cost in each assistant response block header
@@ -259,6 +259,6 @@ Phases execute in numeric order: 10 -> 11 -> 12 -> 13
 | 8. Plan Tracking | v1.0 | 3/3 | Complete | 2026-03-04 |
 | 9. Settings + Remote Sync | v1.0 | 3/3 | Complete | 2026-03-04 |
 | 10. Data Grouping Foundation | v1.1 | 2/2 | Complete | 2026-03-04 |
-| 11. Core Collapsible UI | 2/3 | In Progress|  | - |
+| 11. Core Collapsible UI | v1.1 | 3/3 | Complete | 2026-03-05 |
 | 12. Token Enrichment | v1.1 | 0/2 | Not started | - |
 | 13. Visual Polish | v1.1 | 0/1 | Not started | - |

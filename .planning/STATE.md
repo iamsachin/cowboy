@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Conversation View Polish
 status: executing
-stopped_at: Completed 11-02-PLAN.md
-last_updated: "2026-03-05T06:16:20Z"
-last_activity: 2026-03-05 -- Completed 11-02 collapsible turn card
+stopped_at: Phase 11 complete (human verification approved)
+last_updated: "2026-03-05T07:00:00Z"
+last_activity: 2026-03-05 -- Phase 11 complete, human verification approved
 progress:
   total_phases: 13
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 29
-  completed_plans: 28
-  percent: 97
+  completed_plans: 29
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-05)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing -- every conversation, tool call, token, and plan across all agents in one place.
-**Current focus:** Phase 11 - Core Collapsible UI
+**Current focus:** Phase 12 - Token Enrichment (next)
 
 ## Current Position
 
-Phase: 11 of 13 (Core Collapsible UI) -- IN PROGRESS
-Plan: 2 of 3 in current phase (Plan 02 complete)
-Status: In progress
-Last activity: 2026-03-05 -- Completed 11-02 collapsible turn card
+Phase: 11 of 13 (Core Collapsible UI) -- COMPLETE
+Plan: 3 of 3 in current phase (Plan 03 complete)
+Status: Phase 11 complete
+Last activity: 2026-03-05 -- Phase 11 complete, human verification approved
 
-Progress: [██████████] 97% (28/29 plans)
+Progress: [██████████] 100% (29/29 plans)
 
 ## Performance Metrics
 
@@ -70,6 +70,8 @@ Recent decisions affecting current work:
 - [11-01]: Independent composable instances (not singleton) -- allows per-view collapse state
 - [11-02]: Props-controlled collapse: TurnCard receives expanded boolean and emits toggle, parent manages state
 - [11-02]: Native details/summary for ToolCallRow I/O expansion, matching existing thinking section pattern
+- [11-03]: Toolbar only renders when totalAssistantTurns > 0 to avoid empty toolbar
+- [11-03]: Collapse state resets naturally via Vue component lifecycle -- new conversation = new component instance
 
 ### Pending Todos
 
@@ -78,10 +80,9 @@ None yet.
 ### Blockers/Concerns
 
 - Phase 12: Confirm tokenUsage table schema and join pattern before writing backend query
-- Phase 11: Decide collapse state persistence strategy (KeepAlive vs composable) during planning
 
 ## Session Continuity
 
-Last session: 2026-03-05T06:16:20Z
-Stopped at: Completed 11-02-PLAN.md
-Resume file: .planning/phases/11-core-collapsible-ui/11-02-SUMMARY.md
+Last session: 2026-03-05T07:00:00Z
+Stopped at: Phase 11 complete -- ready for Phase 12 planning
+Resume file: .planning/phases/11-core-collapsible-ui/11-03-SUMMARY.md

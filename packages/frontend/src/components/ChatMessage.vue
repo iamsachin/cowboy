@@ -1,11 +1,14 @@
 <template>
-  <div class="chat chat-end ml-auto max-w-[85%]">
-    <div class="chat-header text-xs text-base-content/50 mb-1">
+  <div class="flex flex-col items-end ml-auto max-w-[85%]">
+    <div class="text-xs text-base-content/50 mb-1">
       You
       <time class="ml-1">{{ formatTime(message.createdAt) }}</time>
     </div>
-    <div class="chat-bubble chat-bubble-primary whitespace-normal break-words">
-      <template v-if="message.content != null">
+    <div class="bg-emerald-500/50 text-base-content border border-emerald-300/70 rounded-lg px-3 py-2 text-sm whitespace-normal break-words">
+      <template v-if="commandText">
+        <p class="whitespace-pre-wrap font-mono">{{ commandText }}</p>
+      </template>
+      <template v-else-if="message.content != null">
         <template v-for="(block, idx) in parsedContent" :key="idx">
           <p v-if="block.type === 'text'" class="whitespace-pre-wrap">{{ block.content }}</p>
           <CodeBlock
@@ -14,6 +17,10 @@
             :language="block.language"
           />
         </template>
+        <div v-if="imageCount > 0" class="flex items-center gap-1 text-xs text-base-content/60" :class="{ 'mt-1': parsedContent.length > 0 }">
+          <ImageIcon class="w-3.5 h-3.5" />
+          <span>{{ imageCount }} image{{ imageCount > 1 ? 's' : '' }} attached</span>
+        </div>
       </template>
     </div>
   </div>
@@ -21,16 +28,33 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { ImageIcon } from 'lucide-vue-next';
 import type { MessageRow } from '@cowboy/shared';
 import CodeBlock from './CodeBlock.vue';
 import { parseContent, formatTime } from '../utils/content-parser';
+import { isSlashCommand, extractCommandText } from '../utils/content-sanitizer';
+
+const IMAGE_RE = /\[Image: source: [^\]]+\]/g;
 
 const props = defineProps<{
   message: MessageRow;
 }>();
 
+const commandText = computed(() => {
+  if (!props.message.content || !isSlashCommand(props.message.content)) return null;
+  return extractCommandText(props.message.content);
+});
+
+const imageCount = computed(() => {
+  if (!props.message.content) return 0;
+  return (props.message.content.match(IMAGE_RE) || []).length;
+});
+
 const parsedContent = computed(() => {
   if (props.message.content == null) return [];
-  return parseContent(props.message.content);
+  // Strip image references from content before parsing
+  const cleaned = props.message.content.replace(IMAGE_RE, '').trim();
+  if (!cleaned) return [];
+  return parseContent(cleaned);
 });
 </script>

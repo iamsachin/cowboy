@@ -86,7 +86,7 @@ export function useSettings() {
     }
   }
 
-  async function clearDatabase(agent?: string): Promise<void> {
+  async function clearDatabase(agent?: string): Promise<boolean> {
     clearing.value = true;
     dataActionResult.value = null;
     try {
@@ -98,18 +98,20 @@ export function useSettings() {
         message: agent ? `Cleared all ${agent} data` : 'Cleared all data',
       };
       await fetchDbStats();
+      return true;
     } catch (e) {
       console.error('Failed to clear database:', e);
       dataActionResult.value = {
         success: false,
         message: `Failed to clear database: ${(e as Error).message}`,
       };
+      return false;
     } finally {
       clearing.value = false;
     }
   }
 
-  async function refreshDatabase(agent?: string): Promise<void> {
+  async function refreshDatabase(agent?: string): Promise<boolean> {
     clearing.value = true;
     dataActionResult.value = null;
     try {
@@ -121,12 +123,14 @@ export function useSettings() {
         message: agent ? `Refreshing ${agent} data...` : 'Refreshing all data...',
       };
       await fetchDbStats();
+      return true;
     } catch (e) {
       console.error('Failed to refresh database:', e);
       dataActionResult.value = {
         success: false,
         message: `Failed to refresh database: ${(e as Error).message}`,
       };
+      return false;
     } finally {
       clearing.value = false;
     }
@@ -137,7 +141,7 @@ export function useSettings() {
     claudeCodeEnabled: boolean;
     cursorPath: string;
     cursorEnabled: boolean;
-  }): Promise<void> {
+  }): Promise<boolean> {
     saving.value = true;
     try {
       const res = await fetch('/api/settings/agent', {
@@ -147,8 +151,10 @@ export function useSettings() {
       });
       if (!res.ok) throw new Error(`Save agent settings failed: ${res.status}`);
       settings.value = await res.json();
+      return true;
     } catch (e) {
       console.error('Failed to save agent settings:', e);
+      return false;
     } finally {
       saving.value = false;
     }
@@ -159,7 +165,7 @@ export function useSettings() {
     syncUrl: string;
     syncFrequency: number;
     syncCategories: string[];
-  }): Promise<void> {
+  }): Promise<boolean> {
     saving.value = true;
     try {
       const res = await fetch('/api/settings/sync', {
@@ -169,8 +175,10 @@ export function useSettings() {
       });
       if (!res.ok) throw new Error(`Save sync settings failed: ${res.status}`);
       settings.value = await res.json();
+      return true;
     } catch (e) {
       console.error('Failed to save sync settings:', e);
+      return false;
     } finally {
       saving.value = false;
     }

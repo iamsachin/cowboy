@@ -98,7 +98,7 @@
           <div class="divider mt-0"></div>
 
           <!-- Stats summary -->
-          <div v-if="dbStats" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+          <div v-if="dbStats" class="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
             <div class="stat bg-base-300 rounded-lg p-3">
               <div class="stat-title text-xs">Conversations</div>
               <div class="stat-value text-lg">{{ dbStats.total.conversations }}</div>
@@ -110,6 +110,10 @@
             <div class="stat bg-base-300 rounded-lg p-3">
               <div class="stat-title text-xs">Tool Calls</div>
               <div class="stat-value text-lg">{{ dbStats.total.toolCalls }}</div>
+            </div>
+            <div class="stat bg-base-300 rounded-lg p-3">
+              <div class="stat-title text-xs">Token Usage Records</div>
+              <div class="stat-value text-lg">{{ dbStats.total.tokenUsage }}</div>
             </div>
             <div class="stat bg-base-300 rounded-lg p-3">
               <div class="stat-title text-xs">Plans</div>
@@ -128,26 +132,37 @@
             <h3 class="text-sm font-semibold text-error">Danger Zone</h3>
 
             <div class="flex flex-wrap gap-2">
+              <!-- Clear All Data with countdown -->
               <button
                 class="btn btn-sm"
-                :class="confirmAction === 'clear-all' ? 'btn-error' : 'btn-error btn-outline'"
-                :disabled="clearing"
-                @click="handleConfirmAction('clear-all', () => clearDatabase())"
+                :class="countdownAction === 'clear-all'
+                  ? (countdownReady ? 'btn-error' : 'btn-error')
+                  : 'btn-error btn-outline'"
+                :disabled="clearing || (countdownAction === 'clear-all' && !countdownReady)"
+                @click="handleCountdownAction('clear-all', () => handleClearAll())"
               >
-                <span v-if="clearing" class="loading loading-spinner loading-xs"></span>
+                <span v-if="clearing && countdownAction === 'clear-all'" class="loading loading-spinner loading-xs"></span>
                 <Trash2 v-else class="w-4 h-4" />
-                {{ confirmAction === 'clear-all' ? 'Confirm Clear All?' : 'Clear All Data' }}
+                <template v-if="countdownAction === 'clear-all' && !countdownReady">
+                  Confirm ({{ countdownRemaining }}...)
+                </template>
+                <template v-else-if="countdownAction === 'clear-all' && countdownReady">
+                  Confirm Clear
+                </template>
+                <template v-else>
+                  Clear All Data
+                </template>
               </button>
 
+              <!-- Refresh All Data with modal -->
               <button
-                class="btn btn-sm"
-                :class="confirmAction === 'refresh-all' ? 'btn-warning' : 'btn-warning btn-outline'"
+                class="btn btn-sm btn-warning btn-outline"
                 :disabled="clearing"
-                @click="handleConfirmAction('refresh-all', () => refreshDatabase())"
+                @click="openRefreshModal()"
               >
-                <span v-if="clearing" class="loading loading-spinner loading-xs"></span>
+                <span v-if="clearing && refreshingAll" class="loading loading-spinner loading-xs"></span>
                 <RotateCcw v-else class="w-4 h-4" />
-                {{ confirmAction === 'refresh-all' ? 'Confirm Refresh All?' : 'Refresh All Data' }}
+                Refresh All Data
               </button>
             </div>
           </div>
@@ -168,34 +183,49 @@
                 <button
                   class="btn btn-ghost btn-xs"
                   :disabled="clearing"
-                  @click="refreshDatabase(agent as string)"
+                  @click="handleRefreshAgent(agent as string)"
                 >
                   <RotateCcw class="w-3 h-3" />
                   Refresh
                 </button>
+                <!-- Per-agent clear with countdown -->
                 <button
                   class="btn btn-ghost btn-xs text-error"
-                  :class="confirmAction === `clear-${agent}` ? 'btn-active' : ''"
-                  :disabled="clearing"
-                  @click="handleConfirmAction(`clear-${agent}`, () => clearDatabase(agent as string))"
+                  :class="countdownAction === `clear-${agent}` ? 'btn-active' : ''"
+                  :disabled="clearing || (countdownAction === `clear-${agent}` && !countdownReady)"
+                  @click="handleCountdownAction(`clear-${agent}`, () => handleClearAgent(agent as string))"
                 >
                   <Trash2 class="w-3 h-3" />
-                  {{ confirmAction === `clear-${agent}` ? 'Confirm?' : 'Clear' }}
+                  <template v-if="countdownAction === `clear-${agent}` && !countdownReady">
+                    Confirm ({{ countdownRemaining }}...)
+                  </template>
+                  <template v-else-if="countdownAction === `clear-${agent}` && countdownReady">
+                    Confirm Clear
+                  </template>
+                  <template v-else>
+                    Clear
+                  </template>
                 </button>
               </div>
             </div>
           </div>
-
-          <!-- Result feedback -->
-          <div
-            v-if="dataActionResult"
-            class="alert mt-4"
-            :class="dataActionResult.success ? 'alert-success' : 'alert-error'"
-          >
-            <span>{{ dataActionResult.message }}</span>
-          </div>
         </div>
       </div>
+
+      <!-- Refresh All Confirmation Modal -->
+      <dialog ref="refreshModal" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box">
+          <h3 class="font-bold text-lg">Refresh All Data</h3>
+          <p class="py-4">Are you sure you want to refresh all data? This will re-ingest all log files.</p>
+          <div class="modal-action">
+            <button class="btn" @click="closeRefreshModal">Cancel</button>
+            <button class="btn btn-warning" @click="confirmRefreshAll">Confirm</button>
+          </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
 
       <!-- Remote Sync Section -->
       <div class="card bg-base-200">
@@ -339,8 +369,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onBeforeUnmount } from 'vue';
 import { useSettings } from '../composables/useSettings';
+import { useToast } from '../composables/useToast';
 import {
   Bot,
   Wifi,
@@ -362,7 +393,6 @@ const {
   syncNowResult,
   dbStats,
   clearing,
-  dataActionResult,
   saveAgentSettings,
   saveSyncSettings,
   validatePath,
@@ -372,26 +402,108 @@ const {
   refreshDatabase,
 } = useSettings();
 
-// Data management confirmation state
-const confirmAction = ref<string | null>(null);
-const confirmTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
+const { success: toastSuccess, error: toastError } = useToast();
 
-function handleConfirmAction(actionKey: string, action: () => void) {
-  if (confirmAction.value === actionKey) {
-    confirmAction.value = null;
-    if (confirmTimeout.value) clearTimeout(confirmTimeout.value);
+// Countdown confirmation state
+const countdownAction = ref<string | null>(null);
+const countdownRemaining = ref(0);
+const countdownReady = ref(false);
+let countdownInterval: ReturnType<typeof setInterval> | null = null;
+let countdownResetTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function clearCountdownTimers() {
+  if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+  if (countdownResetTimeout) { clearTimeout(countdownResetTimeout); countdownResetTimeout = null; }
+}
+
+function resetCountdown() {
+  clearCountdownTimers();
+  countdownAction.value = null;
+  countdownRemaining.value = 0;
+  countdownReady.value = false;
+}
+
+function handleCountdownAction(actionKey: string, action: () => void) {
+  // If countdown is ready and this is the same action, execute
+  if (countdownAction.value === actionKey && countdownReady.value) {
+    resetCountdown();
     action();
+    return;
+  }
+
+  // If a different action or no action yet, start countdown
+  resetCountdown();
+  countdownAction.value = actionKey;
+  countdownRemaining.value = 3;
+  countdownReady.value = false;
+
+  countdownInterval = setInterval(() => {
+    countdownRemaining.value--;
+    if (countdownRemaining.value <= 0) {
+      if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+      countdownReady.value = true;
+      // Auto-reset after 3 seconds if user doesn't confirm
+      countdownResetTimeout = setTimeout(() => {
+        resetCountdown();
+      }, 3000);
+    }
+  }, 1000);
+}
+
+onBeforeUnmount(() => {
+  clearCountdownTimers();
+});
+
+// Refresh modal state
+const refreshModal = ref<HTMLDialogElement | null>(null);
+const refreshingAll = ref(false);
+
+function openRefreshModal() {
+  refreshModal.value?.showModal();
+}
+
+function closeRefreshModal() {
+  refreshModal.value?.close();
+}
+
+async function confirmRefreshAll() {
+  closeRefreshModal();
+  refreshingAll.value = true;
+  const ok = await refreshDatabase();
+  refreshingAll.value = false;
+  if (ok) {
+    toastSuccess('Refreshing all data...');
   } else {
-    confirmAction.value = actionKey;
-    if (confirmTimeout.value) clearTimeout(confirmTimeout.value);
-    confirmTimeout.value = setTimeout(() => { confirmAction.value = null; }, 3000);
+    toastError('Failed to refresh database');
   }
 }
 
-// Auto-dismiss data action result after 5 seconds
-watch(dataActionResult, (val) => {
-  if (val) setTimeout(() => { dataActionResult.value = null; }, 5000);
-});
+async function handleRefreshAgent(agent: string) {
+  const ok = await refreshDatabase(agent);
+  if (ok) {
+    toastSuccess(`Refreshing ${agent} data...`);
+  } else {
+    toastError(`Failed to refresh ${agent} data`);
+  }
+}
+
+async function handleClearAll() {
+  const ok = await clearDatabase();
+  if (ok) {
+    toastSuccess('Cleared all data');
+  } else {
+    toastError('Failed to clear database');
+  }
+}
+
+async function handleClearAgent(agent: string) {
+  const ok = await clearDatabase(agent);
+  if (ok) {
+    toastSuccess(`Cleared all ${agent} data`);
+  } else {
+    toastError(`Failed to clear ${agent} data`);
+  }
+}
 
 // Local form state
 const form = ref({
@@ -450,22 +562,32 @@ watch(() => form.value.cursorPath, (val) => {
 });
 
 // Handlers
-function handleSaveAgent() {
-  saveAgentSettings({
+async function handleSaveAgent() {
+  const ok = await saveAgentSettings({
     claudeCodePath: form.value.claudeCodePath,
     claudeCodeEnabled: form.value.claudeCodeEnabled,
     cursorPath: form.value.cursorPath,
     cursorEnabled: form.value.cursorEnabled,
   });
+  if (ok) {
+    toastSuccess('Agent settings saved');
+  } else {
+    toastError('Failed to save agent settings');
+  }
 }
 
-function handleSaveSync() {
-  saveSyncSettings({
+async function handleSaveSync() {
+  const ok = await saveSyncSettings({
     syncEnabled: form.value.syncEnabled,
     syncUrl: form.value.syncUrl,
     syncFrequency: form.value.syncFrequency,
     syncCategories: form.value.syncCategories,
   });
+  if (ok) {
+    toastSuccess('Sync settings saved');
+  } else {
+    toastError('Failed to save sync settings');
+  }
 }
 
 function handleTestConnection() {

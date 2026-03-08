@@ -7,6 +7,11 @@
 [data-theme="forest"] {
   --color-primary: oklch(0.55 0.18 250);
   --color-primary-content: oklch(0.98 0 0);
+
+  /* Chart theming: neutral tones that adapt with theme */
+  --chart-grid: oklch(0.40 0 0 / 0.3);
+  --chart-text: oklch(0.75 0 0);
+  --chart-legend: oklch(0.75 0 0);
 }
 
 /* Claude Code badge — Anthropic orange */

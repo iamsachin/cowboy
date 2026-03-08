@@ -89,9 +89,9 @@
 
 ### Overview & Settings
 
-- [ ] **PAGE-01**: Overview KPIs labeled with date filter context (OV-01)
-- [ ] **PAGE-02**: Table column consistency between Overview and Conversations (OV-02)
-- [ ] **PAGE-03**: Empty state shows friendly message instead of zeroed KPIs (OV-03)
+- [x] **PAGE-01**: Overview KPIs labeled with date filter context (OV-01)
+- [x] **PAGE-02**: Table column consistency between Overview and Conversations (OV-02)
+- [x] **PAGE-03**: Empty state shows friendly message instead of zeroed KPIs (OV-03)
 - [x] **PAGE-04**: Settings save shows success toast (ST-01)
 - [x] **PAGE-05**: Danger Zone confirm has countdown or longer timeout (ST-02)
 - [x] **PAGE-06**: Refresh button has confirmation dialog (ST-03)
@@ -173,9 +173,9 @@ None — all audit bugs targeted for v1.3.
 | XCUT-06 | Phase 23 | Complete |
 | XCUT-07 | Phase 23 | Complete |
 | XCUT-08 | Phase 23 | Complete |
-| PAGE-01 | Phase 24 | Pending |
-| PAGE-02 | Phase 24 | Pending |
-| PAGE-03 | Phase 24 | Pending |
+| PAGE-01 | Phase 24 | Complete |
+| PAGE-02 | Phase 24 | Complete |
+| PAGE-03 | Phase 24 | Complete |
 | PAGE-04 | Phase 24 | Complete |
 | PAGE-05 | Phase 24 | Complete |
 | PAGE-06 | Phase 24 | Complete |

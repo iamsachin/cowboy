@@ -5,9 +5,9 @@
       class="cursor-pointer select-none flex items-center gap-2 px-3 py-1 rounded-full bg-base-300/50 text-base-content/40 text-xs hover:bg-base-300/70 transition-colors"
       @click="expanded = !expanded"
     >
-      <ChevronDown
+      <ChevronRight
         class="w-3 h-3 shrink-0 transition-transform"
-        :class="{ 'rotate-180': expanded }"
+        :class="{ 'rotate-90': expanded }"
       />
       <span>{{ summaryLabel }}</span>
     </div>
@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { ChevronDown } from 'lucide-vue-next';
+import { ChevronRight } from 'lucide-vue-next';
 import type { SystemGroup, SystemMessageCategory } from '../composables/useGroupedTurns';
 import { stripXmlTags } from '../utils/content-sanitizer';
 

@@ -70,8 +70,8 @@
 - [ ] **PLAN-03**: Separate numbered lists not incorrectly merged (PL-03)
 - [ ] **PLAN-04**: Action verb filter uses threshold instead of all-or-nothing (PL-04)
 - [ ] **PLAN-05**: Loose word matching threshold raised to reduce false completions (PL-05)
-- [ ] **PLAN-06**: Re-ingestion updates plan data instead of skipping (PL-06)
-- [ ] **PLAN-07**: Sort columns map correctly to backend params (PL-07)
+- [x] **PLAN-06**: Re-ingestion updates plan data instead of skipping (PL-06)
+- [x] **PLAN-07**: Sort columns map correctly to backend params (PL-07)
 - [ ] **PLAN-08**: "not-started" and "unknown" statuses visually distinct (PL-08)
 - [ ] **PLAN-09**: KPI cards don't render empty description div (PL-09)
 - [ ] **PLAN-10**: Tool name matching uses word boundaries (PL-10)
@@ -152,8 +152,8 @@ None — all audit bugs targeted for v1.3.
 | PLAN-03 | Phase 21 | Pending |
 | PLAN-04 | Phase 21 | Pending |
 | PLAN-05 | Phase 21 | Pending |
-| PLAN-06 | Phase 21 | Pending |
-| PLAN-07 | Phase 21 | Pending |
+| PLAN-06 | Phase 21 | Complete |
+| PLAN-07 | Phase 21 | Complete |
 | PLAN-08 | Phase 21 | Pending |
 | PLAN-09 | Phase 21 | Pending |
 | PLAN-10 | Phase 21 | Pending |

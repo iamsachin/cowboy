@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Bug Fix & Quality Audit
-status: executing
-stopped_at: Completed 20-03-PLAN.md
-last_updated: "2026-03-08T12:29:00.000Z"
+status: completed
+stopped_at: Completed 21-02-PLAN.md
+last_updated: "2026-03-08T14:46:32.763Z"
 last_activity: 2026-03-08 — Completed 20-03 (display fixes, filter API, loading overlay)
 progress:
   total_phases: 8
   completed_phases: 4
-  total_plans: 11
+  total_plans: 14
   completed_plans: 12
 ---
 
@@ -20,16 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 20 - Conversation List Fixes (v1.3)
+**Current focus:** Phase 21 - Plan Extraction Quality (v1.3)
 
 ## Current Position
 
-Phase: 20 of 24 (Conversation List Fixes) - COMPLETE
-Plan: 3 of 3 in current phase (all done)
-Status: Phase 20 complete
-Last activity: 2026-03-08 — Completed 20-03 (display fixes, filter API, loading overlay)
+Phase: 21 of 24 (Plan Extraction Quality)
+Plan: 2 of 3 in current phase (21-02 complete)
+Status: In progress
+Last activity: 2026-03-08 — Completed 21-02 (re-ingestion delete+insert, sort column mapping)
 
-Progress (v1.3): [██████████] 100% (35 plans completed)
+Progress (v1.3): [██████████] 95% (36 plans completed)
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [20-02]: DOMPurify with ALLOWED_TAGS: ['mark'] replaces regex sanitizer
 - [20-03]: API-driven filter dropdowns with fallback to hardcoded/page-derived values
 - [20-03]: Loading overlay with opacity + pointer-events-none pattern for subsequent fetches
+- [Phase 21-02]: Delete-then-insert pattern for plan re-ingestion (replaces onConflictDoNothing)
 
 ### Pending Todos
 
@@ -79,6 +80,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-08T12:29:00.000Z
-Stopped at: Completed 20-03-PLAN.md
-Resume file: .planning/phases/20-conversation-list-fixes/20-03-SUMMARY.md
+Last session: 2026-03-08T14:46:32.761Z
+Stopped at: Completed 21-02-PLAN.md
+Resume file: None

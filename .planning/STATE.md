@@ -5,7 +5,7 @@ milestone_name: Bug Fix & Quality Audit
 status: milestone_complete
 stopped_at: v1.3 milestone shipped
 last_updated: "2026-03-08"
-last_activity: 2026-03-08 - Completed quick task 10: Show blinking green circle for active conversations
+last_activity: 2026-03-08 - Completed quick task 11: Fix chart re-rendering flash with v-show
 progress:
   total_phases: 8
   completed_phases: 8
@@ -103,9 +103,10 @@ None currently.
 | 8 | Liven up sidebar with stats strip, tagline, tips | 2026-03-08 | 1398e2f | [8-liven-up-sidebar-with-stats-strip-taglin](./quick/8-liven-up-sidebar-with-stats-strip-taglin/) |
 | 9 | Add cowboy hat SVG logo and humorous tagline | 2026-03-08 | 9b5ed27 | [9-add-cowboy-hat-svg-logo-and-humorous-cow](./quick/9-add-cowboy-hat-svg-logo-and-humorous-cow/) |
 | 10 | Show blinking green circle for active conversations | 2026-03-08 | 844637c | [10-show-blinking-green-circle-indicator-for](./quick/10-show-blinking-green-circle-indicator-for/) |
+| 11 | Fix chart re-rendering flash with v-show | 2026-03-08 | 7ae59b3 | [11-fix-chart-re-rendering-on-data-push-with](./quick/11-fix-chart-re-rendering-on-data-push-with/) |
 
 ## Session Continuity
 
-Last session: 2026-03-08T17:49:51Z
-Stopped at: Completed quick task 10
+Last session: 2026-03-08T18:04:09Z
+Stopped at: Completed quick task 11
 Resume file: None

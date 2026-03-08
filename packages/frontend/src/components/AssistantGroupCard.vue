@@ -53,7 +53,7 @@
             <Brain class="w-4 h-4 text-info shrink-0" />
             <span>Thinking</span>
           </summary>
-          <pre class="text-xs whitespace-pre-wrap break-words mt-1 pl-6 text-base-content/70">{{ turn.message.thinking }}</pre>
+          <div class="thinking-content text-xs mt-1 pl-6 text-base-content/70" v-html="renderMarkdown(turn.message.thinking!)"></div>
         </details>
 
         <!-- Turn text content -->
@@ -100,6 +100,7 @@ import { stripXmlTags } from '../utils/content-sanitizer';
 import { getPreviewSnippet, formatMs } from '../utils/turn-helpers';
 import { formatTokenCount, formatTurnCost } from '../utils/format-tokens';
 import { getModelBadge } from '../utils/model-labels';
+import { renderMarkdown } from '../utils/render-markdown';
 import CodeBlock from './CodeBlock.vue';
 import ToolCallRowComponent from './ToolCallRow.vue';
 
@@ -171,3 +172,70 @@ function getTurnContent(turn: AssistantTurn) {
   return parseContent(turn.message.content);
 }
 </script>
+
+<style scoped>
+.thinking-content :deep(h1),
+.thinking-content :deep(h2),
+.thinking-content :deep(h3),
+.thinking-content :deep(h4) {
+  font-weight: 600;
+  margin-top: 0.75em;
+  margin-bottom: 0.25em;
+}
+.thinking-content :deep(h1) { font-size: 1.1em; }
+.thinking-content :deep(h2) { font-size: 1.05em; }
+.thinking-content :deep(h3) { font-size: 1em; }
+.thinking-content :deep(ul),
+.thinking-content :deep(ol) {
+  padding-left: 1.5em;
+  margin: 0.25em 0;
+}
+.thinking-content :deep(ul) { list-style-type: disc; }
+.thinking-content :deep(ol) { list-style-type: decimal; }
+.thinking-content :deep(li) { margin: 0.1em 0; }
+.thinking-content :deep(code) {
+  background: oklch(0.25 0 0 / 0.5);
+  padding: 0.1em 0.3em;
+  border-radius: 0.25em;
+  font-size: 0.9em;
+}
+.thinking-content :deep(pre) {
+  background: oklch(0.2 0 0 / 0.5);
+  padding: 0.75em;
+  border-radius: 0.375em;
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+.thinking-content :deep(pre code) {
+  background: none;
+  padding: 0;
+}
+.thinking-content :deep(blockquote) {
+  border-left: 3px solid oklch(0.5 0 0);
+  padding-left: 0.75em;
+  margin: 0.5em 0;
+  opacity: 0.8;
+}
+.thinking-content :deep(p) {
+  margin: 0.25em 0;
+}
+.thinking-content :deep(a) {
+  text-decoration: underline;
+  opacity: 0.9;
+}
+.thinking-content :deep(strong) { font-weight: 600; }
+.thinking-content :deep(hr) {
+  border-color: oklch(0.4 0 0);
+  margin: 0.5em 0;
+}
+.thinking-content :deep(table) {
+  border-collapse: collapse;
+  margin: 0.5em 0;
+  font-size: 0.9em;
+}
+.thinking-content :deep(th),
+.thinking-content :deep(td) {
+  border: 1px solid oklch(0.4 0 0);
+  padding: 0.25em 0.5em;
+}
+</style>

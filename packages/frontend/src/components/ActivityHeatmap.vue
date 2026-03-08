@@ -98,7 +98,7 @@ const cells = computed<HeatmapCell[]>(() => {
   const result: HeatmapCell[] = [];
   const current = new Date(startDate);
   while (current <= endDate) {
-    const dateStr = current.toISOString().slice(0, 10);
+    const dateStr = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
     result.push({
       date: dateStr,
       count: countMap.get(dateStr) ?? 0,

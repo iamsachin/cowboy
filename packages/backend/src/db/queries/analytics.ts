@@ -167,7 +167,7 @@ export function getTimeSeries(from: string, to: string, granularity: Granularity
 
   const rows = db
     .select({
-      period: sql<string>`strftime('${sql.raw(dateFormat)}', ${tokenUsage.createdAt})`.as('period'),
+      period: sql<string>`strftime('${sql.raw(dateFormat)}', ${conversations.createdAt})`.as('period'),
       model: tokenUsage.model,
       inputTokens: sql<number>`sum(${tokenUsage.inputTokens})`,
       outputTokens: sql<number>`sum(${tokenUsage.outputTokens})`,
@@ -595,6 +595,9 @@ export function getConversationDetail(conversationId: string): ConversationDetai
     };
   }
 
+  const firstMessageAt = msgs.length > 0 ? msgs[0].createdAt : conv.createdAt;
+  const lastMessageAt = msgs.length > 0 ? msgs[msgs.length - 1].createdAt : conv.updatedAt;
+
   return {
     conversation: {
       id: conv.id,
@@ -604,6 +607,8 @@ export function getConversationDetail(conversationId: string): ConversationDetai
       createdAt: conv.createdAt,
       updatedAt: conv.updatedAt,
       model: conv.model,
+      firstMessageAt,
+      lastMessageAt,
     },
     messages: msgs,
     toolCalls: tools,

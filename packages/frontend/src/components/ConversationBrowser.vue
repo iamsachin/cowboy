@@ -114,13 +114,20 @@
                 </div>
               </td>
               <td>
-                <div class="max-w-[16rem]">
-                  <div class="truncate">{{ cleanTitle(row.title ?? '') }}</div>
-                  <div
-                    v-if="searchQuery && 'snippet' in row && row.snippet"
-                    class="text-xs text-base-content/60 truncate mt-0.5"
-                    v-html="sanitizeSnippet(row.snippet)"
-                  ></div>
+                <div class="max-w-[16rem] flex items-center gap-1.5">
+                  <span
+                    v-if="('isActive' in row) && row.isActive"
+                    class="pulse-dot shrink-0"
+                    title="Running"
+                  ></span>
+                  <div class="min-w-0">
+                    <div class="truncate">{{ cleanTitle(row.title ?? '') }}</div>
+                    <div
+                      v-if="searchQuery && 'snippet' in row && row.snippet"
+                      class="text-xs text-base-content/60 truncate mt-0.5"
+                      v-html="sanitizeSnippet(row.snippet)"
+                    ></div>
+                  </div>
                 </div>
               </td>
               <td class="text-right font-mono">
@@ -281,3 +288,18 @@ const visiblePages = computed(() => {
   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 });
 </script>
+
+<style scoped>
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: oklch(0.72 0.19 142);
+  animation: pulse-fade 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-fade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+</style>

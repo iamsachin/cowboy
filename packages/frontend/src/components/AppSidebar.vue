@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import ConnectionStatus from './ConnectionStatus.vue';
 import {
   LayoutDashboard,
@@ -66,7 +66,11 @@ import {
   ChevronRight,
 } from 'lucide-vue-next';
 
-const collapsed = ref(false);
+const collapsed = ref(localStorage.getItem('sidebar-collapsed') === 'true');
+
+watch(collapsed, (val) => {
+  localStorage.setItem('sidebar-collapsed', String(val));
+});
 
 const navItems = [
   { path: '/overview', label: 'Overview', icon: LayoutDashboard, disabled: false },

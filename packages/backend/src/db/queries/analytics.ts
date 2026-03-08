@@ -418,7 +418,7 @@ export function getConversationList(
       cacheCreationTokens: cacheCreation,
       cost: convCost?.cost ?? null,
       savings: convCost?.savings ?? null,
-      isActive: Boolean(row.isActive),
+      isActive: Number(row.isActive) === 1,
     };
 
     // If search was provided, extract a snippet from matching message content

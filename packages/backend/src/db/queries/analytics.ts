@@ -116,7 +116,7 @@ function computePeriodStats(from: string, to: string, agent?: string): PeriodSta
     .from(tokenUsage)
     .innerJoin(conversations, sql`${tokenUsage.conversationId} = ${conversations.id}`)
     .where(dateFilter)
-    .groupBy(tokenUsage.conversationId)
+    .groupBy(tokenUsage.conversationId, tokenUsage.model)
     .all();
 
   let estimatedCost = 0;
@@ -300,15 +300,15 @@ export function getConversationList(
 
   const offset = (page - 1) * limit;
 
-  // Sort column mapping
+  // Sort column mapping — cost sort is handled in JS after computing actual cost
+  const isCostSort = sort === 'cost';
   const sortColumn = sort === 'inputTokens' ? sql`sum(${tokenUsage.inputTokens})`
     : sort === 'outputTokens' ? sql`sum(${tokenUsage.outputTokens})`
-    : sort === 'cost' ? sql`sum(${tokenUsage.inputTokens})` // sort by input as proxy for cost
     : sql`${conversations.createdAt}`;
 
   const orderDir = order === 'asc' ? sql`ASC` : sql`DESC`;
 
-  const rows = db
+  const query = db
     .select({
       id: conversations.id,
       date: conversations.createdAt,
@@ -325,10 +325,12 @@ export function getConversationList(
     .leftJoin(tokenUsage, sql`${tokenUsage.conversationId} = ${conversations.id}`)
     .where(dateFilter)
     .groupBy(conversations.id)
-    .orderBy(sql`${sortColumn} ${orderDir}`)
-    .limit(limit)
-    .offset(offset)
-    .all();
+    .orderBy(sql`${sortColumn} ${orderDir}`);
+
+  // For cost sort, fetch all rows (sort in JS after computing cost); otherwise use SQL pagination
+  const rows = isCostSort
+    ? query.all()
+    : query.limit(limit).offset(offset).all();
 
   // Total count for pagination (with same filters)
   const totalResult = db
@@ -337,14 +339,52 @@ export function getConversationList(
     .where(dateFilter)
     .get();
 
+  // Compute per-model costs for each conversation (handles multi-model conversations correctly)
+  const convIds = rows.map(r => r.id);
+  const perModelTokenRows = convIds.length > 0
+    ? db
+        .select({
+          conversationId: tokenUsage.conversationId,
+          model: tokenUsage.model,
+          inputTokens: sql<number>`sum(${tokenUsage.inputTokens})`,
+          outputTokens: sql<number>`sum(${tokenUsage.outputTokens})`,
+          cacheReadTokens: sql<number>`sum(${tokenUsage.cacheReadTokens})`,
+          cacheCreationTokens: sql<number>`sum(${tokenUsage.cacheCreationTokens})`,
+        })
+        .from(tokenUsage)
+        .where(sql`${tokenUsage.conversationId} IN (${sql.join(convIds.map(id => sql`${id}`), sql`, `)})`)
+        .groupBy(tokenUsage.conversationId, tokenUsage.model)
+        .all()
+    : [];
+
+  // Build a map of conversationId -> { cost, savings }
+  const costByConv = new Map<string, { cost: number; savings: number }>();
+  for (const pmRow of perModelTokenRows) {
+    const costResult = calculateCost(
+      pmRow.model,
+      Number(pmRow.inputTokens),
+      Number(pmRow.outputTokens),
+      Number(pmRow.cacheReadTokens),
+      Number(pmRow.cacheCreationTokens),
+    );
+    if (costResult) {
+      const existing = costByConv.get(pmRow.conversationId);
+      if (existing) {
+        existing.cost += costResult.cost;
+        existing.savings += costResult.savings;
+      } else {
+        costByConv.set(pmRow.conversationId, { cost: costResult.cost, savings: costResult.savings });
+      }
+    }
+  }
+
   const conversationRows: ConversationRow[] = rows.map(row => {
-    const model = row.model ?? 'unknown';
     const input = Number(row.inputTokens);
     const output = Number(row.outputTokens);
     const cacheRead = Number(row.cacheReadTokens);
     const cacheCreation = Number(row.cacheCreationTokens);
 
-    const costResult = calculateCost(model, input, output, cacheRead, cacheCreation);
+    const convCost = costByConv.get(row.id);
 
     const baseRow: ConversationRow = {
       id: row.id,
@@ -357,8 +397,8 @@ export function getConversationList(
       outputTokens: output,
       cacheReadTokens: cacheRead,
       cacheCreationTokens: cacheCreation,
-      cost: costResult?.cost ?? null,
-      savings: costResult?.savings ?? null,
+      cost: convCost?.cost ?? null,
+      savings: convCost?.savings ?? null,
     };
 
     // If search was provided, extract a snippet from matching message content
@@ -369,6 +409,25 @@ export function getConversationList(
 
     return baseRow;
   });
+
+  // For cost sort, sort by computed cost in JS and apply pagination
+  if (isCostSort) {
+    const sortDir = order === 'asc' ? 1 : -1;
+    conversationRows.sort((a, b) => {
+      // Nulls last regardless of sort direction
+      if (a.cost === null && b.cost === null) return 0;
+      if (a.cost === null) return 1;
+      if (b.cost === null) return -1;
+      return (a.cost - b.cost) * sortDir;
+    });
+    const paginatedRows = conversationRows.slice(offset, offset + limit);
+    return {
+      rows: paginatedRows,
+      total: Number(totalResult?.count ?? 0),
+      page,
+      limit,
+    };
+  }
 
   return {
     rows: conversationRows,

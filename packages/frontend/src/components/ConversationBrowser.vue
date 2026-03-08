@@ -26,13 +26,27 @@
         </option>
       </select>
 
-      <input
-        v-model="searchQuery"
-        type="search"
-        class="input input-bordered input-sm"
-        placeholder="Search conversations..."
-        @keydown.enter="submitSearch"
-      />
+      <div class="relative">
+        <input
+          v-model="searchQuery"
+          type="search"
+          class="input input-bordered input-sm pr-14"
+          placeholder="Search conversations..."
+          @keydown.enter="submitSearch"
+        />
+        <span
+          v-if="loading && searchQuery"
+          class="absolute right-7 top-1/2 -translate-y-1/2 loading loading-spinner loading-xs"
+        ></span>
+        <button
+          v-if="searchQuery"
+          class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-ghost btn-xs btn-circle"
+          @click="clearSearch"
+          title="Clear search"
+        >
+          &times;
+        </button>
+      </div>
     </div>
 
     <!-- Table -->
@@ -92,22 +106,17 @@
                 </div>
               </td>
               <td>
-                <div class="max-w-[16rem] truncate">
-                  {{ row.title ?? '--' }}
+                <div class="max-w-[16rem]">
+                  <div class="truncate">{{ row.title ?? '--' }}</div>
+                  <div
+                    v-if="searchQuery && 'snippet' in row && row.snippet"
+                    class="text-xs text-base-content/60 truncate mt-0.5"
+                    v-html="sanitizeSnippet(row.snippet)"
+                  ></div>
                 </div>
               </td>
               <td class="text-right font-mono">
                 {{ formatTokens(row.inputTokens + row.outputTokens) }}
-              </td>
-            </tr>
-            <!-- Search snippet row -->
-            <tr
-              v-if="searchQuery && 'snippet' in row && row.snippet"
-              class="cursor-pointer hover"
-              @click="navigateToDetail(row.id)"
-            >
-              <td :colspan="columns.length" class="pt-0 pb-2 pl-8">
-                <span class="text-xs text-base-content/60" v-html="sanitizeSnippet(row.snippet)"></span>
               </td>
             </tr>
           </template>
@@ -155,6 +164,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import DOMPurify from 'dompurify';
 import { useConversationBrowser } from '../composables/useConversationBrowser';
 import AgentBadge from './AgentBadge.vue';
 import { AGENTS, AGENT_LABELS } from '../utils/agent-constants';
@@ -175,6 +185,7 @@ const {
   setAgent,
   setProject,
   submitSearch,
+  clearSearch,
 } = useConversationBrowser();
 
 const columns = [
@@ -198,8 +209,7 @@ function formatTokens(n: number): string {
 }
 
 function sanitizeSnippet(html: string): string {
-  // Only allow <mark> tags for search highlighting
-  return html.replace(/<(?!\/?mark\b)[^>]*>/g, '');
+  return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['mark'] });
 }
 
 function navigateToDetail(id: string): void {

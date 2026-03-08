@@ -625,7 +625,8 @@ export function getConversationDetail(conversationId: string): ConversationDetai
 }
 
 /**
- * Get per-tool statistics: success/failure counts, frequency, avg and P95 duration.
+ * Get per-tool statistics: success/failure/unknown counts and frequency.
+ * Duration fields are null (JSONL format lacks execution time data).
  * Optional agent parameter filters by agent.
  */
 export function getToolStats(from: string, to: string, agent?: string): ToolStatsRow[] {
@@ -642,7 +643,7 @@ export function getToolStats(from: string, to: string, agent?: string): ToolStat
       total: sql<number>`count(*)`,
       success: sql<number>`sum(case when ${toolCalls.status} = 'success' or ${toolCalls.status} = 'completed' then 1 else 0 end)`,
       failure: sql<number>`sum(case when ${toolCalls.status} is not null and ${toolCalls.status} != 'success' and ${toolCalls.status} != 'completed' then 1 else 0 end)`,
-      avgDuration: sql<number>`avg(${toolCalls.duration})`,
+      unknown: sql<number>`sum(case when ${toolCalls.status} is null then 1 else 0 end)`,
     })
     .from(toolCalls)
     .innerJoin(conversations, sql`${toolCalls.conversationId} = ${conversations.id}`)
@@ -651,30 +652,15 @@ export function getToolStats(from: string, to: string, agent?: string): ToolStat
     .orderBy(sql`count(*) DESC`)
     .all();
 
-  // Compute P95 per tool via secondary query (SQLite has no PERCENTILE function)
-  return rows.map(r => {
-    const durations = db
-      .select({ duration: toolCalls.duration })
-      .from(toolCalls)
-      .innerJoin(conversations, sql`${toolCalls.conversationId} = ${conversations.id}`)
-      .where(and(dateFilter, eq(toolCalls.name, r.name), sql`${toolCalls.duration} is not null`))
-      .orderBy(sql`${toolCalls.duration} ASC`)
-      .all()
-      .map(d => Number(d.duration));
-
-    const p95 = durations.length > 0
-      ? durations[Math.min(Math.floor(durations.length * 0.95), durations.length - 1)]
-      : null;
-
-    return {
-      name: r.name,
-      total: Number(r.total),
-      success: Number(r.success),
-      failure: Number(r.failure),
-      avgDuration: r.avgDuration != null ? Math.round(Number(r.avgDuration)) : null,
-      p95Duration: p95,
-    };
-  });
+  return rows.map(r => ({
+    name: r.name,
+    total: Number(r.total),
+    success: Number(r.success),
+    failure: Number(r.failure),
+    unknown: Number(r.unknown),
+    avgDuration: null,
+    p95Duration: null,
+  }));
 }
 
 /**

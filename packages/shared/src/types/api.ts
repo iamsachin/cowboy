@@ -91,6 +91,8 @@ export interface ConversationDetailResponse {
     createdAt: string;
     updatedAt: string;
     model: string | null;
+    firstMessageAt?: string;
+    lastMessageAt?: string;
   };
   messages: MessageRow[];
   toolCalls: ToolCallRow[];
@@ -128,6 +130,7 @@ export interface ToolStatsRow {
   total: number;
   success: number;
   failure: number;
+  unknown: number;
   avgDuration: number | null;
   p95Duration: number | null;
 }

@@ -30,8 +30,6 @@
             <td class="font-mono text-sm">{{ row.name }}</td>
             <td>{{ row.total }}</td>
             <td>{{ formatSuccessRate(row) }}</td>
-            <td>{{ formatDuration(row.avgDuration) }}</td>
-            <td>{{ formatDuration(row.p95Duration) }}</td>
           </tr>
         </tbody>
       </table>
@@ -52,8 +50,6 @@ const columns = [
   { key: 'name', label: 'Tool Name' },
   { key: 'total', label: 'Calls' },
   { key: 'successRate', label: 'Success Rate' },
-  { key: 'avgDuration', label: 'Avg Duration' },
-  { key: 'p95Duration', label: 'P95 Duration' },
 ];
 
 const sortBy = ref<string>('total');
@@ -69,8 +65,9 @@ function toggleSort(key: string) {
 }
 
 function getSuccessRate(row: ToolStatsRow): number {
-  if (row.total === 0) return 0;
-  return (row.success / row.total) * 100;
+  const denominator = row.total - (row.unknown ?? 0);
+  if (denominator === 0) return 0;
+  return (row.success / denominator) * 100;
 }
 
 const sortedData = computed(() => {
@@ -106,8 +103,4 @@ function formatSuccessRate(row: ToolStatsRow): string {
   return `${getSuccessRate(row).toFixed(1)}%`;
 }
 
-function formatDuration(value: number | null): string {
-  if (value === null || value === undefined) return 'N/A';
-  return `${Math.round(value)}ms`;
-}
 </script>

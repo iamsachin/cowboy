@@ -117,3 +117,83 @@ Here are the implementation steps:
 4. Test the real-time flow
 
 This approach ensures low latency and reliable delivery.`;
+
+// ── Phase 21 fixtures ────────────────────────────────────────────────
+
+/** Title with ## heading prefix — should produce "Setup Plan" */
+export const MARKDOWN_HEADING_TITLE = `## Setup Plan
+
+1. Create the database schema
+2. Install the migration tool
+3. Run the initial migration`;
+
+/** Title with **bold** markers — should produce "Bold Title" */
+export const MARKDOWN_BOLD_TITLE = `**Bold Title**
+
+1. Create the project scaffolding
+2. Install required packages
+3. Configure the build system`;
+
+/** Title with backticks — should strip them */
+export const MARKDOWN_BACKTICK_TITLE = `\`Config Setup\`
+
+1. Create the config file
+2. Add environment variables
+3. Run the validation script`;
+
+/** Two numbered lists separated by prose — should produce 2 plans */
+export const SPLIT_BY_PROSE = `Phase 1 tasks:
+
+1. Create the API routes
+2. Add input validation
+3. Write endpoint tests
+
+Now let's move to the frontend work.
+
+1. Build the component library
+2. Add the state management
+3. Connect the API layer`;
+
+/** Two numbered lists separated by a ### heading — should produce 2 plans */
+export const SPLIT_BY_HEADING = `Backend tasks:
+
+1. Create the database schema
+2. Add the query builders
+3. Write integration tests
+
+### Frontend tasks
+
+1. Build the page layouts
+2. Add the form components
+3. Configure the routing`;
+
+/** Number sequence reset: 1-5 then 1-3 — should produce 2 plans */
+export const NUMBER_RESET = `Here's the full plan:
+
+1. Create the project structure
+2. Install dependencies
+3. Configure the linter
+4. Set up the test runner
+5. Build the CI pipeline
+
+1. Deploy to staging
+2. Run the smoke tests
+3. Enable monitoring`;
+
+/** 3 of 5 steps (60%) have action verbs — should be accepted */
+export const PARTIAL_ACTION_VERBS_ACCEPTED = `The plan:
+
+1. Create the database tables
+2. The API layer needs configuration
+3. Install the required packages
+4. Run the test suite
+5. The monitoring dashboard setup`;
+
+/** 1 of 5 steps (20%) has action verb — should be rejected */
+export const PARTIAL_ACTION_VERBS_REJECTED = `The overview:
+
+1. The database tables need updating
+2. The API layer requires changes
+3. Create the migration script
+4. The test suite is outdated
+5. The monitoring needs attention`;

@@ -105,6 +105,7 @@
               <td class="font-mono text-center">{{ row.completedSteps }}/{{ row.totalSteps }}</td>
               <td>
                 <span class="badge badge-sm" :class="statusBadgeClass(row.status)">
+                  <HelpCircle v-if="row.status === 'unknown'" class="w-3 h-3 mr-0.5" />
                   {{ row.status }}
                 </span>
               </td>
@@ -157,7 +158,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { ClipboardList, ListChecks, CheckCircle2, BarChart3 } from 'lucide-vue-next';
+import { ClipboardList, ListChecks, CheckCircle2, BarChart3, HelpCircle } from 'lucide-vue-next';
 import DateRangeFilter from '../components/DateRangeFilter.vue';
 import KpiCard from '../components/KpiCard.vue';
 import PlanStatsCharts from '../components/PlanStatsCharts.vue';
@@ -200,15 +201,20 @@ function statusBadgeClass(status: string): string {
     case 'partial':
       return 'badge-warning';
     case 'not-started':
+      return 'badge-neutral';
     case 'unknown':
     default:
-      return 'badge-ghost';
+      return 'badge-ghost badge-outline';
   }
 }
 
 function formatDate(isoString: string): string {
   try {
-    return new Date(isoString).toISOString().slice(0, 10);
+    const d = new Date(isoString);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   } catch {
     return isoString;
   }

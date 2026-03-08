@@ -6,16 +6,16 @@
       @click="$emit('toggle')"
     >
       <div class="flex items-center gap-2 text-xs">
-        <ChevronDown
+        <ChevronRight
           class="w-4 h-4 shrink-0 transition-transform"
-          :class="{ 'rotate-180': expanded }"
+          :class="{ 'rotate-90': expanded }"
         />
         <span
           v-if="group.model"
           class="badge badge-sm"
           :class="modelBadge.cssClass"
         >{{ modelBadge.label }}</span>
-        <span class="text-base-content/50">
+        <span v-if="group.toolCallCount > 0" class="text-base-content/50">
           {{ group.toolCallCount }} tool call{{ group.toolCallCount === 1 ? '' : 's' }}
         </span>
         <span class="text-base-content/50">
@@ -41,7 +41,7 @@
     </div>
 
     <!-- Expanded: show all individual turns -->
-    <div v-if="expanded" class="px-4 pb-4 pt-2 space-y-3">
+    <div v-if="expanded" class="max-h-[80vh] overflow-y-auto px-4 pb-4 pt-2 space-y-3">
       <div
         v-for="turn in group.turns"
         :key="turn.message.id"
@@ -92,7 +92,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Brain, ChevronDown } from 'lucide-vue-next';
+import { Brain, ChevronRight } from 'lucide-vue-next';
 import type { MessageTokenUsage } from '@cowboy/shared';
 import type { AssistantGroup, AssistantTurn } from '../composables/useGroupedTurns';
 import { parseContent, formatTime } from '../utils/content-parser';
@@ -121,7 +121,9 @@ const previewSnippet = computed(() => {
     const snippet = getPreviewSnippet(turn);
     if (snippet) return snippet;
   }
-  return `Used ${props.group.toolCallCount} tool calls`;
+  return props.group.toolCallCount > 0
+    ? `Used ${props.group.toolCallCount} tool call${props.group.toolCallCount === 1 ? '' : 's'}`
+    : 'Assistant response';
 });
 
 const duration = computed(() => {

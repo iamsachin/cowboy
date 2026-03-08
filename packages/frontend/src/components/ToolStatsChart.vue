@@ -60,6 +60,7 @@ const chartOptions = computed(() => {
   const themeColors = getChartThemeColors();
   return {
   responsive: true,
+  animation: false,
   maintainAspectRatio: false,
   indexAxis: 'y' as const,
   scales: {

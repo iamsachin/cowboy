@@ -17,7 +17,7 @@
     </div>
 
     <!-- Turn list -->
-    <template v-for="turn in turns" :key="turnKey(turn)">
+    <template v-for="turn in visibleTurns" :key="turnKey(turn)">
       <ChatMessage
         v-if="turn.type === 'user'"
         :message="turn.message"
@@ -42,11 +42,20 @@
         :turn="turn"
       />
     </template>
+
+    <!-- Load more button for large conversations -->
+    <button
+      v-if="hasMore"
+      class="btn btn-ghost btn-sm w-full mt-2"
+      @click="loadMore"
+    >
+      Load more ({{ remainingCount }} remaining)
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { ChevronsDown, ChevronsUp } from 'lucide-vue-next';
 import type { MessageRow, ToolCallRow, MessageTokenUsage } from '@cowboy/shared';
 import { groupTurns, type GroupedTurn } from '../composables/useGroupedTurns';
@@ -78,6 +87,23 @@ const activeToolCalls = computed(() => {
 
 const turns = computed(() => groupTurns(sortedMessages.value, activeToolCalls.value));
 
+// Pagination: show first PAGE_SIZE groups, then load more on demand
+const PAGE_SIZE = 50;
+const visibleCount = ref(PAGE_SIZE);
+
+const visibleTurns = computed(() => turns.value.slice(0, visibleCount.value));
+const hasMore = computed(() => visibleCount.value < turns.value.length);
+const remainingCount = computed(() => turns.value.length - visibleCount.value);
+
+function loadMore() {
+  visibleCount.value = Math.min(visibleCount.value + PAGE_SIZE, turns.value.length);
+}
+
+// Reset pagination when a new conversation is loaded
+watch(() => props.messages.length, () => {
+  visibleCount.value = PAGE_SIZE;
+});
+
 function turnKey(turn: GroupedTurn): string {
   if (turn.type === 'user') return turn.message.id;
   if (turn.type === 'assistant-group') return turn.turns[0].message.id;
@@ -90,7 +116,7 @@ function turnKey(turn: GroupedTurn): string {
 const { isExpanded, toggle, expandAll, collapseAll, expandedCount } = useCollapseState();
 
 const groupIds = computed(() =>
-  turns.value.filter(t => t.type === 'assistant-group').map(t => turnKey(t))
+  visibleTurns.value.filter(t => t.type === 'assistant-group').map(t => turnKey(t))
 );
 const totalGroups = computed(() => groupIds.value.length);
 const allExpanded = computed(() =>

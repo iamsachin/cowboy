@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Bug Fix & Quality Audit
 status: executing
-stopped_at: Completed 22-01-PLAN.md
-last_updated: "2026-03-08T15:23:53.195Z"
-last_activity: 2026-03-08 — Completed 22-01 (heatmap legend, API agent filter, GitCompareArrows icon, Compare tab 4-call optimization)
+stopped_at: Completed 23-01-PLAN.md
+last_updated: "2026-03-08T15:58:09.097Z"
+last_activity: 2026-03-08 — Completed 23-01 (404 page, sidebar persistence, TurnCard removal, model regex, plan API type)
 progress:
   total_phases: 8
   completed_phases: 6
-  total_plans: 16
-  completed_plans: 16
+  total_plans: 18
+  completed_plans: 17
 ---
 
 # Project State
@@ -20,16 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 22 - Analytics Agent Pages (v1.3)
+**Current focus:** Phase 23 - Cross-Cutting Polish (v1.3)
 
 ## Current Position
 
-Phase: 22 of 24 (Analytics Agent Pages)
+Phase: 23 of 24 (Cross-Cutting Polish)
 Plan: 1 of 2 in current phase
 Status: In progress
-Last activity: 2026-03-08 — Completed 22-01 (heatmap legend, API agent filter, GitCompareArrows icon, Compare tab 4-call optimization)
+Last activity: 2026-03-08 — Completed 23-01 (404 page, sidebar persistence, TurnCard removal, model regex, plan API type)
 
-Progress (v1.3): [██████████] 98% (39 plans completed)
+Progress (v1.3): [██████████] 98% (41 plans completed)
 
 ## Performance Metrics
 
@@ -80,6 +80,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [22-02]: Cursor N/A check requires both activeTab === cursor AND agentOverview loaded (not null) to avoid flashing N/A during load
 - [Phase 22]: oklch CSS custom properties for heatmap colors to respect DaisyUI theme switching
 - [Phase 22]: Fallback to AGENT_LABELS keys when /api/analytics/filters fetch fails
+- [Phase 23-01]: Word-boundary regex uses model-string delimiters [-_./\s] instead of \b (digits are word chars in JS regex)
+- [Phase 23-01]: ConversationPlanEntry type separates by-conversation response from PlanDetailResponse
 
 ### Pending Todos
 
@@ -91,6 +93,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-08T15:23:53.192Z
-Stopped at: Completed 22-01-PLAN.md
+Last session: 2026-03-08T15:58:09.094Z
+Stopped at: Completed 23-01-PLAN.md
 Resume file: None

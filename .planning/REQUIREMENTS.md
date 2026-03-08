@@ -78,14 +78,14 @@
 
 ### Cross-Cutting & Polish
 
-- [ ] **XCUT-01**: 404/catch-all route added (XC-01)
-- [ ] **XCUT-02**: Sidebar collapsed state persisted to localStorage (XC-02)
+- [x] **XCUT-01**: 404/catch-all route added (XC-01)
+- [x] **XCUT-02**: Sidebar collapsed state persisted to localStorage (XC-02)
 - [ ] **XCUT-03**: DateRangeFilter respects theme instead of hardcoded dark (XC-03)
 - [ ] **XCUT-04**: Chart colors use theme-aware values (XC-04)
 - [ ] **XCUT-05**: ChatMessage uses DaisyUI theme colors (XC-05)
-- [ ] **XCUT-06**: TurnCard.vue dead code deleted (XC-06)
-- [ ] **XCUT-07**: Model badge regex uses word boundary matching (XC-08)
-- [ ] **XCUT-08**: TypeScript type for plan API response corrected (XC-09)
+- [x] **XCUT-06**: TurnCard.vue dead code deleted (XC-06)
+- [x] **XCUT-07**: Model badge regex uses word boundary matching (XC-08)
+- [x] **XCUT-08**: TypeScript type for plan API response corrected (XC-09)
 
 ### Overview & Settings
 
@@ -165,14 +165,14 @@ None — all audit bugs targeted for v1.3.
 | ANLYT-06 | Phase 22 | Complete |
 | ANLYT-07 | Phase 22 | Complete |
 | ANLYT-08 | Phase 22 | Complete |
-| XCUT-01 | Phase 23 | Pending |
-| XCUT-02 | Phase 23 | Pending |
+| XCUT-01 | Phase 23 | Complete |
+| XCUT-02 | Phase 23 | Complete |
 | XCUT-03 | Phase 23 | Pending |
 | XCUT-04 | Phase 23 | Pending |
 | XCUT-05 | Phase 23 | Pending |
-| XCUT-06 | Phase 23 | Pending |
-| XCUT-07 | Phase 23 | Pending |
-| XCUT-08 | Phase 23 | Pending |
+| XCUT-06 | Phase 23 | Complete |
+| XCUT-07 | Phase 23 | Complete |
+| XCUT-08 | Phase 23 | Complete |
 | PAGE-01 | Phase 24 | Pending |
 | PAGE-02 | Phase 24 | Pending |
 | PAGE-03 | Phase 24 | Pending |

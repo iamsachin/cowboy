@@ -49,7 +49,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 </details>
 
-### 🚧 v1.3 Bug Fix & Quality Audit (In Progress)
+### v1.3 Bug Fix & Quality Audit (In Progress)
 
 **Milestone Goal:** Fix all bugs from the 2026-03-08 UI audit — cost calculation errors, data accuracy issues, display bugs, and cross-cutting quality problems. Tests for all fixes.
 
@@ -168,7 +168,10 @@ Plans:
   3. DateRangeFilter, chart colors, and ChatMessage all use DaisyUI theme variables — no hardcoded dark-mode colors
   4. TurnCard.vue dead code is deleted; model badge regex uses word boundary matching
   5. Plan API response TypeScript type is correct and matches actual backend response shape
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 23-01-PLAN.md — Add 404 route, persist sidebar state, delete dead code, fix model badge regex and plan API type
+- [ ] 23-02-PLAN.md — Theme-aware charts via shared utility, fix DateRangeFilter and ChatMessage theming
 
 ### Phase 24: Overview, Settings & Final Verification
 **Goal**: Overview and Settings pages are polished, and all v1.3 fixes are browser-verified
@@ -210,6 +213,6 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 19. Conversation Display Fixes | 3/3 | Complete    | 2026-03-08 | - |
 | 20. Conversation List Fixes | 3/3 | Complete    | 2026-03-08 | - |
 | 21. Plan Extraction Quality | 3/3 | Complete    | 2026-03-08 | - |
-| 22. Analytics & Agent Pages | 2/2 | Complete   | 2026-03-08 | - |
-| 23. Cross-Cutting Polish | v1.3 | 0/? | Not started | - |
+| 22. Analytics & Agent Pages | 2/2 | Complete    | 2026-03-08 | - |
+| 23. Cross-Cutting Polish | 1/2 | In Progress|  | - |
 | 24. Overview, Settings & Final Verification | v1.3 | 0/? | Not started | - |

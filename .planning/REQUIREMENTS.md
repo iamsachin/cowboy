@@ -80,9 +80,9 @@
 
 - [x] **XCUT-01**: 404/catch-all route added (XC-01)
 - [x] **XCUT-02**: Sidebar collapsed state persisted to localStorage (XC-02)
-- [ ] **XCUT-03**: DateRangeFilter respects theme instead of hardcoded dark (XC-03)
-- [ ] **XCUT-04**: Chart colors use theme-aware values (XC-04)
-- [ ] **XCUT-05**: ChatMessage uses DaisyUI theme colors (XC-05)
+- [x] **XCUT-03**: DateRangeFilter respects theme instead of hardcoded dark (XC-03)
+- [x] **XCUT-04**: Chart colors use theme-aware values (XC-04)
+- [x] **XCUT-05**: ChatMessage uses DaisyUI theme colors (XC-05)
 - [x] **XCUT-06**: TurnCard.vue dead code deleted (XC-06)
 - [x] **XCUT-07**: Model badge regex uses word boundary matching (XC-08)
 - [x] **XCUT-08**: TypeScript type for plan API response corrected (XC-09)
@@ -167,9 +167,9 @@ None — all audit bugs targeted for v1.3.
 | ANLYT-08 | Phase 22 | Complete |
 | XCUT-01 | Phase 23 | Complete |
 | XCUT-02 | Phase 23 | Complete |
-| XCUT-03 | Phase 23 | Pending |
-| XCUT-04 | Phase 23 | Pending |
-| XCUT-05 | Phase 23 | Pending |
+| XCUT-03 | Phase 23 | Complete |
+| XCUT-04 | Phase 23 | Complete |
+| XCUT-05 | Phase 23 | Complete |
 | XCUT-06 | Phase 23 | Complete |
 | XCUT-07 | Phase 23 | Complete |
 | XCUT-08 | Phase 23 | Complete |

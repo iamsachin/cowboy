@@ -26,7 +26,25 @@
           <div class="flex items-center gap-1.5 mb-1">
             <span class="badge badge-ghost badge-xs">{{ categoryLabel(group.categories[idx]) }}</span>
           </div>
-          <div class="thinking-content max-h-40 overflow-y-auto text-xs text-base-content/60 break-words" v-html="renderMarkdown(stripXmlTags(msg.content || ''))"></div>
+          <div class="relative">
+            <div
+              class="thinking-content text-xs text-base-content/60 break-words overflow-hidden transition-[max-height] duration-200"
+              :class="fullyExpanded.has(msg.id) ? 'max-h-none' : 'max-h-40'"
+              v-html="renderMarkdown(stripXmlTags(msg.content || ''))"
+            ></div>
+            <div
+              v-if="!fullyExpanded.has(msg.id)"
+              class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-base-200 to-transparent flex items-end justify-center"
+            >
+              <button
+                class="flex items-center gap-1 text-xs text-base-content/50 hover:text-base-content/80 pb-0.5"
+                @click="fullyExpanded.add(msg.id)"
+              >
+                <ChevronsDown class="w-3 h-3" />
+                <span>Show full</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </Transition>
@@ -34,8 +52,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { ChevronRight } from 'lucide-vue-next';
+import { ref, reactive, computed } from 'vue';
+import { ChevronRight, ChevronsDown } from 'lucide-vue-next';
 import type { SystemGroup, SystemMessageCategory } from '../composables/useGroupedTurns';
 import { stripXmlTags } from '../utils/content-sanitizer';
 import { renderMarkdown } from '../utils/render-markdown';
@@ -45,6 +63,7 @@ const props = defineProps<{
 }>();
 
 const expanded = ref(false);
+const fullyExpanded = reactive(new Set<string>());
 
 const categoryLabels: Record<SystemMessageCategory, string> = {
   'system-reminder': 'System reminder',

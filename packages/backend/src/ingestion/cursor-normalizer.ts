@@ -41,6 +41,7 @@ export function normalizeCursorConversation(
   // ── Messages ──────────────────────────────────────────────────────────
 
   const normalizedMessages: NormalizedData['messages'] = [];
+  const normalizedToolCalls: NormalizedData['toolCalls'] = [];
   const includedBubbleIds = new Set<string>();
   // Map from individual bubbleId to the merged message's bubbleId (for token usage)
   const bubbleToMergedId = new Map<string, string>();
@@ -87,6 +88,8 @@ export function normalizeCursorConversation(
     const textSegments: string[] = [];
     let toolCount = 0;
     let firstBubble = assistantGroup[0];
+    // Collect tool call data from bubbles with toolFormerData
+    const pendingToolCalls: Array<{ bubble: CursorBubble }> = [];
 
     for (const b of assistantGroup) {
       // Extract thinking content
@@ -103,6 +106,10 @@ export function normalizeCursorConversation(
 
       if (isToolOnly) {
         toolCount++;
+        // Collect tool call data if toolFormerData has a name
+        if (b.toolFormerData?.name) {
+          pendingToolCalls.push({ bubble: b });
+        }
       } else if (hasText) {
         textSegments.push(b.text.trim());
       }
@@ -146,11 +153,23 @@ export function normalizeCursorConversation(
       createdAt: bubbleTimestamp,
       model: bubbleModel,
     });
-  }
 
-  // ── Tool calls ────────────────────────────────────────────────────────
-  // Cursor's toolFormerData is inconsistent; extract what we can
-  const normalizedToolCalls: NormalizedData['toolCalls'] = [];
+    // Extract tool calls from pending bubbles, now that messageId is known
+    for (const { bubble: tb } of pendingToolCalls) {
+      const tfd = tb.toolFormerData!;
+      normalizedToolCalls.push({
+        id: generateId(conversationId, tfd.toolCallId || tb.bubbleId),
+        messageId,
+        conversationId,
+        name: tfd.name!,
+        input: safeJsonParse(tfd.params ?? tfd.rawArgs ?? null),
+        output: safeJsonParseWithFallback(tfd.result ?? null),
+        status: mapToolStatus(tfd.status ?? null),
+        duration: null,
+        createdAt: deriveBubbleTimestamp(tb, conv),
+      });
+    }
+  }
 
   // ── Token usage ────────────────────────────────────────────────────────
 
@@ -322,4 +341,40 @@ function deriveBubbleTimestamp(bubble: CursorBubble, conv: CursorConversation): 
 
   // 3. Fall back to conversation createdAt
   return normalizeCursorTimestamp(conv.createdAt);
+}
+
+/**
+ * Safely parse a JSON string, returning null if parsing fails or input is null.
+ */
+function safeJsonParse(value: string | null | undefined): unknown {
+  if (!value) return null;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Safely parse a JSON string, falling back to the raw string if not valid JSON.
+ * Returns null if input is null/undefined.
+ */
+function safeJsonParseWithFallback(value: string | null | undefined): unknown {
+  if (value === null || value === undefined) return null;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value; // Return the raw string as fallback
+  }
+}
+
+/**
+ * Map Cursor toolFormerData.status to normalized status values.
+ * "completed" -> "success", "error" -> "error", others pass through, null -> null.
+ */
+function mapToolStatus(status: string | null): string | null {
+  if (status === null) return null;
+  if (status === 'completed') return 'success';
+  if (status === 'error') return 'error';
+  return status;
 }

@@ -16,7 +16,23 @@ export function formatTokenCount(count: number): string {
 }
 
 /**
- * Format cost with conditional precision.
+ * Format cost with conditional precision — canonical cost formatter.
+ * Zero -> "$0.00"
+ * >= $0.01 -> "$X.XX" (2 decimals)
+ * >= $0.001 -> "$X.XXX" (3 decimals)
+ * >= $0.0001 -> "$X.XXXX" (4 decimals)
+ * < $0.0001 -> "< $0.0001"
+ */
+export function formatCost(cost: number): string {
+  if (cost === 0) return '$0.00';
+  if (cost >= 0.01) return `$${cost.toFixed(2)}`;
+  if (cost >= 0.001) return `$${cost.toFixed(3)}`;
+  if (cost >= 0.0001) return `$${cost.toFixed(4)}`;
+  return '< $0.0001';
+}
+
+/**
+ * Format cost with conditional precision (legacy, prefer formatCost).
  * >= $0.01 -> "$X.XX" (2 decimals)
  * >= $0.001 -> "$X.XXX" (3 decimals)
  * < $0.001 -> "< $0.001"

@@ -2,7 +2,7 @@
   <div class="flex flex-col items-start my-1 w-full">
     <!-- Collapsed indicator (default) -->
     <div
-      class="cursor-pointer select-none flex items-center gap-2 px-3 py-1 rounded-full bg-base-300/50 text-base-content/40 text-xs hover:bg-base-300/70 transition-colors"
+      class="cursor-pointer select-none flex items-center gap-2 px-3 py-1 rounded-full border border-base-content/20 bg-base-300/30 text-base-content/40 text-xs hover:bg-base-300/50 transition-colors"
       @click="expanded = !expanded"
     >
       <ChevronRight

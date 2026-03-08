@@ -30,12 +30,12 @@
 ### Conversation Display
 
 - [ ] **CONV-01**: System messages do not break assistant turn grouping (BUG-04)
-- [ ] **CONV-02**: "0 tool calls" not shown when count is zero (CD-01)
-- [ ] **CONV-03**: Preview fallback shows "Assistant response" when no text and 0 tool calls (CD-02)
-- [ ] **CONV-04**: Chevron direction follows standard convention (down=expanded) (CD-03)
+- [x] **CONV-02**: "0 tool calls" not shown when count is zero (CD-01)
+- [x] **CONV-03**: Preview fallback shows "Assistant response" when no text and 0 tool calls (CD-02)
+- [x] **CONV-04**: Chevron direction follows standard convention (down=expanded) (CD-03)
 - [ ] **CONV-05**: Skill/system prompt messages detected by isSystemInjected (CD-06)
 - [ ] **CONV-06**: System message indicators reduced or hidden by default (CD-07)
-- [ ] **CONV-07**: Expanded AssistantGroupCard has max-height with scroll (CD-10)
+- [x] **CONV-07**: Expanded AssistantGroupCard has max-height with scroll (CD-10)
 - [ ] **CONV-08**: Null/empty content not falsely hidden as system message (CD-12)
 - [ ] **CONV-09**: Large conversations paginated or virtualized (CD-13)
 
@@ -129,12 +129,12 @@ None — all audit bugs targeted for v1.3.
 | DATA-08 | Phase 18 | Complete |
 | DATA-09 | Phase 18 | Complete |
 | CONV-01 | Phase 19 | Pending |
-| CONV-02 | Phase 19 | Pending |
-| CONV-03 | Phase 19 | Pending |
-| CONV-04 | Phase 19 | Pending |
+| CONV-02 | Phase 19 | Complete |
+| CONV-03 | Phase 19 | Complete |
+| CONV-04 | Phase 19 | Complete |
 | CONV-05 | Phase 19 | Pending |
 | CONV-06 | Phase 19 | Pending |
-| CONV-07 | Phase 19 | Pending |
+| CONV-07 | Phase 19 | Complete |
 | CONV-08 | Phase 19 | Pending |
 | CONV-09 | Phase 19 | Pending |
 | LIST-01 | Phase 20 | Pending |

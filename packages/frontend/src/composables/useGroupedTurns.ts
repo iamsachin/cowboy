@@ -231,8 +231,10 @@ export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[]): Gr
       }
 
       // Check for system-injected content
+      // Do NOT flush assistant group here — system messages between assistant turns
+      // should not break the group (CONV-01). They accumulate in pendingSystem and
+      // flush after the assistant group ends (CONV-06).
       if (isSystemInjected(content)) {
-        flushAssistant();
         pendingSystem.push(msg);
         continue;
       }
@@ -243,7 +245,12 @@ export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[]): Gr
       grouped.push({ type: 'user', message: msg });
     } else {
       // Assistant message
-      flushSystem();
+      // Only flush system messages if there's no pending assistant group.
+      // If there IS a pending assistant group, system messages between assistant
+      // turns stay deferred and flush after the group ends (CONV-01/CONV-06).
+      if (pendingAssistant.length === 0) {
+        flushSystem();
+      }
       const turn = assistantTurnByMsgId.get(msg.id);
       if (turn) {
         pendingAssistant.push(turn);

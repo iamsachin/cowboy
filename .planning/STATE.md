@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Bug Fix & Quality Audit
-status: completed
-stopped_at: "Completed 18-01-PLAN.md (data accuracy fixes: timestamps, duration, turns, models)"
-last_updated: "2026-03-08T09:06:06.345Z"
-last_activity: 2026-03-08 — Completed 18-03 (heatmap timezone & timeseries consistency)
+status: in-progress
+stopped_at: "Completed 19-02-PLAN.md (UI display fixes: tool calls, preview, chevron, max-height)"
+last_updated: "2026-03-08T09:32:38.727Z"
+last_activity: 2026-03-08 — Completed 19-02 (UI display fixes: tool calls, preview, chevron, max-height)
 progress:
   total_phases: 8
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 8
+  completed_plans: 7
 ---
 
 # Project State
@@ -20,16 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 18 - Data Accuracy Fixes (v1.3)
+**Current focus:** Phase 19 - Conversation Display Fixes (v1.3)
 
 ## Current Position
 
-Phase: 18 of 24 (Data Accuracy Fixes)
-Plan: 3 of 3 in current phase
-Status: Completed 18-03 (heatmap timezone & timeseries consistency)
-Last activity: 2026-03-08 — Completed 18-03 (heatmap timezone & timeseries consistency)
+Phase: 19 of 24 (Conversation Display Fixes)
+Plan: 2 of 2 in current phase
+Status: Completed 19-02 (UI display fixes: tool calls, preview, chevron, max-height)
+Last activity: 2026-03-08 — Completed 19-02 (UI display fixes)
 
-Progress (v1.3): [████░░░░░░] 40% (4 plans completed)
+Progress (v1.3): [█████████░] 94% (30 plans completed)
 
 ## Performance Metrics
 
@@ -43,6 +43,7 @@ Progress (v1.3): [████░░░░░░] 40% (4 plans completed)
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
+- [19-02]: Use ChevronRight with rotate-90 as standard expand/collapse convention across all collapsible components
 - [18-03]: Use getFullYear/getMonth/getDate for local date formatting instead of toISOString (avoids UTC conversion)
 - [18-03]: Group timeseries by conversations.createdAt to match the WHERE filter source
 - [17-02]: Show cache read tokens as separate annotation rather than folding into total token count
@@ -68,6 +69,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-08T09:06:06.342Z
-Stopped at: Completed 18-01-PLAN.md (data accuracy fixes: timestamps, duration, turns, models)
+Last session: 2026-03-08T09:32:08Z
+Stopped at: Completed 19-02-PLAN.md (UI display fixes: tool calls, preview, chevron, max-height)
 Resume file: None

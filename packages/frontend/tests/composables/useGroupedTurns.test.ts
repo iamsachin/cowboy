@@ -335,3 +335,95 @@ describe('groupTurns — system messages and slash commands', () => {
     expect(result[0].type).toBe('user');
   });
 });
+
+// ─── CONV-01: system messages between assistant turns ────────────────────────
+
+describe('CONV-01: system messages between assistant turns', () => {
+  it('does not break assistant group when system-injected message appears between assistant turns', () => {
+    // Sequence: [assistant, system-injected-user, assistant, user]
+    // Expected: [assistant-group(2 turns), system-group, user]
+    const a1 = makeMessage({ id: 'a1', role: 'assistant', createdAt: '2024-01-01T00:01:00Z', content: 'First response' });
+    const sys = makeMessage({
+      id: 's1',
+      role: 'user',
+      createdAt: '2024-01-01T00:01:30Z',
+      content: '<system-reminder>Some injected reminder</system-reminder>',
+    });
+    const a2 = makeMessage({ id: 'a2', role: 'assistant', createdAt: '2024-01-01T00:02:00Z', content: 'Second response' });
+    const user = makeMessage({ id: 'u1', role: 'user', createdAt: '2024-01-01T00:03:00Z', content: 'Thanks!' });
+
+    const result = groupTurns([a1, sys, a2, user], []);
+    expect(result).toHaveLength(3);
+    expect(result[0].type).toBe('assistant-group');
+    if (result[0].type === 'assistant-group') {
+      expect(result[0].messageCount).toBe(2);
+      expect(result[0].turns[0].message.id).toBe('a1');
+      expect(result[0].turns[1].message.id).toBe('a2');
+    }
+    expect(result[1].type).toBe('system-group');
+    expect(result[2].type).toBe('user');
+  });
+
+  it('handles multiple system messages between assistant turns without splitting', () => {
+    // Sequence: [assistant, sys, sys, assistant, user]
+    // Expected: [assistant-group(2 turns), system-group(2 msgs), user]
+    const a1 = makeMessage({ id: 'a1', role: 'assistant', createdAt: '2024-01-01T00:01:00Z', content: 'First' });
+    const sys1 = makeMessage({
+      id: 's1',
+      role: 'user',
+      createdAt: '2024-01-01T00:01:30Z',
+      content: '<system-reminder>Reminder 1</system-reminder>',
+    });
+    const sys2 = makeMessage({
+      id: 's2',
+      role: 'user',
+      createdAt: '2024-01-01T00:01:45Z',
+      content: '<objective>Some objective</objective>',
+    });
+    const a2 = makeMessage({ id: 'a2', role: 'assistant', createdAt: '2024-01-01T00:02:00Z', content: 'Second' });
+    const user = makeMessage({ id: 'u1', role: 'user', createdAt: '2024-01-01T00:03:00Z', content: 'Done' });
+
+    const result = groupTurns([a1, sys1, sys2, a2, user], []);
+    expect(result).toHaveLength(3);
+    expect(result[0].type).toBe('assistant-group');
+    if (result[0].type === 'assistant-group') {
+      expect(result[0].messageCount).toBe(2);
+    }
+    expect(result[1].type).toBe('system-group');
+    if (result[1].type === 'system-group') {
+      expect(result[1].count).toBe(2);
+    }
+    expect(result[2].type).toBe('user');
+  });
+
+  it('still produces separate system-group when system messages appear before assistant turns', () => {
+    // Sequence: [system-user, assistant, user]
+    // Expected: [system-group, assistant-group, user]
+    const sys = makeMessage({
+      id: 's1',
+      role: 'user',
+      createdAt: '2024-01-01T00:00:00Z',
+      content: '<system-reminder>Initial reminder</system-reminder>',
+    });
+    const a1 = makeMessage({ id: 'a1', role: 'assistant', createdAt: '2024-01-01T00:01:00Z', content: 'Response' });
+    const user = makeMessage({ id: 'u1', role: 'user', createdAt: '2024-01-01T00:02:00Z', content: 'Thanks' });
+
+    const result = groupTurns([sys, a1, user], []);
+    expect(result).toHaveLength(3);
+    expect(result[0].type).toBe('system-group');
+    expect(result[1].type).toBe('assistant-group');
+    expect(result[2].type).toBe('user');
+  });
+
+  it('no regression: [user, assistant, user] still works correctly', () => {
+    const u1 = makeMessage({ id: 'u1', role: 'user', createdAt: '2024-01-01T00:00:00Z', content: 'Hello' });
+    const a1 = makeMessage({ id: 'a1', role: 'assistant', createdAt: '2024-01-01T00:01:00Z', content: 'Hi there' });
+    const u2 = makeMessage({ id: 'u2', role: 'user', createdAt: '2024-01-01T00:02:00Z', content: 'Bye' });
+
+    const result = groupTurns([u1, a1, u2], []);
+    expect(result).toHaveLength(3);
+    expect(result[0].type).toBe('user');
+    expect(result[1].type).toBe('assistant-group');
+    expect(result[2].type).toBe('user');
+  });
+});

@@ -61,9 +61,9 @@ export function extractCommandText(content: string): string {
  * Slash commands (/clear, /gsd:*) are NOT system-injected — they are user actions.
  */
 export function isSystemInjected(content: string | null): boolean {
-  if (!content) return true;
+  if (!content) return false;
   const trimmed = content.trim();
-  if (!trimmed) return true;
+  if (!trimmed) return false;
 
   // Slash commands are user actions, not system-injected
   if (isSlashCommand(trimmed)) return false;
@@ -76,6 +76,9 @@ export function isSystemInjected(content: string | null): boolean {
 
   // Skill/command expanded prompts — contain structured XML sections
   if (/<(objective|execution_context|context|process|success_criteria|files_to_read)>/.test(trimmed)) return true;
+
+  // Skill prompt messages injected by Claude Code
+  if (/^Base directory for this skill:/.test(trimmed)) return true;
 
   // After stripping tags, if nothing meaningful remains, it's system content
   const cleaned = stripXmlTags(trimmed);

@@ -37,7 +37,7 @@
 - [x] **CONV-06**: System message indicators reduced or hidden by default (CD-07)
 - [x] **CONV-07**: Expanded AssistantGroupCard has max-height with scroll (CD-10)
 - [x] **CONV-08**: Null/empty content not falsely hidden as system message (CD-12)
-- [ ] **CONV-09**: Large conversations paginated or virtualized (CD-13)
+- [x] **CONV-09**: Large conversations paginated or virtualized (CD-13)
 
 ### Conversation List
 
@@ -136,7 +136,7 @@ None — all audit bugs targeted for v1.3.
 | CONV-06 | Phase 19 | Complete |
 | CONV-07 | Phase 19 | Complete |
 | CONV-08 | Phase 19 | Complete |
-| CONV-09 | Phase 19 | Pending |
+| CONV-09 | Phase 19 | Complete |
 | LIST-01 | Phase 20 | Pending |
 | LIST-02 | Phase 20 | Pending |
 | LIST-03 | Phase 20 | Pending |

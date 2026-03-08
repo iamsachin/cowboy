@@ -25,6 +25,7 @@ import {
 } from 'chart.js';
 import type { TimeSeriesPoint } from '@cowboy/shared';
 import { AGENT_COLORS } from '../utils/agent-constants';
+import { formatCost } from '../utils/format-tokens';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
@@ -112,7 +113,7 @@ const chartOptions = computed(() => ({
         color: 'rgba(255, 255, 255, 0.7)',
         callback: (value: number | string) => {
           const n = Number(value);
-          if (props.metric === 'cost') return `$${n.toFixed(2)}`;
+          if (props.metric === 'cost') return formatCost(n);
           if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
           if (n >= 1_000) return `${(n / 1_000).toFixed(0)}k`;
           return String(n);

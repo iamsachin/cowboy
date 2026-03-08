@@ -31,6 +31,7 @@ import {
   Legend,
 } from 'chart.js';
 import type { TimeSeriesPoint } from '@cowboy/shared';
+import { formatCost } from '../utils/format-tokens';
 
 ChartJS.register(
   CategoryScale,
@@ -250,7 +251,7 @@ const chartOptions = computed(() => ({
       grid: { color: 'rgba(255, 255, 255, 0.1)' },
       ticks: {
         color: 'rgba(255, 255, 255, 0.7)',
-        callback: (value: number | string) => `$${Number(value).toFixed(2)}`,
+        callback: (value: number | string) => formatCost(Number(value)),
       },
     },
   },

@@ -113,6 +113,7 @@ import {
   Database,
   HardDrive,
 } from 'lucide-vue-next';
+import { formatCost } from '../utils/format-tokens';
 
 const props = defineProps<{
   data: ProjectStatsRow[];
@@ -182,10 +183,6 @@ function formatTokens(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return String(n);
-}
-
-function formatCost(n: number): string {
-  return `$${n.toFixed(2)}`;
 }
 
 function formatRelativeDate(dateStr: string): string {

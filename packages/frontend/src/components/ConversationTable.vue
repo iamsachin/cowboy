@@ -122,6 +122,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useConversations } from '../composables/useConversations';
 import AgentBadge from './AgentBadge.vue';
+import { formatCost } from '../utils/format-tokens';
 
 const props = defineProps<{
   agent?: string;
@@ -145,12 +146,6 @@ const columns = [
 ];
 
 const tokenFormatter = new Intl.NumberFormat('en-US');
-const costFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
@@ -160,10 +155,6 @@ function formatDate(dateStr: string): string {
 
 function formatTokens(n: number): string {
   return tokenFormatter.format(n);
-}
-
-function formatCost(n: number): string {
-  return costFormatter.format(n);
 }
 
 const totalPages = computed(() => {

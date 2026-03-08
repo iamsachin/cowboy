@@ -261,11 +261,11 @@ export function inferStepCompletion(
   if (step.isChecked === true) return 'complete';
   if (step.isChecked === false) return 'incomplete';
 
-  // Priority 2: Tool call correlation
-  const stepLower = step.content.toLowerCase();
+  // Priority 2: Tool call correlation (word boundary matching)
   for (const tc of context.toolCalls) {
-    const toolName = tc.name.toLowerCase();
-    if (stepLower.includes(toolName) && (tc.status === 'success' || tc.status === 'completed')) {
+    const escapedName = tc.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const toolRegex = new RegExp('\\b' + escapedName + '\\b', 'i');
+    if (toolRegex.test(step.content) && (tc.status === 'success' || tc.status === 'completed')) {
       return 'complete';
     }
   }
@@ -273,11 +273,12 @@ export function inferStepCompletion(
   // Priority 3: Text pattern matching in later messages
   // Extract significant words (3+ chars, skip common stopwords) from step content
   const STOPWORDS = new Set(['the', 'and', 'for', 'with', 'from', 'into', 'that', 'this', 'then', 'will', 'all', 'are', 'was', 'were', 'has', 'have', 'had']);
+  const stepLower = step.content.toLowerCase();
   const stepWords = stepLower
     .split(/\s+/)
     .filter(w => w.length >= 3 && !STOPWORDS.has(w));
-  // Require at least 2 significant words to match (or all if fewer than 2)
-  const matchThreshold = Math.min(2, stepWords.length);
+  // Require >60% of significant words to match (minimum 2)
+  const matchThreshold = Math.max(2, Math.ceil(stepWords.length * 0.6));
 
   for (const msg of context.laterMessages) {
     if (!msg.content) continue;

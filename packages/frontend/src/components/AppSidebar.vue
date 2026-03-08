@@ -5,12 +5,12 @@
   >
     <!-- Header -->
     <div class="p-3 flex items-center justify-between border-b border-base-300">
-      <span
-        v-if="!collapsed"
-        class="text-lg font-bold text-primary tracking-tight"
-      >
-        Cowboy
-      </span>
+      <div v-if="!collapsed" class="flex flex-col">
+        <span class="text-lg font-bold text-primary tracking-tight">
+          Cowboy
+        </span>
+        <span class="text-xs text-base-content/50 font-normal">Agent Performance Dashboard</span>
+      </div>
       <button
         class="btn btn-ghost btn-sm btn-square"
         @click="collapsed = !collapsed"
@@ -21,7 +21,7 @@
     </div>
 
     <!-- Navigation -->
-    <ul class="menu menu-sm flex-1 gap-1 px-2 pt-2">
+    <ul class="menu menu-sm gap-1 px-2 pt-2">
       <li v-for="item in navItems" :key="item.path">
         <router-link
           :to="item.disabled ? '' : item.path"
@@ -45,6 +45,35 @@
       </li>
     </ul>
 
+    <!-- Quick Stats Strip -->
+    <div v-if="!collapsed && overview" class="px-4 py-3 border-t border-base-300">
+      <div class="text-xs text-base-content/60 font-medium mb-2">Quick Stats</div>
+      <div class="space-y-1.5">
+        <div class="flex justify-between text-xs">
+          <span class="text-base-content/50">Conversations</span>
+          <span class="font-medium text-base-content/80">{{ overview.conversationCount.toLocaleString() }}</span>
+        </div>
+        <div class="flex justify-between text-xs">
+          <span class="text-base-content/50">Tokens</span>
+          <span class="font-medium text-base-content/80">{{ formatTokens(overview.totalTokens) }}</span>
+        </div>
+        <div class="flex justify-between text-xs">
+          <span class="text-base-content/50">Est. Cost</span>
+          <span class="font-medium text-base-content/80">${{ overview.estimatedCost.toFixed(2) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spacer -->
+    <div class="flex-1"></div>
+
+    <!-- Rotating Tip -->
+    <div v-if="!collapsed" class="px-4 py-3 border-t border-base-300">
+      <div class="text-xs text-base-content/40 leading-relaxed">
+        <span class="text-base-content/50 font-medium">Tip:</span> {{ tips[currentTipIndex] }}
+      </div>
+    </div>
+
     <!-- Connection Status Footer -->
     <div class="border-t border-base-300 mt-auto">
       <ConnectionStatus :collapsed="collapsed" />
@@ -53,8 +82,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onUnmounted } from 'vue';
 import ConnectionStatus from './ConnectionStatus.vue';
+import { useAnalytics } from '../composables/useAnalytics';
 import {
   LayoutDashboard,
   MessageSquare,
@@ -80,4 +110,37 @@ const navItems = [
   { path: '/plans', label: 'Plans', icon: ClipboardList, disabled: false },
   { path: '/settings', label: 'Settings', icon: Settings, disabled: false },
 ];
+
+// Quick Stats
+const { overview } = useAnalytics();
+
+function formatTokens(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
+  return n.toString();
+}
+
+// Rotating Tips
+const tips = [
+  'Use date range presets to quickly compare time periods',
+  'Click any conversation row to see the full message thread',
+  'Filter by agent to isolate performance patterns',
+  'The Analytics page shows token usage trends over time',
+  'Check model distribution to optimize API costs',
+  'Sort conversations by cost to find expensive sessions',
+  'Active days shows how many days had agent activity',
+  'Cache read tokens reduce your effective API costs',
+  'Use the Plans view to track agent task completion',
+  'Compare agent performance side by side on the Agents page',
+];
+
+const currentTipIndex = ref(Math.floor(Math.random() * tips.length));
+
+const tipInterval = setInterval(() => {
+  currentTipIndex.value = (currentTipIndex.value + 1) % tips.length;
+}, 30_000);
+
+onUnmounted(() => {
+  clearInterval(tipInterval);
+});
 </script>

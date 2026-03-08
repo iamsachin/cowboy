@@ -183,7 +183,11 @@ Plans:
   3. Settings save shows a success toast; Danger Zone confirm has a countdown timer; Refresh has a confirmation dialog
   4. Database stats section displays tokenUsage record count
   5. All v1.3 fixes verified in browser — no regressions from previous milestones
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 24-01-PLAN.md — Fix Overview KPI descriptions, empty states, and table column consistency
+- [ ] 24-02-PLAN.md — Add toast feedback, countdown confirmation, refresh modal, and tokenUsage stat to Settings
+- [ ] 24-03-PLAN.md — Browser-verify all v1.3 fixes across every page
 
 ## Progress
 
@@ -214,5 +218,5 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 20. Conversation List Fixes | 3/3 | Complete    | 2026-03-08 | - |
 | 21. Plan Extraction Quality | 3/3 | Complete    | 2026-03-08 | - |
 | 22. Analytics & Agent Pages | 2/2 | Complete    | 2026-03-08 | - |
-| 23. Cross-Cutting Polish | 2/2 | Complete   | 2026-03-08 | - |
-| 24. Overview, Settings & Final Verification | v1.3 | 0/? | Not started | - |
+| 23. Cross-Cutting Polish | 2/2 | Complete    | 2026-03-08 | - |
+| 24. Overview, Settings & Final Verification | v1.3 | 0/3 | Not started | - |

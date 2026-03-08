@@ -56,10 +56,12 @@
                 {{ row.model ?? '--' }}
               </div>
             </td>
-            <td class="text-right font-mono">{{ formatTokens(row.inputTokens) }}</td>
-            <td class="text-right font-mono">{{ formatTokens(row.outputTokens) }}</td>
-            <td class="text-right font-mono">{{ formatTokens(row.cacheReadTokens) }}</td>
-            <td class="text-right font-mono">{{ formatTokens(row.cacheCreationTokens) }}</td>
+            <td>
+              <div class="max-w-[16rem] truncate">{{ cleanTitle(row.title ?? '') || '--' }}</div>
+            </td>
+            <td class="text-right font-mono">
+              {{ formatTokens(row.inputTokens + row.outputTokens) }}
+            </td>
             <td class="whitespace-nowrap">
               <template v-if="row.cost !== null">
                 <span class="text-primary font-mono">{{ formatCost(row.cost) }}</span>
@@ -123,6 +125,7 @@ import { useRouter } from 'vue-router';
 import { useConversations } from '../composables/useConversations';
 import AgentBadge from './AgentBadge.vue';
 import { formatCost } from '../utils/format-tokens';
+import { cleanTitle } from '../utils/content-sanitizer';
 
 const props = defineProps<{
   agent?: string;
@@ -138,10 +141,8 @@ const columns = [
   { field: 'agent', label: 'Agent' },
   { field: 'project', label: 'Project' },
   { field: 'model', label: 'Model' },
-  { field: 'inputTokens', label: 'Input Tokens' },
-  { field: 'outputTokens', label: 'Output Tokens' },
-  { field: 'cacheReadTokens', label: 'Cache Read' },
-  { field: 'cacheCreationTokens', label: 'Cache Creation' },
+  { field: 'title', label: 'Title' },
+  { field: 'inputTokens', label: 'Tokens' },
   { field: 'cost', label: 'Cost' },
 ];
 
@@ -149,8 +150,10 @@ const tokenFormatter = new Intl.NumberFormat('en-US');
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
-  // Use compact YYYY-MM-DD format
-  return d.toISOString().slice(0, 10);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function formatTokens(n: number): string {

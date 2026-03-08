@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-center my-1 w-full">
+  <div class="flex flex-col items-start my-1 w-full">
     <!-- Collapsed indicator (default) -->
     <div
       class="cursor-pointer select-none flex items-center gap-2 px-3 py-1 rounded-full bg-base-300/50 text-base-content/40 text-xs hover:bg-base-300/70 transition-colors"
@@ -52,6 +52,8 @@ const categoryLabels: Record<SystemMessageCategory, string> = {
   'skill-instruction': 'Skill instruction',
   'objective': 'Objective',
   'system-caveat': 'System caveat',
+  'task-notification': 'Task notification',
+  'interrupt': 'Interrupt',
   'other': 'System',
 };
 

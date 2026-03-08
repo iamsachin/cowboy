@@ -5,7 +5,7 @@ milestone_name: Bug Fix & Quality Audit
 status: milestone_complete
 stopped_at: v1.3 milestone shipped
 last_updated: "2026-03-08"
-last_activity: 2026-03-09 - Completed quick task 12: Fix Cursor data extraction (thinking, capabilityType, turn merging)
+last_activity: 2026-03-09 - Completed quick task 13: Extract Cursor tool call data from toolFormerData
 progress:
   total_phases: 8
   completed_phases: 8
@@ -105,9 +105,10 @@ None currently.
 | 10 | Show blinking green circle for active conversations | 2026-03-08 | 844637c | [10-show-blinking-green-circle-indicator-for](./quick/10-show-blinking-green-circle-indicator-for/) |
 | 11 | Fix chart re-rendering flash with v-show | 2026-03-08 | 7ae59b3 | [11-fix-chart-re-rendering-on-data-push-with](./quick/11-fix-chart-re-rendering-on-data-push-with/) |
 | 12 | Fix Cursor data extraction (thinking, capabilityType, turn merging) | 2026-03-09 | a62b878 | [12-fix-cursor-data-extraction-analyze-db-st](./quick/12-fix-cursor-data-extraction-analyze-db-st/) |
+| 13 | Extract Cursor tool call data from toolFormerData | 2026-03-09 | 94314c1 | [13-extract-cursor-tool-call-data-from-toolf](./quick/13-extract-cursor-tool-call-data-from-toolf/) |
 
 ## Session Continuity
 
-Last session: 2026-03-09T00:36:47Z
-Stopped at: Completed quick task 12
+Last session: 2026-03-09T00:29:00Z
+Stopped at: Completed quick task 13
 Resume file: None

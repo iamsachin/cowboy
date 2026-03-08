@@ -32,6 +32,7 @@ function makeBubble(overrides?: Partial<CursorBubble>): CursorBubble {
     isCapabilityIteration: false,
     capabilityType: null,
     tokenCountUpUntilHere: null,
+    thinking: null,
     ...overrides,
   };
 }
@@ -625,6 +626,233 @@ describe('normalizeCursorConversation', () => {
       expect(assistantMsgs).toHaveLength(2); // grouped tool summary + real response
       expect(assistantMsgs[0].content).toMatch(/3 tool/);
       expect(assistantMsgs[1].content).toBe('Here is the answer');
+    });
+  });
+
+  describe('thinking extraction', () => {
+    it('extracts thinking from capabilityType=30 bubble into message.thinking', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          capabilityType: 30,
+          thinking: { text: 'Let me reason about this carefully' },
+        }),
+        makeBubble({ bubbleId: 'b3', type: 2, text: 'Here is the answer' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      // After merging, the assistant turn should have thinking content
+      const assistantMsgs = result!.messages.filter(m => m.role === 'assistant');
+      const thinkingMsg = assistantMsgs.find(m => m.thinking !== null);
+      expect(thinkingMsg).toBeDefined();
+      expect(thinkingMsg!.thinking).toContain('Let me reason about this carefully');
+    });
+
+    it('extracts thinking alongside regular text when both present', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: 'Here is the response',
+          thinking: { text: 'I need to think about this' },
+        }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      const assistantMsg = result!.messages.find(m => m.role === 'assistant');
+      expect(assistantMsg!.content).toContain('Here is the response');
+      expect(assistantMsg!.thinking).toBe('I need to think about this');
+    });
+  });
+
+  describe('capabilityType-based tool detection', () => {
+    it('classifies capabilityType=15 empty-text bubble as tool-only even when isCapabilityIteration=false', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          isCapabilityIteration: false,
+          capabilityType: 15,
+        }),
+        makeBubble({ bubbleId: 'b3', type: 2, text: 'Actual response' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      // The capabilityType=15 bubble should be treated as tool-only
+      const assistantMsgs = result!.messages.filter(m => m.role === 'assistant');
+      // Should have merged result with tool summary and actual response
+      expect(assistantMsgs.length).toBeGreaterThanOrEqual(1);
+      // The final content should contain the actual response, not just "Executed tool call"
+      const hasActualResponse = assistantMsgs.some(m => m.content?.includes('Actual response'));
+      expect(hasActualResponse).toBe(true);
+    });
+
+    it('does NOT treat capabilityType=30 thinking bubble with thinking.text as tool-only', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          capabilityType: 30,
+          isCapabilityIteration: false,
+          thinking: { text: 'Deep reasoning here' },
+        }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      // The thinking bubble should NOT be classified as tool-only
+      const assistantMsgs = result!.messages.filter(m => m.role === 'assistant');
+      expect(assistantMsgs).toHaveLength(1);
+      expect(assistantMsgs[0].thinking).toBe('Deep reasoning here');
+    });
+
+    it('final response bubble (type=2, no capabilityType, text="actual response") produces message with real content', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({ bubbleId: 'b2', type: 2, text: 'Here is my detailed answer to your question' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      const assistantMsg = result!.messages.find(m => m.role === 'assistant');
+      expect(assistantMsg!.content).toBe('Here is my detailed answer to your question');
+    });
+  });
+
+  describe('consecutive assistant bubble merging', () => {
+    it('merges thinking + tool calls + response into a single logical turn', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        // Thinking bubble
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          capabilityType: 30,
+          thinking: { text: 'Let me think...' },
+        }),
+        // Tool call bubbles
+        makeBubble({
+          bubbleId: 'b3',
+          type: 2,
+          text: '',
+          capabilityType: 15,
+          isCapabilityIteration: false,
+        }),
+        makeBubble({
+          bubbleId: 'b4',
+          type: 2,
+          text: '',
+          capabilityType: 15,
+          isCapabilityIteration: false,
+        }),
+        // Final response
+        makeBubble({ bubbleId: 'b5', type: 2, text: 'Here is the answer' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      // Should produce: 1 user message + 1 merged assistant message
+      expect(result!.messages).toHaveLength(2);
+      expect(result!.messages[0].role).toBe('user');
+      expect(result!.messages[1].role).toBe('assistant');
+      expect(result!.messages[1].content).toContain('Here is the answer');
+      expect(result!.messages[1].thinking).toContain('Let me think...');
+    });
+
+    it('produces tool summary when all assistant bubbles are tool-only (no text response)', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          capabilityType: 15,
+          isCapabilityIteration: false,
+        }),
+        makeBubble({
+          bubbleId: 'b3',
+          type: 2,
+          text: '',
+          capabilityType: 15,
+          isCapabilityIteration: false,
+        }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      const assistantMsgs = result!.messages.filter(m => m.role === 'assistant');
+      expect(assistantMsgs).toHaveLength(1);
+      expect(assistantMsgs[0].content).toContain('tool');
+      expect(assistantMsgs[0].content).toContain('2');
+    });
+
+    it('empty conversations (all bubbles empty-text capability) still produce a conversation (not null)', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({
+          bubbleId: 'b1',
+          type: 2,
+          text: '',
+          capabilityType: 15,
+          isCapabilityIteration: false,
+        }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          capabilityType: 15,
+          isCapabilityIteration: false,
+        }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result).not.toBeNull();
+      expect(result!.messages.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('keeps intermediary assistant bubbles with text in the merged turn', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({ bubbleId: 'b2', type: 2, text: 'Running compiler...' }),
+        makeBubble({ bubbleId: 'b3', type: 2, text: 'Build successful. Here is the result.' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      // Consecutive assistant bubbles should be merged
+      expect(result!.messages).toHaveLength(2); // user + merged assistant
+      expect(result!.messages[1].content).toContain('Running compiler...');
+      expect(result!.messages[1].content).toContain('Build successful');
+    });
+
+    it('accumulates thinking from multiple thinking bubbles in same turn', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          capabilityType: 30,
+          thinking: { text: 'First thought' },
+        }),
+        makeBubble({
+          bubbleId: 'b3',
+          type: 2,
+          text: '',
+          capabilityType: 30,
+          thinking: { text: 'Second thought' },
+        }),
+        makeBubble({ bubbleId: 'b4', type: 2, text: 'Final answer' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.messages).toHaveLength(2);
+      expect(result!.messages[1].thinking).toContain('First thought');
+      expect(result!.messages[1].thinking).toContain('Second thought');
+      expect(result!.messages[1].content).toContain('Final answer');
     });
   });
 

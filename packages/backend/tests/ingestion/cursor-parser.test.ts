@@ -231,6 +231,39 @@ describe('Cursor Parser', () => {
       expect(bubbles[0].createdAt).toBeNull();
       expect(bubbles[0].tokenCount).toBeNull();
       expect(bubbles[0].modelInfo).toBeNull();
+      expect(bubbles[0].thinking).toBeNull();
+    });
+
+    it('extracts thinking field from bubble JSON data', () => {
+      const bubbleData = {
+        type: 2,
+        text: '',
+        capabilityType: 30,
+        thinking: { text: 'Deep reasoning about the problem', signature: 'sig123' },
+      };
+      setupDb.prepare('INSERT INTO cursorDiskKV (key, value) VALUES (?, ?)').run(
+        'bubbleId:conv-123:bubble-thinking',
+        Buffer.from(JSON.stringify(bubbleData))
+      );
+
+      const bubbles = getBubblesForConversation(dbPath, 'conv-123');
+      expect(bubbles).toHaveLength(1);
+      expect(bubbles[0].thinking).toEqual({ text: 'Deep reasoning about the problem', signature: 'sig123' });
+    });
+
+    it('sets thinking to null when not present in bubble data', () => {
+      const bubbleData = {
+        type: 2,
+        text: 'Normal response',
+      };
+      setupDb.prepare('INSERT INTO cursorDiskKV (key, value) VALUES (?, ?)').run(
+        'bubbleId:conv-123:bubble-no-thinking',
+        Buffer.from(JSON.stringify(bubbleData))
+      );
+
+      const bubbles = getBubblesForConversation(dbPath, 'conv-123');
+      expect(bubbles).toHaveLength(1);
+      expect(bubbles[0].thinking).toBeNull();
     });
   });
 });

@@ -27,6 +27,7 @@ export interface CursorBubble {
   isCapabilityIteration: boolean;   // true when bubble is a tool/capability call
   capabilityType: number | null;    // numeric type of the capability used
   tokenCountUpUntilHere: number | null; // cumulative token count up to this bubble
+  thinking: { text: string; signature?: string } | null; // thinking content from capabilityType=30 bubbles
 }
 
 // ── Parser functions ────────────────────────────────────────────────────
@@ -110,6 +111,7 @@ export function getBubblesForConversation(dbPath: string, composerId: string): C
           isCapabilityIteration: data?.isCapabilityIteration ?? false,
           capabilityType: data?.capabilityType ?? null,
           tokenCountUpUntilHere: data?.tokenCountUpUntilHere ?? null,
+          thinking: data?.thinking ?? null,
         });
       } catch {
         // Skip rows with invalid JSON

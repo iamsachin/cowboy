@@ -58,7 +58,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 19: Conversation Display Fixes** — Fix turn grouping, tool call display, system message handling, and scroll behavior in conversation detail (completed 2026-03-08)
 - [x] **Phase 20: Conversation List Fixes** — Fix titles, sorting, filtering, search, and formatting in the conversation list view (completed 2026-03-08)
 - [x] **Phase 21: Plan Extraction Quality** — Fix plan title heuristics, merge logic, completion matching, and status display (completed 2026-03-08)
-- [ ] **Phase 22: Analytics & Agent Pages** — Fix heatmap legend, agent filters, Cursor data display, and comparison card styling
+- [x] **Phase 22: Analytics & Agent Pages** — Fix heatmap legend, agent filters, Cursor data display, and comparison card styling (completed 2026-03-08)
 - [ ] **Phase 23: Cross-Cutting Polish** — Fix routing, theme awareness, dead code, and type safety across the codebase
 - [ ] **Phase 24: Overview, Settings & Final Verification** — Fix overview KPIs, settings UX, and browser-verify all v1.3 fixes
 
@@ -210,6 +210,6 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 19. Conversation Display Fixes | 3/3 | Complete    | 2026-03-08 | - |
 | 20. Conversation List Fixes | 3/3 | Complete    | 2026-03-08 | - |
 | 21. Plan Extraction Quality | 3/3 | Complete    | 2026-03-08 | - |
-| 22. Analytics & Agent Pages | 1/2 | In Progress|  | - |
+| 22. Analytics & Agent Pages | 2/2 | Complete   | 2026-03-08 | - |
 | 23. Cross-Cutting Polish | v1.3 | 0/? | Not started | - |
 | 24. Overview, Settings & Final Verification | v1.3 | 0/? | Not started | - |

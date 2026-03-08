@@ -810,3 +810,32 @@ export function getProjectStats(from: string, to: string, agent?: string): Proje
     };
   });
 }
+
+/**
+ * Get distinct project and agent values for filter dropdowns, scoped to date range.
+ */
+export function getFilterOptions(from: string, to: string): { projects: string[]; agents: string[] } {
+  const dateFilter = and(
+    gte(conversations.createdAt, from),
+    lte(conversations.createdAt, to + 'T23:59:59Z'),
+  );
+
+  const projectRows = db
+    .selectDistinct({ project: conversations.project })
+    .from(conversations)
+    .where(and(dateFilter, sql`${conversations.project} IS NOT NULL`))
+    .orderBy(conversations.project)
+    .all();
+
+  const agentRows = db
+    .selectDistinct({ agent: conversations.agent })
+    .from(conversations)
+    .where(dateFilter)
+    .orderBy(conversations.agent)
+    .all();
+
+  return {
+    projects: projectRows.map(r => r.project!),
+    agents: agentRows.map(r => r.agent),
+  };
+}

@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { getOverviewStats, getTimeSeries, getModelDistribution, getToolStats, getHeatmapData, getProjectStats, getConversationList, getConversationDetail } from '../db/queries/analytics.js';
+import { getOverviewStats, getTimeSeries, getModelDistribution, getToolStats, getHeatmapData, getProjectStats, getConversationList, getConversationDetail, getFilterOptions } from '../db/queries/analytics.js';
 import { autoGranularity } from '@cowboy/shared';
 import type { Granularity } from '@cowboy/shared';
 
@@ -68,6 +68,16 @@ export default async function analyticsRoutes(app: FastifyInstance) {
     const fromDate = from || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
     return getProjectStats(fromDate, toDate, agent || undefined);
+  });
+
+  // GET /analytics/filters?from=&to= — distinct projects and agents for filter dropdowns
+  app.get('/analytics/filters', async (request) => {
+    const { from, to } = request.query as { from?: string; to?: string };
+
+    const toDate = to || new Date().toISOString().slice(0, 10);
+    const fromDate = from || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    return getFilterOptions(fromDate, toDate);
   });
 
   // GET /analytics/conversations/:id -- must be registered BEFORE the list route

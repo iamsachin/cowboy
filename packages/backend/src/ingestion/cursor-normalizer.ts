@@ -42,72 +42,110 @@ export function normalizeCursorConversation(
 
   const normalizedMessages: NormalizedData['messages'] = [];
   const includedBubbleIds = new Set<string>();
+  // Map from individual bubbleId to the merged message's bubbleId (for token usage)
+  const bubbleToMergedId = new Map<string, string>();
 
-  // Group consecutive tool-only assistant bubbles and emit summary messages
+  // Merge consecutive assistant bubbles into logical turns.
+  // For each user message, emit it directly. Then collect all subsequent assistant
+  // bubbles until the next user message and merge them into a single rich message.
   let i = 0;
   while (i < bubbles.length) {
     const bubble = bubbles[i];
     const role = bubble.type === 1 ? 'user' : bubble.type === 2 ? 'assistant' : null;
     if (!role) { i++; continue; }
 
-    // Check if this is a tool-only assistant bubble (no text, has capability/tool flags)
-    const isToolOnly = role === 'assistant' && !bubble.text?.trim() &&
-        (bubble.isCapabilityIteration || bubble.toolFormerData);
-
-    if (isToolOnly) {
-      // Collect consecutive tool-only bubbles into a group
-      let toolCount = 0;
-      const firstToolBubble = bubble;
-      while (i < bubbles.length) {
-        const b = bubbles[i];
-        const r = b.type === 1 ? 'user' : b.type === 2 ? 'assistant' : null;
-        if (r === 'assistant' && !b.text?.trim() && (b.isCapabilityIteration || b.toolFormerData)) {
-          toolCount++;
-          i++;
-        } else {
-          break;
-        }
-      }
-
-      // Emit a single summary message for the group
-      const summaryContent = `Executed ${toolCount} tool call${toolCount !== 1 ? 's' : ''}`;
-      const messageId = generateId(conversationId, firstToolBubble.bubbleId);
-      const bubbleTimestamp = deriveBubbleTimestamp(firstToolBubble, conv);
-      const rawModel = firstToolBubble.modelInfo?.modelName ?? conv.modelConfig?.modelName ?? null;
-      const bubbleModel = rawModel === 'default' ? 'unknown' : rawModel;
-
-      includedBubbleIds.add(firstToolBubble.bubbleId);
+    // User bubbles are emitted directly
+    if (role === 'user') {
+      includedBubbleIds.add(bubble.bubbleId);
+      const messageId = generateId(conversationId, bubble.bubbleId);
+      const bubbleTimestamp = deriveBubbleTimestamp(bubble, conv);
       normalizedMessages.push({
         id: messageId,
         conversationId,
-        role: 'assistant',
-        content: summaryContent,
+        role: 'user',
+        content: bubble.text || null,
         thinking: null,
         createdAt: bubbleTimestamp,
-        model: bubbleModel,
+        model: null,
       });
+      i++;
       continue;
     }
 
-    includedBubbleIds.add(bubble.bubbleId);
+    // Collect consecutive assistant bubbles into a logical turn
+    const assistantGroup: CursorBubble[] = [];
+    while (i < bubbles.length) {
+      const b = bubbles[i];
+      const r = b.type === 1 ? 'user' : b.type === 2 ? 'assistant' : null;
+      if (r !== 'assistant') break;
+      assistantGroup.push(b);
+      i++;
+    }
 
-    const messageId = generateId(conversationId, bubble.bubbleId);
-    const bubbleTimestamp = deriveBubbleTimestamp(bubble, conv);
-    const rawModel = bubble.modelInfo?.modelName ?? conv.modelConfig?.modelName ?? null;
-    const bubbleModel = role === 'assistant'
-      ? (rawModel === 'default' ? 'unknown' : rawModel)
-      : null;
+    // Merge the assistant group into a single message
+    const thinkingSegments: string[] = [];
+    const textSegments: string[] = [];
+    let toolCount = 0;
+    let firstBubble = assistantGroup[0];
+
+    for (const b of assistantGroup) {
+      // Extract thinking content
+      if (b.thinking?.text?.trim()) {
+        thinkingSegments.push(b.thinking.text);
+      }
+
+      // Check if this is a tool-only bubble:
+      // No text AND no thinking AND has capabilityType or toolFormerData
+      const hasText = !!b.text?.trim();
+      const hasThinking = !!b.thinking?.text?.trim();
+      const isToolOnly = !hasText && !hasThinking &&
+        (b.capabilityType !== null || !!b.toolFormerData);
+
+      if (isToolOnly) {
+        toolCount++;
+      } else if (hasText) {
+        textSegments.push(b.text.trim());
+      }
+      // Thinking-only bubbles (hasThinking but !hasText and !isToolOnly) contribute
+      // their thinking but no text content — that's fine
+    }
+
+    // Build merged content
+    let mergedContent: string | null = null;
+    if (textSegments.length > 0) {
+      mergedContent = textSegments.join('\n\n');
+      if (toolCount > 0) {
+        mergedContent = `Executed ${toolCount} tool call${toolCount !== 1 ? 's' : ''}\n\n${mergedContent}`;
+      }
+    } else if (toolCount > 0) {
+      mergedContent = `Executed ${toolCount} tool call${toolCount !== 1 ? 's' : ''}`;
+    }
+
+    const mergedThinking = thinkingSegments.length > 0 ? thinkingSegments.join('\n\n') : null;
+
+    // Derive model from first bubble with modelInfo
+    const modelBubble = assistantGroup.find(b => b.modelInfo?.modelName) ?? firstBubble;
+    const rawModel = modelBubble.modelInfo?.modelName ?? conv.modelConfig?.modelName ?? null;
+    const bubbleModel = rawModel === 'default' ? 'unknown' : rawModel;
+
+    const messageId = generateId(conversationId, firstBubble.bubbleId);
+    const bubbleTimestamp = deriveBubbleTimestamp(firstBubble, conv);
+
+    // Track all bubble IDs in the group for token usage matching
+    for (const b of assistantGroup) {
+      includedBubbleIds.add(b.bubbleId);
+      bubbleToMergedId.set(b.bubbleId, firstBubble.bubbleId);
+    }
 
     normalizedMessages.push({
       id: messageId,
       conversationId,
-      role,
-      content: bubble.text || null,
-      thinking: null,
+      role: 'assistant',
+      content: mergedContent,
+      thinking: mergedThinking,
       createdAt: bubbleTimestamp,
       model: bubbleModel,
     });
-    i++;
   }
 
   // ── Tool calls ────────────────────────────────────────────────────────
@@ -130,7 +168,8 @@ export function normalizeCursorConversation(
 
     // Only record if there are actual token counts and the bubble has a corresponding message
     if ((inputTokens > 0 || outputTokens > 0) && hasMessage) {
-      const messageId = generateId(conversationId, bubble.bubbleId);
+      const mergedBubbleId = bubbleToMergedId.get(bubble.bubbleId) ?? bubble.bubbleId;
+      const messageId = generateId(conversationId, mergedBubbleId);
       const rawTokenModel = bubble.modelInfo?.modelName ?? conv.modelConfig?.modelName ?? 'unknown';
       const bubbleModel = rawTokenModel === 'default' ? 'unknown' : rawTokenModel;
       const bubbleTimestamp = deriveBubbleTimestamp(bubble, conv);
@@ -149,7 +188,8 @@ export function normalizeCursorConversation(
     } else if (bubble.tokenCountUpUntilHere && bubble.tokenCountUpUntilHere > prevCumulativeTokens && hasMessage) {
       // Use differential of cumulative token count as output token estimate
       const estimatedOutputTokens = bubble.tokenCountUpUntilHere - prevCumulativeTokens;
-      const messageId = generateId(conversationId, bubble.bubbleId);
+      const mergedBubbleId2 = bubbleToMergedId.get(bubble.bubbleId) ?? bubble.bubbleId;
+      const messageId = generateId(conversationId, mergedBubbleId2);
       const rawTokenModel = bubble.modelInfo?.modelName ?? conv.modelConfig?.modelName ?? 'unknown';
       const bubbleModel = rawTokenModel === 'default' ? 'unknown' : rawTokenModel;
       const bubbleTimestamp = deriveBubbleTimestamp(bubble, conv);

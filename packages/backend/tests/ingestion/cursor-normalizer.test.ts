@@ -288,7 +288,7 @@ describe('normalizeCursorConversation', () => {
   });
 
   describe('tool-call bubble handling', () => {
-    it('produces tool summary for type 2 bubbles with isCapabilityIteration=true and no text', () => {
+    it('produces merged message with tool summary and response for capability + text bubbles', () => {
       const conv = makeConversation();
       const bubbles = [
         makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
@@ -296,10 +296,11 @@ describe('normalizeCursorConversation', () => {
         makeBubble({ bubbleId: 'b3', type: 2, text: 'Here is the answer', isCapabilityIteration: false }),
       ];
       const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
-      expect(result!.messages).toHaveLength(3); // user + tool summary + assistant with text
+      // Consecutive assistant bubbles are merged into a single turn
+      expect(result!.messages).toHaveLength(2); // user + merged assistant
       expect(result!.messages[0].role).toBe('user');
       expect(result!.messages[1].content).toContain('tool call');
-      expect(result!.messages[2].content).toBe('Here is the answer');
+      expect(result!.messages[1].content).toContain('Here is the answer');
     });
 
     it('keeps type 2 bubbles with isCapabilityIteration=true but WITH text', () => {
@@ -323,7 +324,7 @@ describe('normalizeCursorConversation', () => {
       expect(result!.messages).toHaveLength(2); // both kept (backward compat)
     });
 
-    it('produces tool summary for type 2 bubbles with toolFormerData and no text', () => {
+    it('produces merged message with tool summary and response for toolFormerData + text bubbles', () => {
       const conv = makeConversation();
       const bubbles = [
         makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
@@ -337,9 +338,10 @@ describe('normalizeCursorConversation', () => {
         makeBubble({ bubbleId: 'b3', type: 2, text: 'Actual response' }),
       ];
       const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
-      expect(result!.messages).toHaveLength(3); // user + tool summary + assistant with text
+      // Consecutive assistant bubbles are merged into a single turn
+      expect(result!.messages).toHaveLength(2); // user + merged assistant
       expect(result!.messages[1].content).toContain('tool call');
-      expect(result!.messages[2].content).toBe('Actual response');
+      expect(result!.messages[1].content).toContain('Actual response');
     });
 
     it('does not filter type 1 (user) bubbles regardless of content', () => {
@@ -611,7 +613,7 @@ describe('normalizeCursorConversation', () => {
       expect(assistantMsgs[0].content).not.toBeNull();
     });
 
-    it('groups consecutive tool-only assistant bubbles into a single summary message', () => {
+    it('groups consecutive tool-only assistant bubbles into a single merged message with text', () => {
       const conv = makeConversation();
       const bubbles = [
         makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
@@ -621,11 +623,11 @@ describe('normalizeCursorConversation', () => {
         makeBubble({ bubbleId: 'b5', type: 2, text: 'Here is the answer' }),
       ];
       const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
-      // Should have: user, one grouped tool summary, assistant with text
+      // All consecutive assistant bubbles merge into a single turn
       const assistantMsgs = result!.messages.filter(m => m.role === 'assistant');
-      expect(assistantMsgs).toHaveLength(2); // grouped tool summary + real response
+      expect(assistantMsgs).toHaveLength(1); // single merged message
       expect(assistantMsgs[0].content).toMatch(/3 tool/);
-      expect(assistantMsgs[1].content).toBe('Here is the answer');
+      expect(assistantMsgs[0].content).toContain('Here is the answer');
     });
   });
 

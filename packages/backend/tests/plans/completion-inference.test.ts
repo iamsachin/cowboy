@@ -120,4 +120,68 @@ describe('inferStepCompletion', () => {
       expect(inferStepCompletion(step, context)).toBe('incomplete');
     });
   });
+
+  describe('word boundary tool matching (PLAN-10)', () => {
+    it('matches "Write" tool for "Write the config file" step', () => {
+      const step: ExtractedStep = { stepNumber: 1, content: 'Write the config file', isChecked: null };
+      const context: CompletionContext = {
+        laterMessages: [],
+        toolCalls: [{ name: 'Write', input: { path: 'config.ts' }, status: 'success' }],
+      };
+      expect(inferStepCompletion(step, context)).toBe('complete');
+    });
+
+    it('does NOT match "Write" tool for "Rewrite the config file" step', () => {
+      const step: ExtractedStep = { stepNumber: 1, content: 'Rewrite the config file', isChecked: null };
+      const context: CompletionContext = {
+        laterMessages: [],
+        toolCalls: [{ name: 'Write', input: { path: 'config.ts' }, status: 'success' }],
+      };
+      expect(inferStepCompletion(step, context)).toBe('unknown');
+    });
+
+    it('does NOT match "Write" tool for "Overwrite the output" step', () => {
+      const step: ExtractedStep = { stepNumber: 1, content: 'Overwrite the output', isChecked: null };
+      const context: CompletionContext = {
+        laterMessages: [],
+        toolCalls: [{ name: 'Write', input: { path: 'out.ts' }, status: 'success' }],
+      };
+      expect(inferStepCompletion(step, context)).toBe('unknown');
+    });
+  });
+
+  describe('raised completion threshold (PLAN-05)', () => {
+    it('requires >60% significant word overlap for text completion', () => {
+      // Step has many significant words; a message matching only 2 common words should NOT trigger completion
+      const step: ExtractedStep = {
+        stepNumber: 1,
+        content: 'Configure the database migration schema validation pipeline',
+        isChecked: null,
+      };
+      const context: CompletionContext = {
+        laterMessages: [
+          // Only matches "configure" and "database" (2 of 5 significant words = 40%)
+          { role: 'assistant', content: 'I have completed the configure database step successfully.' },
+        ],
+        toolCalls: [],
+      };
+      expect(inferStepCompletion(step, context)).toBe('unknown');
+    });
+
+    it('marks complete when >60% of significant words match with completion signal', () => {
+      const step: ExtractedStep = {
+        stepNumber: 1,
+        content: 'Configure the database migration schema',
+        isChecked: null,
+      };
+      const context: CompletionContext = {
+        laterMessages: [
+          // Matches "configure", "database", "migration", "schema" (4 of 4 = 100%)
+          { role: 'assistant', content: 'I have completed configuring the database migration schema.' },
+        ],
+        toolCalls: [],
+      };
+      expect(inferStepCompletion(step, context)).toBe('complete');
+    });
+  });
 });

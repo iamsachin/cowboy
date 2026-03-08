@@ -105,7 +105,11 @@ Plans:
   3. Chevron points right when collapsed and down when expanded (standard convention)
   4. System-injected messages (skill prompts, context) are detected and hidden by default with opt-in visibility
   5. Large conversations (100+ turns) remain navigable via pagination or virtualization with max-height scroll on expanded blocks
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 19-01-PLAN.md — Fix turn grouping (system messages breaking assistant groups), isSystemInjected null/empty handling, and skill prompt detection
+- [ ] 19-02-PLAN.md — Fix zero tool call display, preview fallback text, chevron direction, and max-height scroll
+- [ ] 19-03-PLAN.md — Add frontend load-more pagination for large conversations
 
 ### Phase 20: Conversation List Fixes
 **Goal**: Conversation list view displays clean data with working sort, filter, and search
@@ -191,8 +195,8 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 15. Cursor Data Quality | v1.2 | 2/2 | Complete | 2026-03-05 |
 | 16. Message Display | v1.2 | 2/2 | Complete | 2026-03-05 |
 | 17. Cost Calculation Fixes | 2/2 | Complete    | 2026-03-08 | - |
-| 18. Data Accuracy Fixes | 3/3 | Complete   | 2026-03-08 | - |
-| 19. Conversation Display Fixes | v1.3 | 0/? | Not started | - |
+| 18. Data Accuracy Fixes | 3/3 | Complete    | 2026-03-08 | - |
+| 19. Conversation Display Fixes | v1.3 | 0/3 | Not started | - |
 | 20. Conversation List Fixes | v1.3 | 0/? | Not started | - |
 | 21. Plan Extraction Quality | v1.3 | 0/? | Not started | - |
 | 22. Analytics & Agent Pages | v1.3 | 0/? | Not started | - |

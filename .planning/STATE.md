@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Bug Fix & Quality Audit
-status: completed
-stopped_at: Completed 19-03-PLAN.md (conversation pagination)
-last_updated: "2026-03-08T09:37:33.293Z"
-last_activity: 2026-03-08 — Completed 19-03 (conversation pagination)
+status: executing
+stopped_at: Completed 20-01-PLAN.md
+last_updated: "2026-03-08T12:25:07.665Z"
+last_activity: 2026-03-08 — Completed 20-01 (backend sort & filters)
 progress:
   total_phases: 8
   completed_phases: 3
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 11
+  completed_plans: 10
 ---
 
 # Project State
@@ -20,16 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 19 - Conversation Display Fixes (v1.3)
+**Current focus:** Phase 20 - Conversation List Fixes (v1.3)
 
 ## Current Position
 
-Phase: 19 of 24 (Conversation Display Fixes) -- COMPLETE
-Plan: 3 of 3 in current phase
-Status: Phase 19 complete (all 3 plans done)
-Last activity: 2026-03-08 — Completed 19-03 (conversation pagination)
+Phase: 20 of 24 (Conversation List Fixes)
+Plan: 1 of 3 in current phase
+Status: Executing phase 20
+Last activity: 2026-03-08 — Completed 20-01 (backend sort & filters)
 
-Progress (v1.3): [██████████] 100% (32 plans completed)
+Progress (v1.3): [█████████░] 94% (33 plans completed)
 
 ## Performance Metrics
 
@@ -61,6 +61,9 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase 18]: Duration from message span via backend firstMessageAt/lastMessageAt fields
 - [Phase 18]: NULL-model backfill expanded to all agents with message fallback
 - [Phase 19]: PAGE_SIZE=50 groups as initial render batch; append-based load-more preserves collapse state
+- [20-01]: Token sort uses sum(input + output) to match the displayed total in the UI
+- [20-01]: NULLS LAST via CASE WHEN IS NULL pattern for nullable column sorting
+- [20-01]: Unrecognized sort fields fall back to date (createdAt) as safe default
 
 ### Pending Todos
 
@@ -72,6 +75,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-08T09:37:33.290Z
-Stopped at: Completed 19-03-PLAN.md (conversation pagination)
-Resume file: None
+Last session: 2026-03-08T12:26:00.000Z
+Stopped at: Completed 20-01-PLAN.md
+Resume file: .planning/phases/20-conversation-list-fixes/20-01-SUMMARY.md

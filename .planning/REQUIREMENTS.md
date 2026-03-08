@@ -42,9 +42,9 @@
 ### Conversation List
 
 - [ ] **LIST-01**: Titles sanitized with cleanTitle() in list view (CL-01)
-- [ ] **LIST-02**: Tokens column sort matches displayed sum (CL-02)
-- [ ] **LIST-03**: Project filter fetches full project list from API (CL-03)
-- [ ] **LIST-04**: Sort disabled or implemented for unsupported columns (CL-04)
+- [x] **LIST-02**: Tokens column sort matches displayed sum (CL-02)
+- [x] **LIST-03**: Project filter fetches full project list from API (CL-03)
+- [x] **LIST-04**: Sort disabled or implemented for unsupported columns (CL-04)
 - [ ] **LIST-05**: Search snippet rows don't break zebra striping (CL-06)
 - [ ] **LIST-06**: Truncated model names have tooltips (CL-07)
 - [ ] **LIST-07**: Loading indicator shown on pagination/sort changes (CL-08)
@@ -138,9 +138,9 @@ None — all audit bugs targeted for v1.3.
 | CONV-08 | Phase 19 | Complete |
 | CONV-09 | Phase 19 | Complete |
 | LIST-01 | Phase 20 | Pending |
-| LIST-02 | Phase 20 | Pending |
-| LIST-03 | Phase 20 | Pending |
-| LIST-04 | Phase 20 | Pending |
+| LIST-02 | Phase 20 | Complete |
+| LIST-03 | Phase 20 | Complete |
+| LIST-04 | Phase 20 | Complete |
 | LIST-05 | Phase 20 | Pending |
 | LIST-06 | Phase 20 | Pending |
 | LIST-07 | Phase 20 | Pending |

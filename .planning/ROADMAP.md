@@ -121,7 +121,11 @@ Plans:
   3. Project filter dropdown shows all projects from the API, not a hardcoded subset
   4. Search shows results with sanitized snippets (DOMPurify), visual debounce affordance, and correct zebra striping
   5. Pagination and sort changes show a loading indicator; dates display in local timezone
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 20-01-PLAN.md — Extend backend sort mapping for all 8 columns and add /analytics/filters endpoint
+- [ ] 20-02-PLAN.md — Debounced search UX, DOMPurify snippet sanitization, inline snippet layout
+- [ ] 20-03-PLAN.md — Apply cleanTitle, model tooltips, loading indicator, local timezone dates, wire filter API
 
 ### Phase 21: Plan Extraction Quality
 **Goal**: Plan extraction produces meaningful titles, correct merge boundaries, and accurate completion status
@@ -196,8 +200,8 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 16. Message Display | v1.2 | 2/2 | Complete | 2026-03-05 |
 | 17. Cost Calculation Fixes | 2/2 | Complete    | 2026-03-08 | - |
 | 18. Data Accuracy Fixes | 3/3 | Complete    | 2026-03-08 | - |
-| 19. Conversation Display Fixes | 3/3 | Complete   | 2026-03-08 | - |
-| 20. Conversation List Fixes | v1.3 | 0/? | Not started | - |
+| 19. Conversation Display Fixes | 3/3 | Complete    | 2026-03-08 | - |
+| 20. Conversation List Fixes | 2/3 | In Progress|  | - |
 | 21. Plan Extraction Quality | v1.3 | 0/? | Not started | - |
 | 22. Analytics & Agent Pages | v1.3 | 0/? | Not started | - |
 | 23. Cross-Cutting Polish | v1.3 | 0/? | Not started | - |

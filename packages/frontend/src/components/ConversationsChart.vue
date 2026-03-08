@@ -27,6 +27,7 @@ import {
   Legend,
 } from 'chart.js';
 import type { TimeSeriesPoint } from '@cowboy/shared';
+import { getChartThemeColors } from '../utils/chart-theme';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -49,18 +50,20 @@ const chartData = computed(() => ({
   ],
 }));
 
-const chartOptions = computed(() => ({
+const chartOptions = computed(() => {
+  const themeColors = getChartThemeColors();
+  return {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
     x: {
-      grid: { color: 'rgba(255, 255, 255, 0.1)' },
-      ticks: { color: 'rgba(255, 255, 255, 0.7)', maxRotation: 45, font: { size: 10 } },
+      grid: { color: themeColors.grid },
+      ticks: { color: themeColors.text, maxRotation: 45, font: { size: 10 } },
     },
     y: {
-      grid: { color: 'rgba(255, 255, 255, 0.1)' },
+      grid: { color: themeColors.grid },
       ticks: {
-        color: 'rgba(255, 255, 255, 0.7)',
+        color: themeColors.text,
         stepSize: 1,
       },
     },
@@ -76,5 +79,6 @@ const chartOptions = computed(() => ({
       },
     },
   },
-}));
+};
+});
 </script>

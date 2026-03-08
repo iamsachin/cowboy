@@ -23,6 +23,7 @@ import {
 } from 'chart.js';
 import type { TimeSeriesPoint } from '@cowboy/shared';
 import { AGENT_COLORS } from '../utils/agent-constants';
+import { getChartThemeColors } from '../utils/chart-theme';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -70,27 +71,29 @@ const chartData = computed(() => ({
   ],
 }));
 
-const chartOptions = computed(() => ({
+const chartOptions = computed(() => {
+  const themeColors = getChartThemeColors();
+  return {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
     x: {
       stacked: true,
-      grid: { color: 'rgba(255, 255, 255, 0.1)' },
-      ticks: { color: 'rgba(255, 255, 255, 0.7)', maxRotation: 45, font: { size: 10 } },
+      grid: { color: themeColors.grid },
+      ticks: { color: themeColors.text, maxRotation: 45, font: { size: 10 } },
     },
     y: {
       stacked: true,
-      grid: { color: 'rgba(255, 255, 255, 0.1)' },
+      grid: { color: themeColors.grid },
       ticks: {
-        color: 'rgba(255, 255, 255, 0.7)',
+        color: themeColors.text,
         stepSize: 1,
       },
     },
   },
   plugins: {
     legend: {
-      labels: { color: 'rgba(255, 255, 255, 0.7)', boxWidth: 12, font: { size: 11 } },
+      labels: { color: themeColors.legendText, boxWidth: 12, font: { size: 11 } },
     },
     tooltip: {
       callbacks: {
@@ -102,5 +105,6 @@ const chartOptions = computed(() => ({
       },
     },
   },
-}));
+};
+});
 </script>

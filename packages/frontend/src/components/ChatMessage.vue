@@ -4,7 +4,7 @@
       You
       <time class="ml-1">{{ formatTime(message.createdAt) }}</time>
     </div>
-    <div class="bg-emerald-500/50 text-base-content border border-emerald-300/70 rounded-lg px-3 py-2 text-sm whitespace-normal break-words">
+    <div class="bg-primary/20 text-base-content border border-primary/40 rounded-lg px-3 py-2 text-sm whitespace-normal break-words">
       <template v-if="commandText">
         <p class="whitespace-pre-wrap font-mono">{{ commandText }}</p>
       </template>

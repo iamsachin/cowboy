@@ -48,6 +48,7 @@ import {
   Legend,
 } from 'chart.js';
 import type { PlanTimeSeriesPoint } from '@cowboy/shared';
+import { getChartThemeColors } from '../utils/chart-theme';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend);
 
@@ -70,18 +71,20 @@ const barChartData = computed(() => ({
   ],
 }));
 
-const barChartOptions = computed(() => ({
+const barChartOptions = computed(() => {
+  const themeColors = getChartThemeColors();
+  return {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
     x: {
-      grid: { color: 'rgba(255, 255, 255, 0.1)' },
-      ticks: { color: 'rgba(255, 255, 255, 0.7)', maxRotation: 45, font: { size: 10 } },
+      grid: { color: themeColors.grid },
+      ticks: { color: themeColors.text, maxRotation: 45, font: { size: 10 } },
     },
     y: {
-      grid: { color: 'rgba(255, 255, 255, 0.1)' },
+      grid: { color: themeColors.grid },
       ticks: {
-        color: 'rgba(255, 255, 255, 0.7)',
+        color: themeColors.text,
         stepSize: 1,
       },
     },
@@ -97,7 +100,8 @@ const barChartOptions = computed(() => ({
       },
     },
   },
-}));
+};
+});
 
 const lineChartData = computed(() => ({
   labels: (props.timeseries ?? []).map((p) => p.period),
@@ -115,18 +119,20 @@ const lineChartData = computed(() => ({
   ],
 }));
 
-const lineChartOptions = computed(() => ({
+const lineChartOptions = computed(() => {
+  const themeColors = getChartThemeColors();
+  return {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
     x: {
-      grid: { color: 'rgba(255, 255, 255, 0.1)' },
-      ticks: { color: 'rgba(255, 255, 255, 0.7)', maxRotation: 45, font: { size: 10 } },
+      grid: { color: themeColors.grid },
+      ticks: { color: themeColors.text, maxRotation: 45, font: { size: 10 } },
     },
     y: {
-      grid: { color: 'rgba(255, 255, 255, 0.1)' },
+      grid: { color: themeColors.grid },
       ticks: {
-        color: 'rgba(255, 255, 255, 0.7)',
+        color: themeColors.text,
         callback: (value: number | string) => `${Number(value)}%`,
       },
       min: 0,
@@ -144,5 +150,6 @@ const lineChartOptions = computed(() => ({
       },
     },
   },
-}));
+};
+});
 </script>

@@ -19,7 +19,7 @@
         v-model="pickerRange"
         range
         :enable-time-picker="false"
-        :dark="true"
+        :dark="isDark"
         auto-apply
         placeholder="Custom range"
         input-class-name="input input-bordered input-sm w-48 text-xs"
@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { VueDatePicker } from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { X } from 'lucide-vue-next';
@@ -52,6 +52,11 @@ import { useDateRange } from '../composables/useDateRange';
 import type { Preset } from '../composables/useDateRange';
 
 const { preset, customFrom, customTo, isCustom, setPreset, setCustomRange } = useDateRange();
+
+const isDark = computed(() => {
+  const theme = document.documentElement.getAttribute('data-theme');
+  return theme !== 'light' && theme !== 'cupcake' && theme !== 'garden';
+});
 
 const presets: { value: Preset; label: string }[] = [
   { value: 'today', label: 'Today' },

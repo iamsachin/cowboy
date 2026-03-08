@@ -32,6 +32,7 @@ import {
 } from 'chart.js';
 import type { TimeSeriesPoint } from '@cowboy/shared';
 import { formatCost } from '../utils/format-tokens';
+import { getChartThemeColors } from '../utils/chart-theme';
 
 ChartJS.register(
   CategoryScale,
@@ -239,18 +240,20 @@ const chartData = computed<any>(() => {
   };
 });
 
-const chartOptions = computed(() => ({
+const chartOptions = computed(() => {
+  const themeColors = getChartThemeColors();
+  return {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
     x: {
-      grid: { color: 'rgba(255, 255, 255, 0.1)' },
-      ticks: { color: 'rgba(255, 255, 255, 0.7)', maxRotation: 45, font: { size: 10 } },
+      grid: { color: themeColors.grid },
+      ticks: { color: themeColors.text, maxRotation: 45, font: { size: 10 } },
     },
     y: {
-      grid: { color: 'rgba(255, 255, 255, 0.1)' },
+      grid: { color: themeColors.grid },
       ticks: {
-        color: 'rgba(255, 255, 255, 0.7)',
+        color: themeColors.text,
         callback: (value: number | string) => formatCost(Number(value)),
       },
     },
@@ -261,7 +264,7 @@ const chartOptions = computed(() => ({
       labels: {
         filter: (item: { text: string }) =>
           !['Upper bound', 'Lower bound'].includes(item.text),
-        color: 'rgba(255, 255, 255, 0.7)',
+        color: themeColors.legendText,
       },
     },
     tooltip: {
@@ -276,5 +279,6 @@ const chartOptions = computed(() => ({
       },
     },
   },
-}));
+};
+});
 </script>

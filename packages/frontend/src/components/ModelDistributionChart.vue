@@ -20,6 +20,7 @@ import {
   Legend,
 } from 'chart.js';
 import type { ModelDistributionEntry } from '@cowboy/shared';
+import { getChartThemeColors } from '../utils/chart-theme';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -50,7 +51,9 @@ const chartData = computed(() => ({
   ],
 }));
 
-const chartOptions = computed(() => ({
+const chartOptions = computed(() => {
+  const themeColors = getChartThemeColors();
+  return {
   responsive: true,
   maintainAspectRatio: false,
   cutout: '55%',
@@ -58,7 +61,7 @@ const chartOptions = computed(() => ({
     legend: {
       position: 'bottom' as const,
       labels: {
-        color: 'rgba(255, 255, 255, 0.7)',
+        color: themeColors.legendText,
         boxWidth: 12,
         font: { size: 11 },
         padding: 8,
@@ -74,5 +77,6 @@ const chartOptions = computed(() => ({
       },
     },
   },
-}));
+};
+});
 </script>

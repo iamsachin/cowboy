@@ -24,6 +24,7 @@ import {
   Legend,
 } from 'chart.js';
 import type { ToolStatsRow } from '@cowboy/shared';
+import { getChartThemeColors } from '../utils/chart-theme';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -55,25 +56,27 @@ const chartData = computed(() => ({
   ],
 }));
 
-const chartOptions = computed(() => ({
+const chartOptions = computed(() => {
+  const themeColors = getChartThemeColors();
+  return {
   responsive: true,
   maintainAspectRatio: false,
   indexAxis: 'y' as const,
   scales: {
     x: {
       stacked: true,
-      grid: { color: 'rgba(255, 255, 255, 0.1)' },
-      ticks: { color: 'rgba(255, 255, 255, 0.7)' },
+      grid: { color: themeColors.grid },
+      ticks: { color: themeColors.text },
     },
     y: {
       stacked: true,
-      grid: { color: 'rgba(255, 255, 255, 0.1)' },
-      ticks: { color: 'rgba(255, 255, 255, 0.7)' },
+      grid: { color: themeColors.grid },
+      ticks: { color: themeColors.text },
     },
   },
   plugins: {
     legend: {
-      labels: { color: 'rgba(255, 255, 255, 0.7)' },
+      labels: { color: themeColors.legendText },
     },
     tooltip: {
       callbacks: {
@@ -84,5 +87,6 @@ const chartOptions = computed(() => ({
       },
     },
   },
-}));
+};
+});
 </script>

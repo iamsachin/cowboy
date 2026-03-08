@@ -29,6 +29,7 @@ import {
   Legend,
 } from 'chart.js';
 import type { TimeSeriesPoint } from '@cowboy/shared';
+import { getChartThemeColors } from '../utils/chart-theme';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
@@ -79,7 +80,9 @@ const chartData = computed(() => ({
   ],
 }));
 
-const chartOptions = computed(() => ({
+const chartOptions = computed(() => {
+  const themeColors = getChartThemeColors();
+  return {
   responsive: true,
   maintainAspectRatio: false,
   interaction: {
@@ -88,14 +91,14 @@ const chartOptions = computed(() => ({
   },
   scales: {
     x: {
-      grid: { color: 'rgba(255, 255, 255, 0.1)' },
-      ticks: { color: 'rgba(255, 255, 255, 0.7)', maxRotation: 45, font: { size: 10 } },
+      grid: { color: themeColors.grid },
+      ticks: { color: themeColors.text, maxRotation: 45, font: { size: 10 } },
     },
     y: {
       stacked: true,
-      grid: { color: 'rgba(255, 255, 255, 0.1)' },
+      grid: { color: themeColors.grid },
       ticks: {
-        color: 'rgba(255, 255, 255, 0.7)',
+        color: themeColors.text,
         callback: (value: number | string) => {
           const n = Number(value);
           if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -107,7 +110,7 @@ const chartOptions = computed(() => ({
   },
   plugins: {
     legend: {
-      labels: { color: 'rgba(255, 255, 255, 0.7)', boxWidth: 12, font: { size: 11 } },
+      labels: { color: themeColors.legendText, boxWidth: 12, font: { size: 11 } },
     },
     tooltip: {
       callbacks: {
@@ -119,5 +122,6 @@ const chartOptions = computed(() => ({
       },
     },
   },
-}));
+};
+});
 </script>

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Bug Fix & Quality Audit
 status: executing
-stopped_at: Completed 20-02-PLAN.md
-last_updated: "2026-03-08T12:27:00.000Z"
-last_activity: 2026-03-08 — Completed 20-02 (search UX and inline snippets)
+stopped_at: Completed 20-03-PLAN.md
+last_updated: "2026-03-08T12:29:00.000Z"
+last_activity: 2026-03-08 — Completed 20-03 (display fixes, filter API, loading overlay)
 progress:
   total_phases: 8
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 11
-  completed_plans: 11
+  completed_plans: 12
 ---
 
 # Project State
@@ -24,12 +24,12 @@ See: .planning/PROJECT.md (updated 2026-03-08)
 
 ## Current Position
 
-Phase: 20 of 24 (Conversation List Fixes)
-Plan: 2 of 3 in current phase
-Status: Executing phase 20
-Last activity: 2026-03-08 — Completed 20-02 (search UX and inline snippets)
+Phase: 20 of 24 (Conversation List Fixes) - COMPLETE
+Plan: 3 of 3 in current phase (all done)
+Status: Phase 20 complete
+Last activity: 2026-03-08 — Completed 20-03 (display fixes, filter API, loading overlay)
 
-Progress (v1.3): [██████████] 97% (34 plans completed)
+Progress (v1.3): [██████████] 100% (35 plans completed)
 
 ## Performance Metrics
 
@@ -66,6 +66,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [20-01]: Unrecognized sort fields fall back to date (createdAt) as safe default
 - [20-02]: Manual setTimeout debounce (400ms) instead of external debounce library
 - [20-02]: DOMPurify with ALLOWED_TAGS: ['mark'] replaces regex sanitizer
+- [20-03]: API-driven filter dropdowns with fallback to hardcoded/page-derived values
+- [20-03]: Loading overlay with opacity + pointer-events-none pattern for subsequent fetches
 
 ### Pending Todos
 
@@ -77,6 +79,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-08T12:27:00.000Z
-Stopped at: Completed 20-02-PLAN.md
-Resume file: .planning/phases/20-conversation-list-fixes/20-02-SUMMARY.md
+Last session: 2026-03-08T12:29:00.000Z
+Stopped at: Completed 20-03-PLAN.md
+Resume file: .planning/phases/20-conversation-list-fixes/20-03-SUMMARY.md

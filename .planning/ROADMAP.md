@@ -56,7 +56,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 17: Cost Calculation Fixes** — Fix critical cost pricing, sorting, formatting, and token counting errors (completed 2026-03-08)
 - [x] **Phase 18: Data Accuracy Fixes** — Fix backend data computation: durations, timestamps, model backfill, tool stats, and timezone issues (completed 2026-03-08)
 - [x] **Phase 19: Conversation Display Fixes** — Fix turn grouping, tool call display, system message handling, and scroll behavior in conversation detail (completed 2026-03-08)
-- [ ] **Phase 20: Conversation List Fixes** — Fix titles, sorting, filtering, search, and formatting in the conversation list view
+- [x] **Phase 20: Conversation List Fixes** — Fix titles, sorting, filtering, search, and formatting in the conversation list view (completed 2026-03-08)
 - [ ] **Phase 21: Plan Extraction Quality** — Fix plan title heuristics, merge logic, completion matching, and status display
 - [ ] **Phase 22: Analytics & Agent Pages** — Fix heatmap legend, agent filters, Cursor data display, and comparison card styling
 - [ ] **Phase 23: Cross-Cutting Polish** — Fix routing, theme awareness, dead code, and type safety across the codebase
@@ -201,7 +201,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 17. Cost Calculation Fixes | 2/2 | Complete    | 2026-03-08 | - |
 | 18. Data Accuracy Fixes | 3/3 | Complete    | 2026-03-08 | - |
 | 19. Conversation Display Fixes | 3/3 | Complete    | 2026-03-08 | - |
-| 20. Conversation List Fixes | 2/3 | In Progress|  | - |
+| 20. Conversation List Fixes | 3/3 | Complete   | 2026-03-08 | - |
 | 21. Plan Extraction Quality | v1.3 | 0/? | Not started | - |
 | 22. Analytics & Agent Pages | v1.3 | 0/? | Not started | - |
 | 23. Cross-Cutting Polish | v1.3 | 0/? | Not started | - |

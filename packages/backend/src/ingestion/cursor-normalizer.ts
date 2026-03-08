@@ -253,7 +253,7 @@ function deriveModel(conv: CursorConversation, bubbles: CursorBubble[]): string 
  * Handles: number (ms or seconds epoch), string (ISO), null (fallback to now).
  */
 function normalizeCursorTimestamp(ts: number | string | null | undefined): string {
-  if (ts === null || ts === undefined) return new Date().toISOString();
+  if (ts === null || ts === undefined || ts === 0) return new Date().toISOString();
 
   if (typeof ts === 'string') {
     return new Date(ts).toISOString();

@@ -69,7 +69,7 @@
           <!-- Duration -->
           <div class="flex items-center gap-1">
             <span class="text-base-content/60">Duration:</span>
-            <span>{{ formatDuration(data.conversation.createdAt, data.conversation.updatedAt) }}</span>
+            <span>{{ messageDuration }}</span>
           </div>
 
           <!-- Total tokens -->
@@ -157,6 +157,15 @@ const totalTokens = computed(() => {
   if (!data.value) return 0;
   const s = data.value.tokenSummary;
   return s.inputTokens + s.outputTokens;
+});
+
+const messageDuration = computed(() => {
+  if (!data.value) return '--';
+  const c = data.value.conversation;
+  const first = c.firstMessageAt || c.createdAt;
+  const last = c.lastMessageAt || c.updatedAt;
+  if (first === last) return '--';
+  return formatDuration(first, last);
 });
 
 const displayTitle = computed(() => cleanTitle(data.value?.conversation.title || ''));

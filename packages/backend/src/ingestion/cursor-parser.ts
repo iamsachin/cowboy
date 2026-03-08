@@ -55,8 +55,8 @@ export function parseCursorDb(dbPath: string): CursorConversation[] {
         conversations.push({
           composerId,
           name: data?.name ?? null,
-          createdAt: data?.createdAt ?? 0,
-          lastUpdatedAt: data?.lastUpdatedAt ?? data?.createdAt ?? 0,
+          createdAt: data?.createdAt || Date.now(),
+          lastUpdatedAt: data?.lastUpdatedAt || data?.createdAt || Date.now(),
           status: data?.status ?? null,
           isAgentic: data?.isAgentic ?? false,
           usageData: data?.usageData ?? null,

@@ -858,6 +858,228 @@ describe('normalizeCursorConversation', () => {
     });
   });
 
+  describe('tool call extraction', () => {
+    it('extracts tool call from toolFormerData with name/params/result/status', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'User question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          isCapabilityIteration: true,
+          capabilityType: 1,
+          toolFormerData: {
+            name: 'read_file_v2',
+            status: 'completed',
+            params: '{"path":"/src/index.ts"}',
+            result: '{"content":"file contents here"}',
+            toolCallId: 'tool_abc123',
+          },
+        }),
+        makeBubble({ bubbleId: 'b3', type: 2, text: 'Here is the file content' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.toolCalls).toHaveLength(1);
+      expect(result!.toolCalls[0].name).toBe('read_file_v2');
+      expect(result!.toolCalls[0].status).toBe('success');
+      expect(result!.toolCalls[0].input).toEqual({ path: '/src/index.ts' });
+      expect(result!.toolCalls[0].output).toEqual({ content: 'file contents here' });
+      expect(result!.toolCalls[0].duration).toBeNull();
+    });
+
+    it('parses params and result JSON strings into objects for input/output', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'Question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          capabilityType: 1,
+          toolFormerData: {
+            name: 'edit_file_v2',
+            status: 'completed',
+            params: '{"file":"test.ts","changes":[1,2,3]}',
+            result: '{"success":true}',
+          },
+        }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.toolCalls[0].input).toEqual({ file: 'test.ts', changes: [1, 2, 3] });
+      expect(result!.toolCalls[0].output).toEqual({ success: true });
+    });
+
+    it('tool call messageId matches the merged assistant message ID', () => {
+      const conv = makeConversation({ composerId: 'comp-1' });
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'Question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          capabilityType: 1,
+          toolFormerData: { name: 'read_file_v2', status: 'completed', params: '{}', result: '{}' },
+        }),
+        makeBubble({ bubbleId: 'b3', type: 2, text: 'Response' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      const convId = result!.conversation.id;
+      // The merged message uses the first bubble in the assistant group (b2)
+      const expectedMsgId = generateId(convId, 'b2');
+      expect(result!.toolCalls[0].messageId).toBe(expectedMsgId);
+      // Verify it matches the actual message
+      const assistantMsg = result!.messages.find(m => m.role === 'assistant');
+      expect(result!.toolCalls[0].messageId).toBe(assistantMsg!.id);
+    });
+
+    it('multiple tool-only bubbles in one turn each produce separate tool call records', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'Question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          capabilityType: 1,
+          toolFormerData: { name: 'read_file_v2', status: 'completed', params: '{"path":"a.ts"}', result: '"ok"' },
+        }),
+        makeBubble({
+          bubbleId: 'b3',
+          type: 2,
+          text: '',
+          capabilityType: 1,
+          toolFormerData: { name: 'edit_file_v2', status: 'completed', params: '{"path":"b.ts"}', result: '"done"' },
+        }),
+        makeBubble({
+          bubbleId: 'b4',
+          type: 2,
+          text: '',
+          capabilityType: 1,
+          toolFormerData: { name: 'glob_file_search', status: 'completed', params: '{"pattern":"*.ts"}', result: '["a.ts","b.ts"]' },
+        }),
+        makeBubble({ bubbleId: 'b5', type: 2, text: 'Done editing' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.toolCalls).toHaveLength(3);
+      expect(result!.toolCalls.map(tc => tc.name)).toEqual(['read_file_v2', 'edit_file_v2', 'glob_file_search']);
+    });
+
+    it('toolFormerData with null/missing fields gracefully produces tool call with nulls', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'Question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          capabilityType: 1,
+          toolFormerData: { name: 'run_terminal_command_v2' },
+        }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.toolCalls).toHaveLength(1);
+      expect(result!.toolCalls[0].name).toBe('run_terminal_command_v2');
+      expect(result!.toolCalls[0].input).toBeNull();
+      expect(result!.toolCalls[0].output).toBeNull();
+      expect(result!.toolCalls[0].status).toBeNull();
+    });
+
+    it('bubbles without toolFormerData produce no tool calls', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'Question' }),
+        makeBubble({ bubbleId: 'b2', type: 2, text: 'Just a regular response' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.toolCalls).toHaveLength(0);
+    });
+
+    it('uses rawArgs as fallback when params is missing/null', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'Question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          capabilityType: 1,
+          toolFormerData: {
+            name: 'web_search',
+            status: 'completed',
+            rawArgs: '{"query":"typescript generics"}',
+            result: '{"results":[]}',
+          },
+        }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.toolCalls).toHaveLength(1);
+      expect(result!.toolCalls[0].input).toEqual({ query: 'typescript generics' });
+    });
+
+    it('maps status "completed" to "success" and "error" to "error"', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'Question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          capabilityType: 1,
+          toolFormerData: { name: 'read_file_v2', status: 'completed', params: '{}', result: '{}' },
+        }),
+        makeBubble({
+          bubbleId: 'b3',
+          type: 2,
+          text: '',
+          capabilityType: 1,
+          toolFormerData: { name: 'edit_file_v2', status: 'error', params: '{}', result: '"failed"' },
+        }),
+        makeBubble({ bubbleId: 'b4', type: 2, text: 'Done' }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.toolCalls[0].status).toBe('success');
+      expect(result!.toolCalls[1].status).toBe('error');
+    });
+
+    it('falls back to raw string when result is not valid JSON', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'Question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          capabilityType: 1,
+          toolFormerData: {
+            name: 'run_terminal_command_v2',
+            status: 'completed',
+            params: '{"cmd":"ls"}',
+            result: 'not valid json output',
+          },
+        }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.toolCalls[0].output).toBe('not valid json output');
+    });
+
+    it('sets conversationId on all tool calls', () => {
+      const conv = makeConversation();
+      const bubbles = [
+        makeBubble({ bubbleId: 'b1', type: 1, text: 'Question' }),
+        makeBubble({
+          bubbleId: 'b2',
+          type: 2,
+          text: '',
+          capabilityType: 1,
+          toolFormerData: { name: 'read_file_v2', status: 'completed', params: '{}', result: '{}' },
+        }),
+      ];
+      const result = normalizeCursorConversation(conv, bubbles, 'Cursor');
+      expect(result!.toolCalls[0].conversationId).toBe(result!.conversation.id);
+    });
+  });
+
   describe('workspace path derivation', () => {
     it('extracts workspace path from conversation and uses last segment as project', () => {
       const conv = makeConversation({ workspacePath: '/Users/sachin/Desktop/myapp' } as any);

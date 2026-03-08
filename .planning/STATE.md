@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Bug Fix & Quality Audit
-status: active
-stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-03-08T08:48:45.000Z"
-last_activity: 2026-03-08 — Completed Phase 17 (all cost calculation fixes)
+status: in-progress
+stopped_at: Completed 18-03-PLAN.md (heatmap timezone & timeseries consistency)
+last_updated: "2026-03-08T09:03:25Z"
+last_activity: 2026-03-08 — Completed 18-03 (heatmap timezone & timeseries consistency)
 progress:
   total_phases: 8
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 5
+  completed_plans: 4
 ---
 
 # Project State
@@ -20,16 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 17 - Cost Calculation Fixes (v1.3)
+**Current focus:** Phase 18 - Data Accuracy Fixes (v1.3)
 
 ## Current Position
 
-Phase: 17 of 24 (Cost Calculation Fixes) — first of 8 v1.3 phases -- COMPLETE
-Plan: 2 of 2 in current phase
-Status: Phase 17 complete — ready for Phase 18
-Last activity: 2026-03-08 — Completed 17-02 (cost display components unified)
+Phase: 18 of 24 (Data Accuracy Fixes)
+Plan: 3 of 3 in current phase
+Status: Completed 18-03 (heatmap timezone & timeseries consistency)
+Last activity: 2026-03-08 — Completed 18-03 (heatmap timezone & timeseries consistency)
 
-Progress (v1.3): [█░░░░░░░░░] 12% (2/2 plans in phase 17)
+Progress (v1.3): [████░░░░░░] 40% (4 plans completed)
 
 ## Performance Metrics
 
@@ -43,6 +43,8 @@ Progress (v1.3): [█░░░░░░░░░] 12% (2/2 plans in phase 17)
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
+- [18-03]: Use getFullYear/getMonth/getDate for local date formatting instead of toISOString (avoids UTC conversion)
+- [18-03]: Group timeseries by conversations.createdAt to match the WHERE filter source
 - [17-02]: Show cache read tokens as separate annotation rather than folding into total token count
 - [17-01]: JS sort for cost column instead of SQL subquery (avoids duplicating pricing logic)
 - [17-01]: Per-model secondary query for conversation list cost (multi-model accuracy)
@@ -63,5 +65,5 @@ None currently.
 ## Session Continuity
 
 Last session: 2026-03-08
-Stopped at: Completed 17-02-PLAN.md (cost display components unified)
+Stopped at: Completed 18-03-PLAN.md (heatmap timezone & timeseries consistency)
 Resume file: None

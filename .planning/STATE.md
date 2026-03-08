@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Bug Fix & Quality Audit
 status: executing
-stopped_at: Completed 20-01-PLAN.md
-last_updated: "2026-03-08T12:25:07.665Z"
-last_activity: 2026-03-08 — Completed 20-01 (backend sort & filters)
+stopped_at: Completed 20-02-PLAN.md
+last_updated: "2026-03-08T12:27:00.000Z"
+last_activity: 2026-03-08 — Completed 20-02 (search UX and inline snippets)
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -25,11 +25,11 @@ See: .planning/PROJECT.md (updated 2026-03-08)
 ## Current Position
 
 Phase: 20 of 24 (Conversation List Fixes)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: Executing phase 20
-Last activity: 2026-03-08 — Completed 20-01 (backend sort & filters)
+Last activity: 2026-03-08 — Completed 20-02 (search UX and inline snippets)
 
-Progress (v1.3): [█████████░] 94% (33 plans completed)
+Progress (v1.3): [██████████] 97% (34 plans completed)
 
 ## Performance Metrics
 
@@ -64,6 +64,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [20-01]: Token sort uses sum(input + output) to match the displayed total in the UI
 - [20-01]: NULLS LAST via CASE WHEN IS NULL pattern for nullable column sorting
 - [20-01]: Unrecognized sort fields fall back to date (createdAt) as safe default
+- [20-02]: Manual setTimeout debounce (400ms) instead of external debounce library
+- [20-02]: DOMPurify with ALLOWED_TAGS: ['mark'] replaces regex sanitizer
 
 ### Pending Todos
 
@@ -75,6 +77,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-08T12:26:00.000Z
-Stopped at: Completed 20-01-PLAN.md
-Resume file: .planning/phases/20-conversation-list-fixes/20-01-SUMMARY.md
+Last session: 2026-03-08T12:27:00.000Z
+Stopped at: Completed 20-02-PLAN.md
+Resume file: .planning/phases/20-conversation-list-fixes/20-02-SUMMARY.md

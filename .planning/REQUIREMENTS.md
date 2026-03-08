@@ -45,11 +45,11 @@
 - [x] **LIST-02**: Tokens column sort matches displayed sum (CL-02)
 - [x] **LIST-03**: Project filter fetches full project list from API (CL-03)
 - [x] **LIST-04**: Sort disabled or implemented for unsupported columns (CL-04)
-- [ ] **LIST-05**: Search snippet rows don't break zebra striping (CL-06)
+- [x] **LIST-05**: Search snippet rows don't break zebra striping (CL-06)
 - [ ] **LIST-06**: Truncated model names have tooltips (CL-07)
 - [ ] **LIST-07**: Loading indicator shown on pagination/sort changes (CL-08)
-- [ ] **LIST-08**: Search has visual affordance (button or debounce) (CL-09)
-- [ ] **LIST-09**: Search snippet uses DOMPurify instead of regex sanitizer (CL-10)
+- [x] **LIST-08**: Search has visual affordance (button or debounce) (CL-09)
+- [x] **LIST-09**: Search snippet uses DOMPurify instead of regex sanitizer (CL-10)
 - [ ] **LIST-10**: formatDate uses local timezone (CL-11)
 
 ### Analytics & Agents
@@ -141,11 +141,11 @@ None — all audit bugs targeted for v1.3.
 | LIST-02 | Phase 20 | Complete |
 | LIST-03 | Phase 20 | Complete |
 | LIST-04 | Phase 20 | Complete |
-| LIST-05 | Phase 20 | Pending |
+| LIST-05 | Phase 20 | Complete |
 | LIST-06 | Phase 20 | Pending |
 | LIST-07 | Phase 20 | Pending |
-| LIST-08 | Phase 20 | Pending |
-| LIST-09 | Phase 20 | Pending |
+| LIST-08 | Phase 20 | Complete |
+| LIST-09 | Phase 20 | Complete |
 | LIST-10 | Phase 20 | Pending |
 | PLAN-01 | Phase 21 | Pending |
 | PLAN-02 | Phase 21 | Pending |

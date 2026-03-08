@@ -19,7 +19,7 @@
       </template>
       <template v-else-if="message.content != null">
         <template v-for="(block, idx) in parsedContent" :key="idx">
-          <p v-if="block.type === 'text'" class="whitespace-pre-wrap">{{ block.content }}</p>
+          <p v-if="block.type === 'text'" class="whitespace-pre-wrap" v-html="linkify(block.content)"></p>
           <CodeBlock
             v-else
             :code="block.content"
@@ -38,12 +38,20 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { ImageIcon } from 'lucide-vue-next';
+import DOMPurify from 'dompurify';
 import type { MessageRow } from '@cowboy/shared';
 import CodeBlock from './CodeBlock.vue';
 import { parseContent, formatTime } from '../utils/content-parser';
 import { isSlashCommand, extractCommandText } from '../utils/content-sanitizer';
 
 const IMAGE_RE = /\[Image: source: [^\]]+\]/g;
+const URL_RE = /(https?:\/\/[^\s<>"')\]]+)/g;
+
+function linkify(text: string): string {
+  const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const linked = escaped.replace(URL_RE, '<a href="$1" target="_blank" rel="noopener noreferrer" class="link link-info break-all">$1</a>');
+  return DOMPurify.sanitize(linked, { ALLOWED_TAGS: ['a'], ALLOWED_ATTR: ['href', 'target', 'rel', 'class'] });
+}
 
 const props = defineProps<{
   message: MessageRow;

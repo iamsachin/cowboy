@@ -65,7 +65,7 @@ function toggleSort(key: string) {
 }
 
 function getSuccessRate(row: ToolStatsRow): number {
-  const denominator = row.total - (row.unknown ?? 0);
+  const denominator = row.total - (row.unknown ?? 0) - (row.rejected ?? 0);
   if (denominator === 0) return 0;
   return (row.success / denominator) * 100;
 }

@@ -151,7 +151,11 @@ export function normalizeConversation(
         name: toolUse.name,
         input: toolUse.input,
         output: result?.content ?? null,
-        status: result ? (result.isError ? 'error' : 'success') : null,
+        status: result
+          ? (toolUse.name === 'ExitPlanMode' && result.isError
+            ? 'rejected'
+            : result.isError ? 'error' : 'success')
+          : null,
         duration: null,
         createdAt: assistant.timestamp,
       });

@@ -642,8 +642,9 @@ export function getToolStats(from: string, to: string, agent?: string): ToolStat
       name: toolCalls.name,
       total: sql<number>`count(*)`,
       success: sql<number>`sum(case when ${toolCalls.status} = 'success' or ${toolCalls.status} = 'completed' then 1 else 0 end)`,
-      failure: sql<number>`sum(case when ${toolCalls.status} is not null and ${toolCalls.status} != 'success' and ${toolCalls.status} != 'completed' then 1 else 0 end)`,
+      failure: sql<number>`sum(case when ${toolCalls.status} = 'error' then 1 else 0 end)`,
       unknown: sql<number>`sum(case when ${toolCalls.status} is null then 1 else 0 end)`,
+      rejected: sql<number>`sum(case when ${toolCalls.status} = 'rejected' then 1 else 0 end)`,
     })
     .from(toolCalls)
     .innerJoin(conversations, sql`${toolCalls.conversationId} = ${conversations.id}`)
@@ -658,6 +659,7 @@ export function getToolStats(from: string, to: string, agent?: string): ToolStat
     success: Number(r.success),
     failure: Number(r.failure),
     unknown: Number(r.unknown),
+    rejected: Number(r.rejected),
     avgDuration: null,
     p95Duration: null,
   }));

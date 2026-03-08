@@ -131,6 +131,7 @@ export interface ToolStatsRow {
   success: number;
   failure: number;
   unknown: number;
+  rejected: number;
   avgDuration: number | null;
   p95Duration: number | null;
 }

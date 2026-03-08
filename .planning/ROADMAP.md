@@ -186,7 +186,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 14. Ingestion Quality | v1.2 | 2/2 | Complete | 2026-03-05 |
 | 15. Cursor Data Quality | v1.2 | 2/2 | Complete | 2026-03-05 |
 | 16. Message Display | v1.2 | 2/2 | Complete | 2026-03-05 |
-| 17. Cost Calculation Fixes | v1.3 | 0/2 | Not started | - |
+| 17. Cost Calculation Fixes | 1/2 | In Progress|  | - |
 | 18. Data Accuracy Fixes | v1.3 | 0/? | Not started | - |
 | 19. Conversation Display Fixes | v1.3 | 0/? | Not started | - |
 | 20. Conversation List Fixes | v1.3 | 0/? | Not started | - |

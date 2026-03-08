@@ -1,59 +1,55 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Data Quality & Display Fixes
-status: completed
-stopped_at: Completed 16-02-PLAN.md (all tasks complete, human verification approved)
-last_updated: "2026-03-05T13:45:28.981Z"
-last_activity: 2026-03-05 -- Completed 16-01 turn grouping extension (SystemGroup, SlashCommandTurn, ClearDividerTurn)
+milestone: v1.3
+milestone_name: Bug Fix & Quality Audit
+status: active
+stopped_at: Completed 17-01-PLAN.md
+last_updated: "2026-03-08T08:45:12.445Z"
+last_activity: 2026-03-08 — Roadmap created for v1.3 Bug Fix & Quality Audit
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
-  percent: 100
+  total_phases: 8
+  completed_phases: 0
+  total_plans: 2
+  completed_plans: 1
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-05)
+See: .planning/PROJECT.md (updated 2026-03-08)
 
-**Core value:** Give developers a single, unified view of how their coding agents are performing -- every conversation, tool call, token, and plan across all agents in one place.
-**Current focus:** Milestone v1.2 -- Data Quality & Display Fixes
+**Core value:** Give developers a single, unified view of how their coding agents are performing
+**Current focus:** Phase 17 - Cost Calculation Fixes (v1.3)
 
 ## Current Position
 
-Phase: 16 of 16 (Message Display) -- COMPLETE
-Plan: 2 of 2 complete
-Status: All plans complete -- milestone v1.2 finished
-Last activity: 2026-03-05 -- Completed 16-02 message display components (SystemMessageIndicator, SlashCommandChip, ClearDivider), human verification approved
+Phase: 17 of 24 (Cost Calculation Fixes) — first of 8 v1.3 phases
+Plan: 1 of 2 in current phase
+Status: Active — executing Phase 17
+Last activity: 2026-03-08 — Completed 17-01 (cost calculation fixes + formatCost utility)
 
-Progress: [██████████] 100% (30/30 plans complete for v1.2)
+Progress (v1.3): [█░░░░░░░░░] 6% (1/2 plans in phase 17)
 
 ## Performance Metrics
 
 **Velocity:**
 - v1.0: 24 plans, ~124min total, ~5min avg
-- v1.1: 8 plans, 20 commits, 33 files changed
+- v1.1: 8 plans, 4 phases
+- v1.2: 6 plans, 3 phases
 
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-- [Phase 14]: Shared title-utils module for cross-normalizer skip logic
-- [Phase 14]: Cursor 'default' model replaced with 'unknown' at both conversation and per-message level
-- [Phase 14]: Idempotent startup migration runs every ingestion cycle (no one-time flag needed)
-- [Phase 15]: Tool-only assistant bubbles produce grouped summary messages instead of being skipped
-- [Phase 15]: Workspace path extracted from composerData with fallback chain for project derivation
-- [Phase 15]: Cursor migration uses generateId reverse-lookup to map DB IDs back to Cursor composerIds/bubbleIds
-- [Phase 15]: Null assistant content falls back to 'Executed tool call' when Cursor DB unavailable
-- [Phase 16-message-display]: System message detection order mirrors content-sanitizer.ts precedence: isClearCommand before isSlashCommand before isSystemInjected
-- [Phase 16-message-display]: groupTurns pendingSystem accumulator merges consecutive system-injected messages into SystemGroup with per-message category labels
-- [Phase 16-message-display]: SystemMessageIndicator uses in-flow flex-col expansion (not absolute dropdown) to avoid z-index issues inside conversation scroll container
-- [Phase 16-message-display]: ConversationDetail.vue removes filteredMessages and /clear slicing — groupTurns handles all classification; system messages are no longer silently dropped
+- [17-01]: JS sort for cost column instead of SQL subquery (avoids duplicating pricing logic)
+- [17-01]: Per-model secondary query for conversation list cost (multi-model accuracy)
+- [v1.3 roadmap]: 67 audit bugs organized into 8 phases by technical area
+- [v1.3 roadmap]: Critical cost bugs (COST-01..06) prioritized as Phase 17
+- [v1.3 roadmap]: Phase 24 includes browser verification of all fixes
+- [v1.2]: groupTurns handles all message classification (single source of truth)
+- [v1.2]: SystemMessageIndicator uses in-flow expansion (avoids z-index issues)
 
 ### Pending Todos
 
@@ -65,6 +61,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-05T13:45:28.978Z
-Stopped at: Completed 16-02-PLAN.md (all tasks complete, human verification approved)
+Last session: 2026-03-08
+Stopped at: Completed 17-01-PLAN.md (cost calculation fixes + formatCost utility)
 Resume file: None

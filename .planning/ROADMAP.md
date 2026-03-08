@@ -89,7 +89,11 @@ Plans:
   3. NULL-model conversations show the correct model derived from their token usage records
   4. Tool call analytics exclude null-status calls from success rate and distinguish user rejections from errors
   5. Heatmap and timeseries data align with the user's local timezone with no off-by-one day shifts
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 18-01-PLAN.md — Fix Cursor timestamp fallback, duration calculation, turn count label, and NULL-model backfill
+- [ ] 18-02-PLAN.md — Fix tool duration display, null-status handling, and ExitPlanMode rejection classification
+- [ ] 18-03-PLAN.md — Fix heatmap timezone consistency and timeseries timestamp source alignment
 
 ### Phase 19: Conversation Display Fixes
 **Goal**: Conversation detail view renders all message types correctly with proper grouping and usable scroll behavior
@@ -186,8 +190,8 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 14. Ingestion Quality | v1.2 | 2/2 | Complete | 2026-03-05 |
 | 15. Cursor Data Quality | v1.2 | 2/2 | Complete | 2026-03-05 |
 | 16. Message Display | v1.2 | 2/2 | Complete | 2026-03-05 |
-| 17. Cost Calculation Fixes | 2/2 | Complete   | 2026-03-08 | - |
-| 18. Data Accuracy Fixes | v1.3 | 0/? | Not started | - |
+| 17. Cost Calculation Fixes | 2/2 | Complete    | 2026-03-08 | - |
+| 18. Data Accuracy Fixes | v1.3 | 0/3 | Not started | - |
 | 19. Conversation Display Fixes | v1.3 | 0/? | Not started | - |
 | 20. Conversation List Fixes | v1.3 | 0/? | Not started | - |
 | 21. Plan Extraction Quality | v1.3 | 0/? | Not started | - |

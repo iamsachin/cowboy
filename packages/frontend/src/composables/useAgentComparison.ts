@@ -1,13 +1,12 @@
 import { ref, watch, onScopeDispose } from 'vue';
 import { autoGranularity } from '@cowboy/shared';
-import type { OverviewStats, TimeSeriesPoint, ModelDistributionEntry } from '@cowboy/shared';
+import type { OverviewStats, TimeSeriesPoint } from '@cowboy/shared';
 import { useDateRange } from './useDateRange';
 import { useWebSocket } from './useWebSocket';
 
 export interface AgentDataSet {
   overview: import('vue').Ref<OverviewStats | null>;
   timeseries: import('vue').Ref<TimeSeriesPoint[]>;
-  modelDistribution: import('vue').Ref<ModelDistributionEntry[]>;
 }
 
 async function fetchAgentOverview(agent: string, from: string, to: string): Promise<OverviewStats> {
@@ -29,31 +28,17 @@ async function fetchAgentTimeSeries(
   return res.json();
 }
 
-async function fetchAgentModelDistribution(
-  agent: string,
-  from: string,
-  to: string
-): Promise<ModelDistributionEntry[]> {
-  const res = await fetch(
-    `/api/analytics/model-distribution?from=${from}&to=${to}&agent=${agent}`
-  );
-  if (!res.ok) throw new Error(`Model distribution fetch failed for ${agent}: ${res.status}`);
-  return res.json();
-}
-
 export function useAgentComparison() {
   const { dateRange } = useDateRange();
 
   const claudeCode: AgentDataSet = {
     overview: ref<OverviewStats | null>(null),
     timeseries: ref<TimeSeriesPoint[]>([]),
-    modelDistribution: ref<ModelDistributionEntry[]>([]),
   };
 
   const cursor: AgentDataSet = {
     overview: ref<OverviewStats | null>(null),
     timeseries: ref<TimeSeriesPoint[]>([]),
-    modelDistribution: ref<ModelDistributionEntry[]>([]),
   };
 
   const loading = ref(false);
@@ -66,22 +51,18 @@ export function useAgentComparison() {
       const { from, to } = dateRange.value;
       const granularity = autoGranularity(from, to);
 
-      const [ccOverview, ccTimeseries, ccModels, curOverview, curTimeseries, curModels] =
+      const [ccOverview, ccTimeseries, curOverview, curTimeseries] =
         await Promise.all([
           fetchAgentOverview('claude-code', from, to),
           fetchAgentTimeSeries('claude-code', from, to, granularity),
-          fetchAgentModelDistribution('claude-code', from, to),
           fetchAgentOverview('cursor', from, to),
           fetchAgentTimeSeries('cursor', from, to, granularity),
-          fetchAgentModelDistribution('cursor', from, to),
         ]);
 
       claudeCode.overview.value = ccOverview;
       claudeCode.timeseries.value = ccTimeseries;
-      claudeCode.modelDistribution.value = ccModels;
       cursor.overview.value = curOverview;
       cursor.timeseries.value = curTimeseries;
-      cursor.modelDistribution.value = curModels;
     } catch (e) {
       error.value = e instanceof Error ? e.message : String(e);
     } finally {

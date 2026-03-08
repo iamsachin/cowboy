@@ -174,7 +174,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Coins, DollarSign, MessageSquare, CalendarDays, Terminal, Mouse } from 'lucide-vue-next';
+import { Coins, DollarSign, MessageSquare, CalendarDays, Terminal, Mouse, GitCompareArrows } from 'lucide-vue-next';
 import KpiCard from '../components/KpiCard.vue';
 import DateRangeFilter from '../components/DateRangeFilter.vue';
 import TokenChart from '../components/TokenChart.vue';
@@ -205,7 +205,7 @@ function setTab(tab: string) {
 const tabs = [
   { id: 'claude-code', label: 'Claude Code', icon: Terminal },
   { id: 'cursor', label: 'Cursor', icon: Mouse },
-  { id: 'compare', label: 'Compare', icon: CalendarDays },
+  { id: 'compare', label: 'Compare', icon: GitCompareArrows },
 ];
 
 // Per-agent data (used when a per-agent tab is active)

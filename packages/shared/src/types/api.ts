@@ -196,6 +196,11 @@ export interface PlanDetailResponse {
   sourceMessageId: string;
 }
 
+export interface ConversationPlanEntry {
+  plan: PlanRow;
+  steps: PlanStepRow[];
+}
+
 export interface PlanStatsResponse {
   totalPlans: number;
   totalSteps: number;

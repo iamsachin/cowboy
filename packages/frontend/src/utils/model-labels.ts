@@ -23,7 +23,8 @@ export function getModelBadge(modelString: string | null): ModelBadgeInfo {
   if (!modelString) return FALLBACK;
   const lower = modelString.toLowerCase();
   for (const { pattern, info } of MODEL_MATCHERS) {
-    if (lower.includes(pattern)) return { ...info };
+    const regex = new RegExp(`(?:^|[-_./\\s])${pattern}(?:$|[-_./\\s])`, 'i');
+    if (regex.test(lower)) return { ...info };
   }
   // Unknown model: use raw string with ghost styling
   return { label: modelString, cssClass: 'badge-ghost' };

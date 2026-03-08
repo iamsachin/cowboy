@@ -125,7 +125,7 @@
 import { computed, ref, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 import { ArrowLeft, AlertTriangle, ClipboardList } from 'lucide-vue-next';
-import type { PlanDetailResponse } from '@cowboy/shared';
+import type { ConversationPlanEntry } from '@cowboy/shared';
 import { useConversationDetail } from '../composables/useConversationDetail';
 import ConversationDetail from '../components/ConversationDetail.vue';
 import PlanStepList from '../components/PlanStepList.vue';
@@ -138,7 +138,7 @@ const id = route.params.id as string;
 const { data, loading, error, notFound } = useConversationDetail(id);
 
 // Fetch inline plans for this conversation
-const conversationPlans = ref<PlanDetailResponse[]>([]);
+const conversationPlans = ref<ConversationPlanEntry[]>([]);
 
 async function fetchConversationPlans(): Promise<void> {
   try {

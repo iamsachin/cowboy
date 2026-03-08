@@ -302,11 +302,29 @@ export function getConversationList(
 
   // Sort column mapping — cost sort is handled in JS after computing actual cost
   const isCostSort = sort === 'cost';
-  const sortColumn = sort === 'inputTokens' ? sql`sum(${tokenUsage.inputTokens})`
-    : sort === 'outputTokens' ? sql`sum(${tokenUsage.outputTokens})`
-    : sql`${conversations.createdAt}`;
+
+  // Columns that may contain NULLs need NULLS LAST treatment
+  const nullableColumns = new Set(['agent', 'project', 'model', 'title']);
+  const isNullableSort = nullableColumns.has(sort);
+
+  // Map sort field to SQL expression
+  const sortColumnMap: Record<string, ReturnType<typeof sql>> = {
+    date: sql`${conversations.createdAt}`,
+    agent: sql`${conversations.agent}`,
+    project: sql`${conversations.project}`,
+    model: sql`${conversations.model}`,
+    title: sql`${conversations.title}`,
+    inputTokens: sql`coalesce(sum(${tokenUsage.inputTokens}), 0) + coalesce(sum(${tokenUsage.outputTokens}), 0)`,
+    cacheReadTokens: sql`coalesce(sum(${tokenUsage.cacheReadTokens}), 0)`,
+  };
+  const sortColumn = sortColumnMap[sort] ?? sortColumnMap['date'];
 
   const orderDir = order === 'asc' ? sql`ASC` : sql`DESC`;
+
+  // For nullable columns, use CASE WHEN to push NULLs to bottom regardless of direction
+  const orderClause = isNullableSort
+    ? sql`CASE WHEN ${sortColumn} IS NULL THEN 1 ELSE 0 END ASC, ${sortColumn} ${orderDir}`
+    : sql`${sortColumn} ${orderDir}`;
 
   const query = db
     .select({
@@ -325,7 +343,7 @@ export function getConversationList(
     .leftJoin(tokenUsage, sql`${tokenUsage.conversationId} = ${conversations.id}`)
     .where(dateFilter)
     .groupBy(conversations.id)
-    .orderBy(sql`${sortColumn} ${orderDir}`);
+    .orderBy(orderClause);
 
   // For cost sort, fetch all rows (sort in JS after computing cost); otherwise use SQL pagination
   const rows = isCostSort

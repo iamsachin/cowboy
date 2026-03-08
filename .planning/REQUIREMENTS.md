@@ -56,12 +56,12 @@
 
 - [ ] **ANLYT-01**: Heatmap has color scale legend (AN-05)
 - [ ] **ANLYT-02**: Agent filter dropdown populated from API (AN-06)
-- [ ] **ANLYT-03**: Cursor shows accurate token/cost data or clear "unavailable" state (AG-01)
-- [ ] **ANLYT-04**: Cursor tool calls extracted where available (AG-02)
+- [x] **ANLYT-03**: Cursor shows accurate token/cost data or clear "unavailable" state (AG-01)
+- [x] **ANLYT-04**: Cursor tool calls extracted where available (AG-02)
 - [ ] **ANLYT-05**: Compare tab uses appropriate icon (AG-03)
-- [ ] **ANLYT-06**: KPI descriptions are contextual, not hardcoded "Awaiting data" (AG-04)
+- [x] **ANLYT-06**: KPI descriptions are contextual, not hardcoded "Awaiting data" (AG-04)
 - [ ] **ANLYT-07**: Compare tab skips analytics API call (AG-05)
-- [ ] **ANLYT-08**: ComparisonCard uses theme colors instead of hardcoded inline styles (AG-06)
+- [x] **ANLYT-08**: ComparisonCard uses theme colors instead of hardcoded inline styles (AG-06)
 
 ### Plan Extraction
 
@@ -159,12 +159,12 @@ None — all audit bugs targeted for v1.3.
 | PLAN-10 | Phase 21 | Complete |
 | ANLYT-01 | Phase 22 | Pending |
 | ANLYT-02 | Phase 22 | Pending |
-| ANLYT-03 | Phase 22 | Pending |
-| ANLYT-04 | Phase 22 | Pending |
+| ANLYT-03 | Phase 22 | Complete |
+| ANLYT-04 | Phase 22 | Complete |
 | ANLYT-05 | Phase 22 | Pending |
-| ANLYT-06 | Phase 22 | Pending |
+| ANLYT-06 | Phase 22 | Complete |
 | ANLYT-07 | Phase 22 | Pending |
-| ANLYT-08 | Phase 22 | Pending |
+| ANLYT-08 | Phase 22 | Complete |
 | XCUT-01 | Phase 23 | Pending |
 | XCUT-02 | Phase 23 | Pending |
 | XCUT-03 | Phase 23 | Pending |

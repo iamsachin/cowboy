@@ -153,7 +153,10 @@ Plans:
   3. Cursor agent pages show accurate token/cost data or a clear "Data unavailable" state — no misleading zeros
   4. KPI descriptions show contextual text based on actual data, not hardcoded "Awaiting data"
   5. ComparisonCard and Compare tab use theme colors and appropriate icons (not hardcoded inline styles)
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 22-01-PLAN.md — Add heatmap color legend, API-driven agent filter, Compare tab icon fix, and API optimization
+- [ ] 22-02-PLAN.md — Add Cursor data unavailable states, contextual KPI descriptions, and ComparisonCard theming
 
 ### Phase 23: Cross-Cutting Polish
 **Goal**: Routing, theming, and code quality issues fixed across the entire codebase
@@ -206,7 +209,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 18. Data Accuracy Fixes | 3/3 | Complete    | 2026-03-08 | - |
 | 19. Conversation Display Fixes | 3/3 | Complete    | 2026-03-08 | - |
 | 20. Conversation List Fixes | 3/3 | Complete    | 2026-03-08 | - |
-| 21. Plan Extraction Quality | 3/3 | Complete   | 2026-03-08 | - |
-| 22. Analytics & Agent Pages | v1.3 | 0/? | Not started | - |
+| 21. Plan Extraction Quality | 3/3 | Complete    | 2026-03-08 | - |
+| 22. Analytics & Agent Pages | 1/2 | In Progress|  | - |
 | 23. Cross-Cutting Polish | v1.3 | 0/? | Not started | - |
 | 24. Overview, Settings & Final Verification | v1.3 | 0/? | Not started | - |

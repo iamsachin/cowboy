@@ -83,11 +83,12 @@ function computePeriodStats(from: string, to: string, agent?: string): PeriodSta
     .where(dateFilter)
     .get();
 
-  // Conversation count
+  // Conversation count (exclude conversations with no assistant messages)
+  const hasAssistant = sql`EXISTS (SELECT 1 FROM ${messages} WHERE ${messages.conversationId} = ${conversations.id} AND ${messages.role} = 'assistant')`;
   const convCount = db
     .select({ count: sql<number>`count(*)` })
     .from(conversations)
-    .where(dateFilter)
+    .where(and(dateFilter, hasAssistant))
     .get();
 
   // Active days
@@ -96,7 +97,7 @@ function computePeriodStats(from: string, to: string, agent?: string): PeriodSta
       days: sql<number>`count(distinct date(${conversations.createdAt}))`,
     })
     .from(conversations)
-    .where(dateFilter)
+    .where(and(dateFilter, hasAssistant))
     .get();
 
   const totalInput = Number(tokenTotals?.totalInput ?? 0);
@@ -342,7 +343,10 @@ export function getConversationList(
     })
     .from(conversations)
     .leftJoin(tokenUsage, sql`${tokenUsage.conversationId} = ${conversations.id}`)
-    .where(dateFilter)
+    .where(and(
+      dateFilter,
+      sql`EXISTS (SELECT 1 FROM ${messages} WHERE ${messages.conversationId} = ${conversations.id} AND ${messages.role} = 'assistant')`
+    ))
     .groupBy(conversations.id)
     .orderBy(orderClause);
 
@@ -355,7 +359,10 @@ export function getConversationList(
   const totalResult = db
     .select({ count: sql<number>`count(*)` })
     .from(conversations)
-    .where(dateFilter)
+    .where(and(
+      dateFilter,
+      sql`EXISTS (SELECT 1 FROM ${messages} WHERE ${messages.conversationId} = ${conversations.id} AND ${messages.role} = 'assistant')`
+    ))
     .get();
 
   // Compute per-model costs for each conversation (handles multi-model conversations correctly)

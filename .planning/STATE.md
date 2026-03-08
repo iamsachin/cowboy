@@ -5,7 +5,7 @@ milestone_name: Bug Fix & Quality Audit
 status: milestone_complete
 stopped_at: v1.3 milestone shipped
 last_updated: "2026-03-08"
-last_activity: 2026-03-08 — Shipped v1.3 Bug Fix & Quality Audit (8 phases, 21 plans, 67 bugs)
+last_activity: 2026-03-08 - Completed quick task 8: Liven up sidebar with stats strip, tagline, tips
 progress:
   total_phases: 8
   completed_phases: 8
@@ -95,8 +95,15 @@ None.
 
 None currently.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 7 | Disable chart animations when data updates | 2026-03-08 | 7b27913 | [7-disable-chart-animations-when-data-updat](./quick/7-disable-chart-animations-when-data-updat/) |
+| 8 | Liven up sidebar with stats strip, tagline, tips | 2026-03-08 | 1398e2f | [8-liven-up-sidebar-with-stats-strip-taglin](./quick/8-liven-up-sidebar-with-stats-strip-taglin/) |
+
 ## Session Continuity
 
-Last session: 2026-03-08T16:37:01.986Z
-Stopped at: Completed 24-02-PLAN.md
+Last session: 2026-03-08T17:25:18Z
+Stopped at: Completed quick task 8
 Resume file: None

@@ -40,7 +40,7 @@
               <Check v-if="copiedInput" class="w-3 h-3 text-success" />
               <Copy v-else class="w-3 h-3" />
             </button>
-            <pre class="bg-base-300 rounded p-2 text-xs overflow-x-auto max-h-80 overflow-y-auto">{{ inputText }}</pre>
+            <pre class="bg-base-300 rounded p-2 text-xs whitespace-pre-wrap break-words max-h-80 overflow-y-auto">{{ inputText }}</pre>
           </div>
         </div>
 
@@ -55,7 +55,7 @@
               <Check v-if="copiedOutput" class="w-3 h-3 text-success" />
               <Copy v-else class="w-3 h-3" />
             </button>
-            <pre class="bg-base-300 rounded p-2 text-xs overflow-x-auto max-h-80 overflow-y-auto">{{ displayedOutput }}</pre>
+            <pre class="bg-base-300 rounded p-2 text-xs whitespace-pre-wrap break-words max-h-80 overflow-y-auto">{{ displayedOutput }}</pre>
           </div>
           <button
             v-if="outputTruncated && !showFullOutput"

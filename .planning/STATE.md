@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Bug Fix & Quality Audit
 status: in-progress
-stopped_at: "Completed 19-02-PLAN.md (UI display fixes: tool calls, preview, chevron, max-height)"
+stopped_at: "Completed 19-01-PLAN.md (turn grouping and system message detection fixes)"
 last_updated: "2026-03-08T09:32:38.727Z"
-last_activity: 2026-03-08 — Completed 19-02 (UI display fixes: tool calls, preview, chevron, max-height)
+last_activity: 2026-03-08 — Completed 19-01 (turn grouping and system message detection fixes)
 progress:
   total_phases: 8
   completed_phases: 2
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-03-08)
 ## Current Position
 
 Phase: 19 of 24 (Conversation Display Fixes)
-Plan: 2 of 2 in current phase
-Status: Completed 19-02 (UI display fixes: tool calls, preview, chevron, max-height)
-Last activity: 2026-03-08 — Completed 19-02 (UI display fixes)
+Plan: 2 of 3 in current phase
+Status: Completed 19-01 (turn grouping and system message detection fixes)
+Last activity: 2026-03-08 — Completed 19-01 (turn grouping and system message detection fixes)
 
 Progress (v1.3): [█████████░] 94% (30 plans completed)
 
@@ -43,6 +43,8 @@ Progress (v1.3): [█████████░] 94% (30 plans completed)
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
+- [19-01]: System-injected messages between assistant turns accumulate without flushing the assistant group
+- [19-01]: Null/empty content returns false from isSystemInjected (safe default: show message)
 - [19-02]: Use ChevronRight with rotate-90 as standard expand/collapse convention across all collapsible components
 - [18-03]: Use getFullYear/getMonth/getDate for local date formatting instead of toISOString (avoids UTC conversion)
 - [18-03]: Group timeseries by conversations.createdAt to match the WHERE filter source
@@ -69,6 +71,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-08T09:32:08Z
-Stopped at: Completed 19-02-PLAN.md (UI display fixes: tool calls, preview, chevron, max-height)
+Last session: 2026-03-08T09:33:35Z
+Stopped at: Completed 19-01-PLAN.md (turn grouping and system message detection fixes)
 Resume file: None

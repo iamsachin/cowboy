@@ -1,5 +1,14 @@
 <template>
-  <div class="flex flex-col items-end ml-auto max-w-[85%]">
+  <!-- Image-only message: compact attachment badge, no header/bubble -->
+  <div v-if="isImageOnly" class="flex justify-end ml-auto max-w-[85%] -mt-2">
+    <div class="flex items-center gap-1 text-xs text-base-content/50 px-3 py-0.5">
+      <ImageIcon class="w-3.5 h-3.5" />
+      <span>{{ imageCount }} image{{ imageCount > 1 ? 's' : '' }} attached</span>
+    </div>
+  </div>
+
+  <!-- Normal message with content -->
+  <div v-else class="flex flex-col items-end ml-auto max-w-[85%]">
     <div class="text-xs text-base-content/50 mb-1">
       You
       <time class="ml-1">{{ formatTime(message.createdAt) }}</time>
@@ -56,5 +65,9 @@ const parsedContent = computed(() => {
   const cleaned = props.message.content.replace(IMAGE_RE, '').trim();
   if (!cleaned) return [];
   return parseContent(cleaned);
+});
+
+const isImageOnly = computed(() => {
+  return imageCount.value > 0 && parsedContent.value.length === 0 && !commandText.value;
 });
 </script>

@@ -95,30 +95,57 @@ function parseLine(line: string): ParsedLine | null {
   return null;
 }
 
+// ── Markdown cleaning ───────────────────────────────────────────────
+
+export function cleanMarkdown(text: string): string {
+  let cleaned = text;
+  // Strip heading prefixes: # ## ### etc.
+  cleaned = cleaned.replace(/^#{1,6}\s+/, '');
+  // Strip bold/italic markers: ** __ * _
+  cleaned = cleaned.replace(/\*\*(.+?)\*\*/g, '$1');
+  cleaned = cleaned.replace(/__(.+?)__/g, '$1');
+  cleaned = cleaned.replace(/\*(.+?)\*/g, '$1');
+  cleaned = cleaned.replace(/_(.+?)_/g, '$1');
+  // Strip backtick wrappers (inline code)
+  cleaned = cleaned.replace(/`(.+?)`/g, '$1');
+  return cleaned.trim();
+}
+
 // ── Title inference ─────────────────────────────────────────────────
 
-function inferTitle(precedingLines: string[], firstStepContent: string): string {
+function inferTitle(
+  precedingLines: string[],
+  firstStepContent: string,
+  conversationTitle?: string,
+): string {
   // Look backwards for a short non-empty line that looks like a heading
   for (let i = precedingLines.length - 1; i >= 0; i--) {
     const line = precedingLines[i].trim();
     if (line.length === 0) continue;
     // Short line (<80 chars), not ending with a period (unless colon)
     if (line.length < 80 && (line.endsWith(':') || !line.endsWith('.'))) {
-      // Strip trailing colon for cleaner title
-      return line.endsWith(':') ? line.slice(0, -1).trim() : line;
+      // Strip trailing colon for cleaner title, then clean markdown artifacts
+      const raw = line.endsWith(':') ? line.slice(0, -1).trim() : line;
+      return cleanMarkdown(raw);
     }
     break; // Stop at first non-empty non-qualifying line
   }
 
-  // Fallback: truncated first step content
-  return firstStepContent.length > 80
-    ? firstStepContent.substring(0, 77) + '...'
-    : firstStepContent;
+  // Fallback 1: conversation title (if provided and non-empty)
+  if (conversationTitle && conversationTitle.trim().length > 0) {
+    return cleanMarkdown(conversationTitle.trim());
+  }
+
+  // Fallback 2: truncated first step content
+  const cleaned = cleanMarkdown(firstStepContent);
+  return cleaned.length > 80
+    ? cleaned.substring(0, 77) + '...'
+    : cleaned;
 }
 
 // ── Main extraction function ────────────────────────────────────────
 
-export function extractPlans(content: string, messageId: string): ExtractedPlan[] {
+export function extractPlans(content: string, messageId: string, conversationTitle?: string): ExtractedPlan[] {
   const lines = content.split('\n');
   const plans: ExtractedPlan[] = [];
 
@@ -128,10 +155,10 @@ export function extractPlans(content: string, messageId: string): ExtractedPlan[
 
   function finalizePlan(endIndex: number) {
     if (currentSteps.length >= 3) {
-      // For numbered lists, require action verbs on all steps
+      // For numbered lists, require action verbs on >50% of steps
       if (currentType === 'numbered') {
-        const allActionable = currentSteps.every(s => hasActionVerb(s.content));
-        if (!allActionable) {
+        const actionCount = currentSteps.filter(s => hasActionVerb(s.content)).length;
+        if (actionCount / currentSteps.length <= 0.5) {
           currentSteps = [];
           currentType = null;
           listStartIndex = -1;
@@ -147,7 +174,7 @@ export function extractPlans(content: string, messageId: string): ExtractedPlan[
       }));
 
       const precedingLines = lines.slice(0, listStartIndex);
-      const title = inferTitle(precedingLines, steps[0].content);
+      const title = inferTitle(precedingLines, steps[0].content, conversationTitle);
 
       plans.push({
         title,
@@ -172,6 +199,18 @@ export function extractPlans(content: string, messageId: string): ExtractedPlan[
         currentSteps = [parsed];
         listStartIndex = i;
       } else if (parsed.type === currentType) {
+        // Number sequence reset detection: if numbered and step number goes backwards, split
+        if (currentType === 'numbered' && currentSteps.length > 0) {
+          const prevStepNum = currentSteps[currentSteps.length - 1].stepNumber;
+          if (parsed.stepNumber <= prevStepNum) {
+            // Finalize current plan, start new one
+            finalizePlan(i);
+            currentType = parsed.type;
+            currentSteps = [parsed];
+            listStartIndex = i;
+            continue;
+          }
+        }
         // Continuing same type of list
         currentSteps.push(parsed);
       } else {

@@ -76,6 +76,10 @@
           <div class="flex items-center gap-1">
             <span class="text-base-content/60">Tokens:</span>
             <span>{{ formatNumber(totalTokens) }}</span>
+            <span
+              v-if="data.tokenSummary.cacheReadTokens > 0"
+              class="text-base-content/50 text-xs"
+            >({{ formatNumber(data.tokenSummary.cacheReadTokens) }} cached)</span>
           </div>
 
           <!-- Cost -->
@@ -126,6 +130,7 @@ import { useConversationDetail } from '../composables/useConversationDetail';
 import ConversationDetail from '../components/ConversationDetail.vue';
 import PlanStepList from '../components/PlanStepList.vue';
 import { cleanTitle } from '../utils/content-sanitizer';
+import { formatCost } from '../utils/format-tokens';
 
 const route = useRoute();
 const id = route.params.id as string;
@@ -151,7 +156,7 @@ fetchConversationPlans();
 const totalTokens = computed(() => {
   if (!data.value) return 0;
   const s = data.value.tokenSummary;
-  return s.inputTokens + s.outputTokens + s.cacheReadTokens + s.cacheCreationTokens;
+  return s.inputTokens + s.outputTokens;
 });
 
 const displayTitle = computed(() => cleanTitle(data.value?.conversation.title || ''));
@@ -165,10 +170,6 @@ const numberFormatter = new Intl.NumberFormat();
 
 function formatNumber(n: number): string {
   return numberFormatter.format(n);
-}
-
-function formatCost(cost: number): string {
-  return `$${cost.toFixed(2)}`;
 }
 
 function formatDate(isoString: string): string {

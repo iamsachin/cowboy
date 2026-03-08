@@ -59,10 +59,11 @@
         <!-- Turn text content -->
         <div v-if="getTurnContent(turn).length > 0">
           <template v-for="(block, idx) in getTurnContent(turn)" :key="idx">
-            <p
+            <div
               v-if="block.type === 'text'"
-              class="whitespace-pre-wrap text-sm text-base-content/70"
-            >{{ block.content }}</p>
+              class="thinking-content text-sm text-base-content/70"
+              v-html="renderMarkdown(block.content)"
+            ></div>
             <CodeBlock
               v-else
               :code="block.content"

@@ -45,6 +45,7 @@ export interface ConversationRow {
   cacheCreationTokens: number;
   cost: number | null;
   savings: number | null;
+  isActive?: boolean;
 }
 
 export interface ConversationListResponse {

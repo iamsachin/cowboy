@@ -15,11 +15,11 @@ import * as schema from '../../src/db/schema.js';
 export async function seedAnalyticsData(db: BetterSQLite3Database<typeof schema>) {
   // Insert conversations
   db.insert(conversations).values([
-    { id: 'conv-1', agent: 'claude-code', project: 'project-alpha', title: 'Conv 1', createdAt: '2026-01-15T10:00:00Z', updatedAt: '2026-01-15T10:30:00Z', model: 'claude-sonnet-4-5' },
-    { id: 'conv-2', agent: 'claude-code', project: 'project-alpha', title: 'Conv 2', createdAt: '2026-01-15T14:00:00Z', updatedAt: '2026-01-15T14:30:00Z', model: 'claude-sonnet-4-5' },
-    { id: 'conv-3', agent: 'claude-code', project: 'project-beta', title: 'Conv 3', createdAt: '2026-01-16T09:00:00Z', updatedAt: '2026-01-16T09:30:00Z', model: 'claude-haiku-4-5' },
-    { id: 'conv-4', agent: 'claude-code', project: 'project-beta', title: 'Conv 4', createdAt: '2026-01-16T15:00:00Z', updatedAt: '2026-01-16T15:30:00Z', model: 'claude-haiku-4-5' },
-    { id: 'conv-5', agent: 'claude-code', project: 'project-alpha', title: 'Conv 5', createdAt: '2026-01-17T11:00:00Z', updatedAt: '2026-01-17T11:30:00Z', model: 'unknown-model' },
+    { id: 'conv-1', agent: 'claude-code', project: 'project-alpha', title: 'Conv 1', createdAt: '2026-01-15T10:00:00Z', updatedAt: '2026-01-15T10:30:00Z', model: 'claude-sonnet-4-5', status: 'completed' },
+    { id: 'conv-2', agent: 'claude-code', project: 'project-alpha', title: 'Conv 2', createdAt: '2026-01-15T14:00:00Z', updatedAt: '2026-01-15T14:30:00Z', model: 'claude-sonnet-4-5', status: 'completed' },
+    { id: 'conv-3', agent: 'claude-code', project: 'project-beta', title: 'Conv 3', createdAt: '2026-01-16T09:00:00Z', updatedAt: '2026-01-16T09:30:00Z', model: 'claude-haiku-4-5', status: 'completed' },
+    { id: 'conv-4', agent: 'claude-code', project: 'project-beta', title: 'Conv 4', createdAt: '2026-01-16T15:00:00Z', updatedAt: '2026-01-16T15:30:00Z', model: 'claude-haiku-4-5', status: 'completed' },
+    { id: 'conv-5', agent: 'claude-code', project: 'project-alpha', title: 'Conv 5', createdAt: '2026-01-17T11:00:00Z', updatedAt: '2026-01-17T11:30:00Z', model: 'unknown-model', status: 'completed' },
   ]).run();
 
   // Insert messages for conversations (before tokenUsage due to FK on messageId)

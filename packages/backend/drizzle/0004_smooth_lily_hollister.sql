@@ -1,0 +1,1 @@
+ALTER TABLE `conversations` ADD `status` text DEFAULT 'completed' NOT NULL;

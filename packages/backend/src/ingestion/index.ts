@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { db } from '../db/index.js';
 import { conversations, messages, toolCalls, tokenUsage, plans, planSteps } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, and, lte } from 'drizzle-orm';
 import { discoverJsonlFiles } from './file-discovery.js';
 import { parseJsonlFile } from './claude-code-parser.js';
 import { normalizeConversation, type NormalizedData } from './normalizer.js';
@@ -148,7 +148,13 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
           db.transaction((tx) => {
             tx.insert(conversations)
               .values(normalizedData.conversation)
-              .onConflictDoNothing({ target: conversations.id })
+              .onConflictDoUpdate({
+                target: conversations.id,
+                set: {
+                  updatedAt: normalizedData.conversation.updatedAt,
+                  status: 'active',
+                },
+              })
               .run();
 
             if (normalizedData.messages.length > 0) {
@@ -204,7 +210,13 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
               db.transaction((tx) => {
                 tx.insert(conversations)
                   .values(normalizedData.conversation)
-                  .onConflictDoNothing({ target: conversations.id })
+                  .onConflictDoUpdate({
+                    target: conversations.id,
+                    set: {
+                      updatedAt: normalizedData.conversation.updatedAt,
+                      status: 'active',
+                    },
+                  })
                   .run();
 
                 if (normalizedData.messages.length > 0) {
@@ -244,6 +256,18 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
           app.log.error({ err }, 'Error processing Cursor state.vscdb');
         }
       }
+
+      // Mark stale conversations as completed (not updated in last 5 minutes)
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      db.update(conversations)
+        .set({ status: 'completed' })
+        .where(
+          and(
+            eq(conversations.status, 'active'),
+            lte(conversations.updatedAt, fiveMinutesAgo)
+          )
+        )
+        .run();
     } catch (err) {
       app.log.error({ err }, 'Error during ingestion');
     } finally {

@@ -338,6 +338,7 @@ export function getConversationList(
       outputTokens: sql<number>`coalesce(sum(${tokenUsage.outputTokens}), 0)`,
       cacheReadTokens: sql<number>`coalesce(sum(${tokenUsage.cacheReadTokens}), 0)`,
       cacheCreationTokens: sql<number>`coalesce(sum(${tokenUsage.cacheCreationTokens}), 0)`,
+      isActive: sql<boolean>`CASE WHEN ${conversations.status} = 'active' THEN 1 ELSE 0 END`,
     })
     .from(conversations)
     .leftJoin(tokenUsage, sql`${tokenUsage.conversationId} = ${conversations.id}`)
@@ -417,6 +418,7 @@ export function getConversationList(
       cacheCreationTokens: cacheCreation,
       cost: convCost?.cost ?? null,
       savings: convCost?.savings ?? null,
+      isActive: Boolean(row.isActive),
     };
 
     // If search was provided, extract a snippet from matching message content

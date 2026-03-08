@@ -8,6 +8,7 @@ export const conversations = sqliteTable('conversations', {
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
   model: text('model'),
+  status: text('status').notNull().default('completed'),
 });
 
 export const messages = sqliteTable('messages', {

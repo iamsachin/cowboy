@@ -17,10 +17,10 @@
 
 ### Data Accuracy
 
-- [ ] **DATA-01**: Cursor conversations with timestamp 0 use current timestamp as fallback (BUG-03)
-- [ ] **DATA-02**: Duration calculated from first-to-last message timestamps, not updatedAt-createdAt (CD-04)
-- [ ] **DATA-03**: Turn count label accurately reflects what is counted (CD-05)
-- [ ] **DATA-04**: NULL-model conversations backfilled from token_usage records (CL-05)
+- [x] **DATA-01**: Cursor conversations with timestamp 0 use current timestamp as fallback (BUG-03)
+- [x] **DATA-02**: Duration calculated from first-to-last message timestamps, not updatedAt-createdAt (CD-04)
+- [x] **DATA-03**: Turn count label accurately reflects what is counted (CD-05)
+- [x] **DATA-04**: NULL-model conversations backfilled from token_usage records (CL-05)
 - [x] **DATA-05**: Tool durations removed or estimated from message timestamps (AN-01)
 - [x] **DATA-06**: Null-status tool calls classified as "unknown" or excluded from success rate denominator (AN-02)
 - [x] **DATA-07**: ExitPlanMode user rejections distinguished from actual errors (AN-03)
@@ -119,10 +119,10 @@ None — all audit bugs targeted for v1.3.
 | COST-04 | Phase 17 | Complete |
 | COST-05 | Phase 17 | Complete |
 | COST-06 | Phase 17 | Complete |
-| DATA-01 | Phase 18 | Pending |
-| DATA-02 | Phase 18 | Pending |
-| DATA-03 | Phase 18 | Pending |
-| DATA-04 | Phase 18 | Pending |
+| DATA-01 | Phase 18 | Complete |
+| DATA-02 | Phase 18 | Complete |
+| DATA-03 | Phase 18 | Complete |
+| DATA-04 | Phase 18 | Complete |
 | DATA-05 | Phase 18 | Complete |
 | DATA-06 | Phase 18 | Complete |
 | DATA-07 | Phase 18 | Complete |

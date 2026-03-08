@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Bug Fix & Quality Audit
 status: completed
-stopped_at: Completed 18-02-PLAN.md (tool stats accuracy)
-last_updated: "2026-03-08T09:05:59.986Z"
+stopped_at: "Completed 18-01-PLAN.md (data accuracy fixes: timestamps, duration, turns, models)"
+last_updated: "2026-03-08T09:06:06.345Z"
 last_activity: 2026-03-08 — Completed 18-03 (heatmap timezone & timeseries consistency)
 progress:
   total_phases: 8
@@ -56,6 +56,7 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase 18]: Remove duration columns entirely rather than estimate (JSONL lacks execution time data)
 - [Phase 18]: ExitPlanMode rejected status only applies on re-ingestion (acceptable tradeoff)
 - [Phase 18]: Duration from message span via backend firstMessageAt/lastMessageAt fields
+- [Phase 18]: NULL-model backfill expanded to all agents with message fallback
 
 ### Pending Todos
 
@@ -67,6 +68,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-08T09:05:54.116Z
-Stopped at: Completed 18-02-PLAN.md (tool stats accuracy)
+Last session: 2026-03-08T09:06:06.342Z
+Stopped at: Completed 18-01-PLAN.md (data accuracy fixes: timestamps, duration, turns, models)
 Resume file: None

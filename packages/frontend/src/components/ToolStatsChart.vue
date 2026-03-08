@@ -1,12 +1,12 @@
 <template>
   <div>
-    <div v-if="loading" class="flex justify-center items-center h-48">
+    <div v-show="loading" class="flex justify-center items-center h-48">
       <span class="loading loading-spinner loading-md"></span>
     </div>
-    <div v-else-if="!data || data.length === 0" class="flex justify-center items-center h-48">
+    <div v-show="!loading && (!data || data.length === 0)" class="flex justify-center items-center h-48">
       <span class="text-base-content/50 text-sm">No data</span>
     </div>
-    <div v-else :style="{ height: chartHeight + 'px' }">
+    <div v-show="!loading && data && data.length > 0" :style="{ height: chartHeight + 'px' }">
       <Bar :data="chartData" :options="chartOptions" />
     </div>
   </div>

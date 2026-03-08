@@ -4,13 +4,13 @@
     <div class="card bg-base-200 rounded-box">
       <div class="card-body p-4">
         <h3 class="card-title text-sm">Plans Over Time</h3>
-        <div v-if="loading" class="flex justify-center items-center h-48">
+        <div v-show="loading" class="flex justify-center items-center h-48">
           <span class="loading loading-spinner loading-md"></span>
         </div>
-        <div v-else-if="!timeseries || timeseries.length === 0" class="flex justify-center items-center h-48">
+        <div v-show="!loading && (!timeseries || timeseries.length === 0)" class="flex justify-center items-center h-48">
           <span class="text-base-content/50 text-sm">No data</span>
         </div>
-        <div v-else class="h-64">
+        <div v-show="!loading && timeseries && timeseries.length > 0" class="h-64">
           <Bar :data="barChartData" :options="barChartOptions" />
         </div>
       </div>
@@ -20,13 +20,13 @@
     <div class="card bg-base-200 rounded-box">
       <div class="card-body p-4">
         <h3 class="card-title text-sm">Completion Rate Trend</h3>
-        <div v-if="loading" class="flex justify-center items-center h-48">
+        <div v-show="loading" class="flex justify-center items-center h-48">
           <span class="loading loading-spinner loading-md"></span>
         </div>
-        <div v-else-if="!timeseries || timeseries.length === 0" class="flex justify-center items-center h-48">
+        <div v-show="!loading && (!timeseries || timeseries.length === 0)" class="flex justify-center items-center h-48">
           <span class="text-base-content/50 text-sm">No data</span>
         </div>
-        <div v-else class="h-64">
+        <div v-show="!loading && timeseries && timeseries.length > 0" class="h-64">
           <Line :data="lineChartData" :options="lineChartOptions" />
         </div>
       </div>

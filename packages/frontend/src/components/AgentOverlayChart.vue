@@ -1,10 +1,10 @@
 <template>
   <div class="bg-base-200 rounded-lg p-4">
     <h2 class="text-sm font-semibold mb-2">{{ title }}</h2>
-    <div v-if="isEmpty" class="flex justify-center items-center h-48 text-base-content/50">
+    <div v-show="isEmpty" class="flex justify-center items-center h-48 text-base-content/50">
       No data
     </div>
-    <div v-else class="h-64">
+    <div v-show="!isEmpty" class="h-64">
       <Line :data="chartData" :options="chartOptions" />
     </div>
   </div>

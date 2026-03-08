@@ -1,10 +1,10 @@
 <template>
   <div class="bg-base-200 rounded-lg p-4">
     <h2 class="text-sm font-semibold mb-2">Model Distribution</h2>
-    <div v-if="!data || data.length === 0" class="flex justify-center items-center h-48 text-base-content/50">
+    <div v-show="!data || data.length === 0" class="flex justify-center items-center h-48 text-base-content/50">
       No data
     </div>
-    <div v-else class="h-64">
+    <div v-show="data && data.length > 0" class="h-64">
       <Doughnut :data="chartData" :options="chartOptions" />
     </div>
   </div>

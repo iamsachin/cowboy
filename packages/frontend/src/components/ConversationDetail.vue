@@ -6,7 +6,7 @@
       class="sticky top-0 z-10 bg-base-200/95 backdrop-blur-sm border-b border-base-300 px-4 py-2 flex items-center justify-between rounded-t-lg mb-2"
     >
       <span class="text-xs text-base-content/60">
-        {{ expandedCount > 0 ? `${expandedCount} of ${totalGroups} expanded` : `${totalGroups} turns` }}
+        {{ expandedCount > 0 ? `${expandedCount} of ${totalGroups} expanded` : `${totalGroups} assistant groups` }}
       </span>
       <div class="tooltip tooltip-left" :data-tip="allExpanded ? 'Collapse All' : 'Expand All'">
         <button class="btn btn-ghost btn-xs" @click="toggleAll">

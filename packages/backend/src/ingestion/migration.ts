@@ -131,11 +131,11 @@ export function fixConversationTitles(database: Database): number {
 export function fixConversationModels(database: Database): number {
   let fixedCount = 0;
 
-  // Fix Claude Code conversations with NULL model using token_usage
+  // Fix conversations with NULL model using token_usage (all agents)
   const nullModelConvs = database
     .select({ id: conversations.id })
     .from(conversations)
-    .where(and(isNull(conversations.model), eq(conversations.agent, 'claude-code')))
+    .where(isNull(conversations.model))
     .all();
 
   for (const conv of nullModelConvs) {
@@ -158,6 +158,31 @@ export function fixConversationModels(database: Database): number {
         .where(eq(conversations.id, conv.id))
         .run();
       fixedCount++;
+    } else {
+      // Fallback: derive model from assistant messages
+      const msgModels = database
+        .select({
+          model: messages.model,
+          count: sql<number>`count(*)`.as('count'),
+        })
+        .from(messages)
+        .where(and(
+          eq(messages.conversationId, conv.id),
+          eq(messages.role, 'assistant'),
+          sql`${messages.model} IS NOT NULL`,
+        ))
+        .groupBy(messages.model)
+        .orderBy(sql`count(*) DESC`)
+        .all();
+
+      if (msgModels.length > 0) {
+        database
+          .update(conversations)
+          .set({ model: msgModels[0].model })
+          .where(eq(conversations.id, conv.id))
+          .run();
+        fixedCount++;
+      }
     }
   }
 

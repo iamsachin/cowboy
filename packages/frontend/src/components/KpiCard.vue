@@ -13,9 +13,6 @@
         </span>
         <span v-if="trendLabel" class="ml-1 opacity-60">{{ trendLabel }}</span>
       </template>
-      <template v-else-if="trend === null">
-        <span class="opacity-50">--</span>
-      </template>
       <template v-else>
         {{ description }}
       </template>

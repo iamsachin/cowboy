@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Bug Fix & Quality Audit
-status: in-progress
-stopped_at: Completed 18-03-PLAN.md (heatmap timezone & timeseries consistency)
-last_updated: "2026-03-08T09:03:25Z"
+status: completed
+stopped_at: Completed 18-02-PLAN.md (tool stats accuracy)
+last_updated: "2026-03-08T09:05:59.986Z"
 last_activity: 2026-03-08 — Completed 18-03 (heatmap timezone & timeseries consistency)
 progress:
   total_phases: 8
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # Project State
@@ -53,6 +53,9 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [v1.3 roadmap]: Phase 24 includes browser verification of all fixes
 - [v1.2]: groupTurns handles all message classification (single source of truth)
 - [v1.2]: SystemMessageIndicator uses in-flow expansion (avoids z-index issues)
+- [Phase 18]: Remove duration columns entirely rather than estimate (JSONL lacks execution time data)
+- [Phase 18]: ExitPlanMode rejected status only applies on re-ingestion (acceptable tradeoff)
+- [Phase 18]: Duration from message span via backend firstMessageAt/lastMessageAt fields
 
 ### Pending Todos
 
@@ -64,6 +67,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-08
-Stopped at: Completed 18-03-PLAN.md (heatmap timezone & timeseries consistency)
+Last session: 2026-03-08T09:05:54.116Z
+Stopped at: Completed 18-02-PLAN.md (tool stats accuracy)
 Resume file: None

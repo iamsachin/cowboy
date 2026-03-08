@@ -54,7 +54,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Milestone Goal:** Fix all bugs from the 2026-03-08 UI audit — cost calculation errors, data accuracy issues, display bugs, and cross-cutting quality problems. Tests for all fixes.
 
 - [x] **Phase 17: Cost Calculation Fixes** — Fix critical cost pricing, sorting, formatting, and token counting errors (completed 2026-03-08)
-- [ ] **Phase 18: Data Accuracy Fixes** — Fix backend data computation: durations, timestamps, model backfill, tool stats, and timezone issues
+- [x] **Phase 18: Data Accuracy Fixes** — Fix backend data computation: durations, timestamps, model backfill, tool stats, and timezone issues (completed 2026-03-08)
 - [ ] **Phase 19: Conversation Display Fixes** — Fix turn grouping, tool call display, system message handling, and scroll behavior in conversation detail
 - [ ] **Phase 20: Conversation List Fixes** — Fix titles, sorting, filtering, search, and formatting in the conversation list view
 - [ ] **Phase 21: Plan Extraction Quality** — Fix plan title heuristics, merge logic, completion matching, and status display
@@ -191,7 +191,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 15. Cursor Data Quality | v1.2 | 2/2 | Complete | 2026-03-05 |
 | 16. Message Display | v1.2 | 2/2 | Complete | 2026-03-05 |
 | 17. Cost Calculation Fixes | 2/2 | Complete    | 2026-03-08 | - |
-| 18. Data Accuracy Fixes | 1/3 | In Progress|  | - |
+| 18. Data Accuracy Fixes | 3/3 | Complete   | 2026-03-08 | - |
 | 19. Conversation Display Fixes | v1.3 | 0/? | Not started | - |
 | 20. Conversation List Fixes | v1.3 | 0/? | Not started | - |
 | 21. Plan Extraction Quality | v1.3 | 0/? | Not started | - |

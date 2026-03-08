@@ -21,9 +21,9 @@
 - [ ] **DATA-02**: Duration calculated from first-to-last message timestamps, not updatedAt-createdAt (CD-04)
 - [ ] **DATA-03**: Turn count label accurately reflects what is counted (CD-05)
 - [ ] **DATA-04**: NULL-model conversations backfilled from token_usage records (CL-05)
-- [ ] **DATA-05**: Tool durations removed or estimated from message timestamps (AN-01)
-- [ ] **DATA-06**: Null-status tool calls classified as "unknown" or excluded from success rate denominator (AN-02)
-- [ ] **DATA-07**: ExitPlanMode user rejections distinguished from actual errors (AN-03)
+- [x] **DATA-05**: Tool durations removed or estimated from message timestamps (AN-01)
+- [x] **DATA-06**: Null-status tool calls classified as "unknown" or excluded from success rate denominator (AN-02)
+- [x] **DATA-07**: ExitPlanMode user rejections distinguished from actual errors (AN-03)
 - [x] **DATA-08**: Heatmap dates consistent (no timezone one-day shift) (AN-04)
 - [x] **DATA-09**: Timeseries groups and filters use consistent timestamp source (AN-07)
 
@@ -123,9 +123,9 @@ None — all audit bugs targeted for v1.3.
 | DATA-02 | Phase 18 | Pending |
 | DATA-03 | Phase 18 | Pending |
 | DATA-04 | Phase 18 | Pending |
-| DATA-05 | Phase 18 | Pending |
-| DATA-06 | Phase 18 | Pending |
-| DATA-07 | Phase 18 | Pending |
+| DATA-05 | Phase 18 | Complete |
+| DATA-06 | Phase 18 | Complete |
+| DATA-07 | Phase 18 | Complete |
 | DATA-08 | Phase 18 | Complete |
 | DATA-09 | Phase 18 | Complete |
 | CONV-01 | Phase 19 | Pending |

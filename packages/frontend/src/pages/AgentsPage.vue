@@ -38,24 +38,24 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <KpiCard
             title="Total Tokens"
-            :value="agentOverview ? formatNumber(agentOverview.totalTokens) : '--'"
-            description="Awaiting data"
+            :value="isCursorTokenUnavailable ? 'N/A' : (agentOverview ? formatNumber(agentOverview.totalTokens) : '--')"
+            :description="isCursorTokenUnavailable ? 'Cursor does not expose token usage data' : tokenDescription"
             :icon="Coins"
-            :trend="agentOverview?.trends.tokensTrend"
+            :trend="isCursorTokenUnavailable ? undefined : agentOverview?.trends.tokensTrend"
             :trend-label="trendLabel"
           />
           <KpiCard
             title="Estimated Cost"
-            :value="agentOverview ? formatCurrency(agentOverview.estimatedCost) : '$--'"
-            description="Awaiting data"
+            :value="isCursorCostUnavailable ? 'N/A' : (agentOverview ? formatCurrency(agentOverview.estimatedCost) : '$--')"
+            :description="isCursorCostUnavailable ? 'Cursor does not expose cost data' : costDescription"
             :icon="DollarSign"
-            :trend="agentOverview?.trends.costTrend"
+            :trend="isCursorCostUnavailable ? undefined : agentOverview?.trends.costTrend"
             :trend-label="trendLabel"
           />
           <KpiCard
             title="Conversations"
             :value="agentOverview ? agentOverview.conversationCount.toString() : '--'"
-            description="Awaiting data"
+            :description="conversationsDescription"
             :icon="MessageSquare"
             :trend="agentOverview?.trends.conversationsTrend"
             :trend-label="trendLabel"
@@ -63,7 +63,7 @@
           <KpiCard
             title="Active Days"
             :value="agentOverview ? agentOverview.activeDays.toString() : '--'"
-            description="Awaiting data"
+            :description="activeDaysDescription"
             :icon="CalendarDays"
             :trend="agentOverview?.trends.activeDaysTrend"
             :trend-label="trendLabel"
@@ -75,7 +75,10 @@
           <TokenChart :data="agentTimeseries" :loading="agentLoading" />
           <CostChart :data="agentTimeseries" :loading="agentLoading" />
           <ConversationsChart :data="agentTimeseries" :loading="agentLoading" />
-          <ModelDistributionChart :data="agentModelDistribution" />
+          <div v-if="isCursorModelDistributionEmpty" class="bg-base-200 rounded-lg p-6 flex items-center justify-center min-h-[200px]">
+            <p class="text-base-content/60 text-sm">Token data not available for Cursor</p>
+          </div>
+          <ModelDistributionChart v-else :data="agentModelDistribution" />
         </div>
 
         <!-- Conversation Table -->
@@ -242,6 +245,52 @@ function formatNumber(n: number): string {
 function formatCurrency(n: number): string {
   return currencyFormatter.format(n);
 }
+
+// Cursor data unavailability checks
+const isCursorTokenUnavailable = computed(() =>
+  activeTab.value === 'cursor' && agentOverview.value !== null && agentOverview.value.totalTokens === 0
+);
+const isCursorCostUnavailable = computed(() =>
+  activeTab.value === 'cursor' && agentOverview.value !== null && agentOverview.value.estimatedCost === 0
+);
+const isCursorModelDistributionEmpty = computed(() =>
+  activeTab.value === 'cursor' && (!agentModelDistribution.value || agentModelDistribution.value.length === 0)
+);
+
+// Preset label for KPI descriptions
+const presetLabel = computed(() => {
+  if (isCustom.value) return 'custom range';
+  switch (preset.value) {
+    case 'today': return 'today';
+    case '7d': return 'last 7 days';
+    case '30d': return 'last 30 days';
+    case 'all': return 'all time';
+    default: return '';
+  }
+});
+
+// Contextual KPI descriptions
+const tokenDescription = computed(() => {
+  if (!agentOverview.value) return '';
+  const count = agentOverview.value.conversationCount;
+  return count > 0 ? `Across ${count} conversations` : 'No conversations yet';
+});
+
+const costDescription = computed(() => {
+  if (!agentOverview.value) return '';
+  return `In ${presetLabel.value}`;
+});
+
+const conversationsDescription = computed(() => {
+  if (!agentOverview.value) return '';
+  const days = agentOverview.value.activeDays;
+  return days > 0 ? `Across ${days} active days` : 'No activity yet';
+});
+
+const activeDaysDescription = computed(() => {
+  if (!agentOverview.value) return '';
+  return `In ${presetLabel.value}`;
+});
 
 const trendLabel = computed(() => {
   if (isCustom.value) return 'vs prior period';

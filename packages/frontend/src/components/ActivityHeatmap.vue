@@ -44,6 +44,21 @@
           ></div>
         </div>
       </div>
+      <!-- Color scale legend -->
+      <div class="flex items-center gap-1 mt-2">
+        <span class="text-xs text-base-content/50">Less</span>
+        <div
+          v-for="level in legendLevels"
+          :key="level"
+          class="rounded-sm"
+          :style="{
+            width: '12px',
+            height: '12px',
+            backgroundColor: intensityColor(level, 4),
+          }"
+        ></div>
+        <span class="text-xs text-base-content/50">More</span>
+      </div>
     </div>
   </div>
 </template>
@@ -114,14 +129,25 @@ const maxCount = computed(() => {
   return Math.max(...cells.value.map((c) => c.count));
 });
 
+const legendLevels = [0, 1, 2, 3, 4];
+
 function intensityColor(count: number, max: number): string {
-  if (count === 0) return 'rgba(255, 255, 255, 0.05)';
-  if (max === 0) return 'rgba(255, 255, 255, 0.05)';
+  if (count === 0 || max === 0) return 'var(--heatmap-0)';
 
   const ratio = count / max;
-  if (ratio <= 0.25) return 'rgba(52, 211, 153, 0.25)';
-  if (ratio <= 0.5) return 'rgba(52, 211, 153, 0.50)';
-  if (ratio <= 0.75) return 'rgba(52, 211, 153, 0.75)';
-  return 'rgba(52, 211, 153, 1.0)';
+  if (ratio <= 0.25) return 'var(--heatmap-1)';
+  if (ratio <= 0.5) return 'var(--heatmap-2)';
+  if (ratio <= 0.75) return 'var(--heatmap-3)';
+  return 'var(--heatmap-4)';
 }
 </script>
+
+<style scoped>
+div {
+  --heatmap-0: oklch(var(--b3));
+  --heatmap-1: oklch(var(--su) / 0.25);
+  --heatmap-2: oklch(var(--su) / 0.50);
+  --heatmap-3: oklch(var(--su) / 0.75);
+  --heatmap-4: oklch(var(--su) / 1.0);
+}
+</style>

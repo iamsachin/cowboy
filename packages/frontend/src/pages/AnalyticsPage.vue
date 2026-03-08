@@ -6,8 +6,9 @@
       <div class="flex items-center gap-3">
         <select class="select select-sm select-bordered" v-model="selectedAgent">
           <option value="">All Agents</option>
-          <option value="claude-code">Claude Code</option>
-          <option value="cursor">Cursor</option>
+          <option v-for="agent in agentOptions" :key="agent" :value="agent">
+            {{ AGENT_LABELS[agent] ?? agent }}
+          </option>
         </select>
         <DateRangeFilter />
       </div>
@@ -49,6 +50,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import { Activity, Wrench, FolderOpen } from 'lucide-vue-next';
 import DateRangeFilter from '../components/DateRangeFilter.vue';
 import ActivityHeatmap from '../components/ActivityHeatmap.vue';
@@ -57,9 +59,27 @@ import ToolStatsTable from '../components/ToolStatsTable.vue';
 import ProjectTable from '../components/ProjectTable.vue';
 import { useAdvancedAnalytics } from '../composables/useAdvancedAnalytics';
 import { useDateRange } from '../composables/useDateRange';
+import { AGENT_LABELS } from '../utils/agent-constants';
 
 const { toolStats, heatmapData, projectStats, loading, selectedAgent } = useAdvancedAnalytics();
 const { setCustomRange } = useDateRange();
+
+// API-driven agent filter with fallback to hardcoded values
+const agentOptions = ref<string[]>(Object.keys(AGENT_LABELS));
+
+onMounted(async () => {
+  try {
+    const res = await fetch('/api/analytics/filters');
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.agents) && data.agents.length > 0) {
+        agentOptions.value = data.agents;
+      }
+    }
+  } catch {
+    // Keep fallback values
+  }
+});
 
 function onDrillDown(date: string) {
   setCustomRange(date, date);

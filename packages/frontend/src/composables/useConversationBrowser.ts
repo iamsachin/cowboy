@@ -86,9 +86,49 @@ export function useConversationBrowser() {
   }
 
   function submitSearch(): void {
+    // Immediate search (e.g. on Enter key) — cancel any pending debounce
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+      searchTimeout = null;
+    }
     page.value = 1;
     fetchConversations();
   }
+
+  function clearSearch(): void {
+    searchQuery.value = '';
+    page.value = 1;
+    fetchConversations();
+  }
+
+  // Debounced auto-search: triggers 400ms after user stops typing
+  let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  watch(searchQuery, (newVal, oldVal) => {
+    if (newVal === oldVal) return;
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+      searchTimeout = null;
+    }
+    if (newVal === '') {
+      // Immediately clear search results
+      page.value = 1;
+      fetchConversations();
+    } else {
+      searchTimeout = setTimeout(() => {
+        searchTimeout = null;
+        page.value = 1;
+        fetchConversations();
+      }, 400);
+    }
+  });
+
+  onScopeDispose(() => {
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+      searchTimeout = null;
+    }
+  });
 
   // Watch dateRange changes: reset page to 1 and re-fetch
   watch(
@@ -123,5 +163,6 @@ export function useConversationBrowser() {
     setAgent,
     setProject,
     submitSearch,
+    clearSearch,
   };
 }

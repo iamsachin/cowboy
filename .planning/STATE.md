@@ -68,6 +68,11 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [20-02]: DOMPurify with ALLOWED_TAGS: ['mark'] replaces regex sanitizer
 - [20-03]: API-driven filter dropdowns with fallback to hardcoded/page-derived values
 - [20-03]: Loading overlay with opacity + pointer-events-none pattern for subsequent fetches
+- [21-01]: cleanMarkdown strips heading prefixes, bold/italic markers, backticks from plan titles
+- [21-01]: conversationTitle optional 3rd param to extractPlans (backward-compatible)
+- [21-01]: Action verb threshold >50% (strict >, not >=) for numbered list acceptance
+- [21-01]: Word boundary regex for tool name matching (Write != rewrite/overwrite)
+- [21-01]: Completion threshold max(2, ceil(n*0.6)) for significant word overlap
 - [Phase 21-02]: Delete-then-insert pattern for plan re-ingestion (replaces onConflictDoNothing)
 - [Phase 21]: badge-neutral for not-started; badge-ghost+outline for unknown; HelpCircle icon on unknown
 - [Phase 21]: Frontend sort params pass column field names directly to API; backend maps to SQL columns
@@ -82,6 +87,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-08T14:47:32.418Z
-Stopped at: Completed 21-03-PLAN.md
+Last session: 2026-03-08T14:47:49Z
+Stopped at: Completed 21-01-PLAN.md (re-executed with actual code changes)
 Resume file: None

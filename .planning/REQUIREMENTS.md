@@ -65,16 +65,16 @@
 
 ### Plan Extraction
 
-- [ ] **PLAN-01**: Plan titles use meaningful heuristics, not raw text excerpts (PL-01)
-- [ ] **PLAN-02**: Markdown artifacts stripped from inferred titles (PL-02)
-- [ ] **PLAN-03**: Separate numbered lists not incorrectly merged (PL-03)
-- [ ] **PLAN-04**: Action verb filter uses threshold instead of all-or-nothing (PL-04)
-- [ ] **PLAN-05**: Loose word matching threshold raised to reduce false completions (PL-05)
+- [x] **PLAN-01**: Plan titles use meaningful heuristics, not raw text excerpts (PL-01)
+- [x] **PLAN-02**: Markdown artifacts stripped from inferred titles (PL-02)
+- [x] **PLAN-03**: Separate numbered lists not incorrectly merged (PL-03)
+- [x] **PLAN-04**: Action verb filter uses threshold instead of all-or-nothing (PL-04)
+- [x] **PLAN-05**: Loose word matching threshold raised to reduce false completions (PL-05)
 - [x] **PLAN-06**: Re-ingestion updates plan data instead of skipping (PL-06)
 - [x] **PLAN-07**: Sort columns map correctly to backend params (PL-07)
 - [x] **PLAN-08**: "not-started" and "unknown" statuses visually distinct (PL-08)
 - [x] **PLAN-09**: KPI cards don't render empty description div (PL-09)
-- [ ] **PLAN-10**: Tool name matching uses word boundaries (PL-10)
+- [x] **PLAN-10**: Tool name matching uses word boundaries (PL-10)
 
 ### Cross-Cutting & Polish
 
@@ -147,16 +147,16 @@ None — all audit bugs targeted for v1.3.
 | LIST-08 | Phase 20 | Complete |
 | LIST-09 | Phase 20 | Complete |
 | LIST-10 | Phase 20 | Complete |
-| PLAN-01 | Phase 21 | Pending |
-| PLAN-02 | Phase 21 | Pending |
-| PLAN-03 | Phase 21 | Pending |
-| PLAN-04 | Phase 21 | Pending |
-| PLAN-05 | Phase 21 | Pending |
+| PLAN-01 | Phase 21 | Complete |
+| PLAN-02 | Phase 21 | Complete |
+| PLAN-03 | Phase 21 | Complete |
+| PLAN-04 | Phase 21 | Complete |
+| PLAN-05 | Phase 21 | Complete |
 | PLAN-06 | Phase 21 | Complete |
 | PLAN-07 | Phase 21 | Complete |
 | PLAN-08 | Phase 21 | Complete |
 | PLAN-09 | Phase 21 | Complete |
-| PLAN-10 | Phase 21 | Pending |
+| PLAN-10 | Phase 21 | Complete |
 | ANLYT-01 | Phase 22 | Pending |
 | ANLYT-02 | Phase 22 | Pending |
 | ANLYT-03 | Phase 22 | Pending |

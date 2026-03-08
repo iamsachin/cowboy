@@ -40,7 +40,7 @@
               <Check v-if="copiedInput" class="w-3 h-3 text-success" />
               <Copy v-else class="w-3 h-3" />
             </button>
-            <pre class="bg-base-300 rounded p-2 text-xs whitespace-pre-wrap break-words max-h-80 overflow-y-auto">{{ inputText }}</pre>
+            <pre class="bg-base-300 rounded p-2 text-xs whitespace-pre-wrap break-words max-h-80 overflow-y-auto"><code v-html="highlight(inputText)"></code></pre>
           </div>
         </div>
 
@@ -55,7 +55,7 @@
               <Check v-if="copiedOutput" class="w-3 h-3 text-success" />
               <Copy v-else class="w-3 h-3" />
             </button>
-            <pre class="bg-base-300 rounded p-2 text-xs whitespace-pre-wrap break-words max-h-80 overflow-y-auto">{{ displayedOutput }}</pre>
+            <pre class="bg-base-300 rounded p-2 text-xs whitespace-pre-wrap break-words max-h-80 overflow-y-auto"><code v-html="highlight(displayedOutput)"></code></pre>
           </div>
           <button
             v-if="outputTruncated && !showFullOutput"
@@ -73,9 +73,23 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Copy, Check } from 'lucide-vue-next';
+import hljs from 'highlight.js/lib/core';
+import json from 'highlight.js/lib/languages/json';
 import type { ToolCallRow } from '@cowboy/shared';
 import { truncateOutput } from '../utils/turn-helpers';
 import { getToolIcon } from '../utils/tool-icons';
+
+hljs.registerLanguage('json', json);
+
+function highlight(text: string): string {
+  // Try JSON highlighting; fall back to escaped plain text
+  try {
+    JSON.parse(text);
+    return hljs.highlight(text, { language: 'json' }).value;
+  } catch {
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+}
 
 const props = defineProps<{
   toolCall: ToolCallRow;

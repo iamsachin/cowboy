@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Bug Fix & Quality Audit
-status: completed
-stopped_at: Completed 21-02-PLAN.md
-last_updated: "2026-03-08T14:46:32.763Z"
-last_activity: 2026-03-08 — Completed 20-03 (display fixes, filter API, loading overlay)
+status: executing
+stopped_at: Completed 21-03-PLAN.md
+last_updated: "2026-03-08T14:47:32.421Z"
+last_activity: 2026-03-08 — Completed 21-03 (status badges, KPI layout, local dates, sort verification)
 progress:
   total_phases: 8
   completed_phases: 4
   total_plans: 14
-  completed_plans: 12
+  completed_plans: 14
 ---
 
 # Project State
@@ -24,12 +24,12 @@ See: .planning/PROJECT.md (updated 2026-03-08)
 
 ## Current Position
 
-Phase: 21 of 24 (Plan Extraction Quality)
-Plan: 2 of 3 in current phase (21-02 complete)
-Status: In progress
-Last activity: 2026-03-08 — Completed 21-02 (re-ingestion delete+insert, sort column mapping)
+Phase: 21 of 24 (Plan Extraction Quality) - COMPLETE
+Plan: 3 of 3 in current phase (all done)
+Status: Phase 21 complete
+Last activity: 2026-03-08 — Completed 21-03 (status badges, KPI layout, local dates, sort verification)
 
-Progress (v1.3): [██████████] 95% (36 plans completed)
+Progress (v1.3): [██████████] 97% (37 plans completed)
 
 ## Performance Metrics
 
@@ -69,6 +69,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [20-03]: API-driven filter dropdowns with fallback to hardcoded/page-derived values
 - [20-03]: Loading overlay with opacity + pointer-events-none pattern for subsequent fetches
 - [Phase 21-02]: Delete-then-insert pattern for plan re-ingestion (replaces onConflictDoNothing)
+- [Phase 21]: badge-neutral for not-started; badge-ghost+outline for unknown; HelpCircle icon on unknown
+- [Phase 21]: Frontend sort params pass column field names directly to API; backend maps to SQL columns
 
 ### Pending Todos
 
@@ -80,6 +82,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-08T14:46:32.761Z
-Stopped at: Completed 21-02-PLAN.md
+Last session: 2026-03-08T14:47:32.418Z
+Stopped at: Completed 21-03-PLAN.md
 Resume file: None

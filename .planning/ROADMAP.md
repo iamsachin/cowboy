@@ -206,7 +206,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 18. Data Accuracy Fixes | 3/3 | Complete    | 2026-03-08 | - |
 | 19. Conversation Display Fixes | 3/3 | Complete    | 2026-03-08 | - |
 | 20. Conversation List Fixes | 3/3 | Complete    | 2026-03-08 | - |
-| 21. Plan Extraction Quality | 1/3 | In Progress|  | - |
+| 21. Plan Extraction Quality | 2/3 | In Progress|  | - |
 | 22. Analytics & Agent Pages | v1.3 | 0/? | Not started | - |
 | 23. Cross-Cutting Polish | v1.3 | 0/? | Not started | - |
 | 24. Overview, Settings & Final Verification | v1.3 | 0/? | Not started | - |

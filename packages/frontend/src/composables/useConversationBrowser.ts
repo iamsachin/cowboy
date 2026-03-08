@@ -130,12 +130,28 @@ export function useConversationBrowser() {
     }
   });
 
+  // Filter options from API (projects, agents for the current date range)
+  const filterOptions = ref<{ projects: string[]; agents: string[] } | null>(null);
+
+  async function fetchFilterOptions(): Promise<void> {
+    try {
+      const { from, to } = dateRange.value;
+      const params = new URLSearchParams({ from, to });
+      const res = await fetch(`/api/analytics/filters?${params}`);
+      if (!res.ok) return;
+      filterOptions.value = await res.json();
+    } catch {
+      // Silently fail — filter dropdowns will use fallback
+    }
+  }
+
   // Watch dateRange changes: reset page to 1 and re-fetch
   watch(
     () => dateRange.value,
     () => {
       page.value = 1;
       fetchConversations();
+      fetchFilterOptions();
     },
     { deep: true, immediate: true }
   );
@@ -164,5 +180,6 @@ export function useConversationBrowser() {
     setProject,
     submitSearch,
     clearSearch,
+    filterOptions,
   };
 }

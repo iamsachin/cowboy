@@ -8,7 +8,7 @@
         @change="setAgent(($event.target as HTMLSelectElement).value)"
       >
         <option value="">All Agents</option>
-        <option v-for="a in AGENTS" :key="a" :value="a">{{ AGENT_LABELS[a] || a }}</option>
+        <option v-for="a in agentOptions" :key="a" :value="a">{{ AGENT_LABELS[a] || a }}</option>
       </select>
 
       <select
@@ -18,7 +18,7 @@
       >
         <option value="">All Projects</option>
         <option
-          v-for="p in uniqueProjects"
+          v-for="p in projectOptions"
           :key="p"
           :value="p"
         >
@@ -50,7 +50,15 @@
     </div>
 
     <!-- Table -->
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto relative">
+      <!-- Loading overlay for subsequent fetches -->
+      <div
+        v-if="loading && data"
+        class="absolute inset-0 bg-base-200/60 z-10 flex items-center justify-center"
+      >
+        <span class="loading loading-spinner loading-md"></span>
+      </div>
+
       <table class="table table-zebra table-pin-rows table-sm">
         <thead>
           <tr>
@@ -69,8 +77,8 @@
             </th>
           </tr>
         </thead>
-        <tbody>
-          <!-- Loading state -->
+        <tbody :class="{ 'opacity-50 pointer-events-none': loading && data }">
+          <!-- Loading state (first load) -->
           <tr v-if="loading && !data">
             <td :colspan="columns.length" class="text-center py-8">
               <span class="loading loading-spinner loading-md"></span>
@@ -101,13 +109,13 @@
               </td>
               <td>{{ row.project ?? '--' }}</td>
               <td>
-                <div class="max-w-[12rem] truncate">
+                <div class="max-w-[12rem] truncate" :title="row.model ?? ''">
                   {{ row.model ?? '--' }}
                 </div>
               </td>
               <td>
                 <div class="max-w-[16rem]">
-                  <div class="truncate">{{ row.title ?? '--' }}</div>
+                  <div class="truncate">{{ cleanTitle(row.title ?? '') }}</div>
                   <div
                     v-if="searchQuery && 'snippet' in row && row.snippet"
                     class="text-xs text-base-content/60 truncate mt-0.5"
@@ -168,6 +176,7 @@ import DOMPurify from 'dompurify';
 import { useConversationBrowser } from '../composables/useConversationBrowser';
 import AgentBadge from './AgentBadge.vue';
 import { AGENTS, AGENT_LABELS } from '../utils/agent-constants';
+import { cleanTitle } from '../utils/content-sanitizer';
 
 const router = useRouter();
 
@@ -186,6 +195,7 @@ const {
   setProject,
   submitSearch,
   clearSearch,
+  filterOptions,
 } = useConversationBrowser();
 
 const columns = [
@@ -201,7 +211,10 @@ const tokenFormatter = new Intl.NumberFormat('en-US');
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
-  return d.toISOString().slice(0, 10);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function formatTokens(n: number): string {
@@ -216,8 +229,14 @@ function navigateToDetail(id: string): void {
   router.push({ name: 'conversation-detail', params: { id } });
 }
 
-// Collect unique projects from current result set for the filter dropdown
-const uniqueProjects = computed(() => {
+// Use API-provided filter options, with fallback to hardcoded/page-derived values
+const agentOptions = computed(() => {
+  return filterOptions.value?.agents ?? AGENTS;
+});
+
+const projectOptions = computed(() => {
+  if (filterOptions.value?.projects) return filterOptions.value.projects;
+  // Fallback: collect from current page
   if (!data.value) return [];
   const projects = new Set<string>();
   for (const row of data.value.rows) {

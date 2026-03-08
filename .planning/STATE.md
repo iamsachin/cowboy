@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Bug Fix & Quality Audit
 status: active
-stopped_at: Completed 17-01-PLAN.md
-last_updated: "2026-03-08T08:45:12.445Z"
-last_activity: 2026-03-08 — Roadmap created for v1.3 Bug Fix & Quality Audit
+stopped_at: Completed 17-02-PLAN.md
+last_updated: "2026-03-08T08:48:45.000Z"
+last_activity: 2026-03-08 — Completed Phase 17 (all cost calculation fixes)
 progress:
   total_phases: 8
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -24,12 +24,12 @@ See: .planning/PROJECT.md (updated 2026-03-08)
 
 ## Current Position
 
-Phase: 17 of 24 (Cost Calculation Fixes) — first of 8 v1.3 phases
-Plan: 1 of 2 in current phase
-Status: Active — executing Phase 17
-Last activity: 2026-03-08 — Completed 17-01 (cost calculation fixes + formatCost utility)
+Phase: 17 of 24 (Cost Calculation Fixes) — first of 8 v1.3 phases -- COMPLETE
+Plan: 2 of 2 in current phase
+Status: Phase 17 complete — ready for Phase 18
+Last activity: 2026-03-08 — Completed 17-02 (cost display components unified)
 
-Progress (v1.3): [█░░░░░░░░░] 6% (1/2 plans in phase 17)
+Progress (v1.3): [█░░░░░░░░░] 12% (2/2 plans in phase 17)
 
 ## Performance Metrics
 
@@ -43,6 +43,7 @@ Progress (v1.3): [█░░░░░░░░░] 6% (1/2 plans in phase 17)
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
+- [17-02]: Show cache read tokens as separate annotation rather than folding into total token count
 - [17-01]: JS sort for cost column instead of SQL subquery (avoids duplicating pricing logic)
 - [17-01]: Per-model secondary query for conversation list cost (multi-model accuracy)
 - [v1.3 roadmap]: 67 audit bugs organized into 8 phases by technical area
@@ -62,5 +63,5 @@ None currently.
 ## Session Continuity
 
 Last session: 2026-03-08
-Stopped at: Completed 17-01-PLAN.md (cost calculation fixes + formatCost utility)
+Stopped at: Completed 17-02-PLAN.md (cost display components unified)
 Resume file: None

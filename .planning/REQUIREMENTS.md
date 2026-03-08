@@ -10,9 +10,9 @@
 
 - [x] **COST-01**: Cost calculation correctly prices each model separately in multi-model conversations (BUG-01)
 - [x] **COST-02**: Cost sort uses actual computed cost, not inputTokens proxy (BUG-02)
-- [ ] **COST-03**: Header cost uses proper precision formatting instead of toFixed(2) showing $0.00 (CD-08)
-- [ ] **COST-04**: Token total does not double-count cache tokens (input + output primary, cache separate) (CD-09)
-- [ ] **COST-05**: Token display shows input + cacheRead for accurate input counts (CD-11)
+- [x] **COST-03**: Header cost uses proper precision formatting instead of toFixed(2) showing $0.00 (CD-08)
+- [x] **COST-04**: Token total does not double-count cache tokens (input + output primary, cache separate) (CD-09)
+- [x] **COST-05**: Token display shows input + cacheRead for accurate input counts (CD-11)
 - [x] **COST-06**: Cost formatting uses a single formatCost() utility everywhere (XC-07)
 
 ### Data Accuracy
@@ -115,9 +115,9 @@ None — all audit bugs targeted for v1.3.
 |-------------|-------|--------|
 | COST-01 | Phase 17 | Complete |
 | COST-02 | Phase 17 | Complete |
-| COST-03 | Phase 17 | Pending |
-| COST-04 | Phase 17 | Pending |
-| COST-05 | Phase 17 | Pending |
+| COST-03 | Phase 17 | Complete |
+| COST-04 | Phase 17 | Complete |
+| COST-05 | Phase 17 | Complete |
 | COST-06 | Phase 17 | Complete |
 | DATA-01 | Phase 18 | Pending |
 | DATA-02 | Phase 18 | Pending |

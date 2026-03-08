@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { db } from '../db/index.js';
 import { conversations, messages, toolCalls, tokenUsage, plans, planSteps } from '../db/schema.js';
+import { eq } from 'drizzle-orm';
 import { discoverJsonlFiles } from './file-discovery.js';
 import { parseJsonlFile } from './claude-code-parser.js';
 import { normalizeConversation, type NormalizedData } from './normalizer.js';
@@ -28,6 +29,16 @@ function insertExtractedPlans(
   tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
   normalizedData: NormalizedData,
 ): void {
+  // Delete existing plans for this conversation so re-ingestion reflects latest extraction logic
+  const existingPlanIds = tx.select({ id: plans.id }).from(plans)
+    .where(eq(plans.conversationId, normalizedData.conversation.id)).all();
+  if (existingPlanIds.length > 0) {
+    for (const p of existingPlanIds) {
+      tx.delete(planSteps).where(eq(planSteps.planId, p.id)).run();
+    }
+    tx.delete(plans).where(eq(plans.conversationId, normalizedData.conversation.id)).run();
+  }
+
   for (const msg of normalizedData.messages) {
     if (msg.role === 'assistant' && msg.content) {
       const extracted = extractPlans(msg.content, msg.id);
@@ -61,7 +72,7 @@ function insertExtractedPlans(
           completedSteps: completedCount,
           status: planStatus,
           createdAt: msg.createdAt,
-        }).onConflictDoNothing({ target: plans.id }).run();
+        }).run();
 
         for (const step of stepsWithStatus) {
           tx.insert(planSteps).values({
@@ -71,7 +82,7 @@ function insertExtractedPlans(
             content: step.content,
             status: step.status,
             createdAt: msg.createdAt,
-          }).onConflictDoNothing({ target: planSteps.id }).run();
+          }).run();
         }
       }
     }

@@ -32,9 +32,12 @@ export function getPlanList(
 
   // Sort column mapping
   const sortColumn = sort === 'title' ? sql`${plans.title}`
+    : sort === 'steps' ? sql`${plans.totalSteps}`
     : sort === 'totalSteps' ? sql`${plans.totalSteps}`
     : sort === 'completedSteps' ? sql`${plans.completedSteps}`
     : sort === 'status' ? sql`${plans.status}`
+    : sort === 'agent' ? sql`${conversations.agent}`
+    : sort === 'project' ? sql`${conversations.project}`
     : sql`${plans.createdAt}`;
 
   const orderDir = order === 'asc' ? sql`ASC` : sql`DESC`;

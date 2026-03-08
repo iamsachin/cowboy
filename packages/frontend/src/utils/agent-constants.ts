@@ -16,6 +16,11 @@ export const AGENT_LABELS: Record<string, string> = {
   'cursor': 'Cursor',
 };
 
+export const AGENT_THEME_CLASSES = {
+  'claude-code': 'text-primary',
+  'cursor': 'text-secondary',
+} as const;
+
 export const AGENTS = ['claude-code', 'cursor'] as const;
 
 export type AgentId = (typeof AGENTS)[number];

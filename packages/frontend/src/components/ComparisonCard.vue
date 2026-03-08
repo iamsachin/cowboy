@@ -8,7 +8,7 @@
       <!-- Claude Code -->
       <div class="space-y-1">
         <div class="text-xs text-base-content/60">Claude Code</div>
-        <div class="text-lg font-bold" style="color: rgba(56, 189, 248, 1)">
+        <div class="text-lg font-bold text-primary">
           {{ claudeValue }}
         </div>
         <div v-if="claudeTrend !== undefined && claudeTrend !== null" class="text-xs">
@@ -20,7 +20,7 @@
       <!-- Cursor -->
       <div class="space-y-1">
         <div class="text-xs text-base-content/60">Cursor</div>
-        <div class="text-lg font-bold" style="color: rgba(168, 85, 247, 1)">
+        <div class="text-lg font-bold text-secondary">
           {{ cursorValue }}
         </div>
         <div v-if="cursorTrend !== undefined && cursorTrend !== null" class="text-xs">

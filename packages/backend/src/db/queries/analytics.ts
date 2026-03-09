@@ -2,7 +2,7 @@ import { db } from '../index.js';
 import { conversations, messages, toolCalls, tokenUsage, compactionEvents } from '../schema.js';
 import { sql, and, gte, lte, eq, like, or } from 'drizzle-orm';
 import { calculateCost } from '@cowboy/shared';
-import type { OverviewStats, TimeSeriesPoint, ConversationRow, ConversationListResponse, ConversationDetailResponse, MessageTokenUsage, ToolStatsRow, HeatmapDay, ProjectStatsRow, ProjectModelEntry } from '@cowboy/shared';
+import type { OverviewStats, TimeSeriesPoint, ConversationRow, ConversationListResponse, ConversationDetailResponse, MessageTokenUsage, ToolStatsRow, HeatmapDay, ProjectStatsRow, ProjectModelEntry, SubagentSummary, ToolCallRow } from '@cowboy/shared';
 import type { Granularity } from '@cowboy/shared';
 
 /**
@@ -686,7 +686,12 @@ export function getConversationDetail(conversationId: string): ConversationDetai
       parentTitle,
     },
     messages: msgs,
-    toolCalls: tools,
+    toolCalls: tools.map(t => ({
+      ...t,
+      subagentSummary: (typeof t.subagentSummary === 'string'
+        ? JSON.parse(t.subagentSummary)
+        : t.subagentSummary) as SubagentSummary | null,
+    })) as ToolCallRow[],
     tokenSummary: {
       inputTokens: totalInput,
       outputTokens: totalOutput,

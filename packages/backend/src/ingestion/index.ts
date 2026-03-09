@@ -74,7 +74,7 @@ function insertExtractedPlans(
           completedSteps: completedCount,
           status: planStatus,
           createdAt: msg.createdAt,
-        }).run();
+        }).onConflictDoNothing({ target: plans.id }).run();
 
         for (const step of stepsWithStatus) {
           tx.insert(planSteps).values({
@@ -84,7 +84,7 @@ function insertExtractedPlans(
             content: step.content,
             status: step.status,
             createdAt: msg.createdAt,
-          }).run();
+          }).onConflictDoNothing({ target: planSteps.id }).run();
         }
       }
     }
@@ -140,7 +140,11 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
           const parseResult = await parseJsonlFile(file.filePath);
           stats.skippedLines += parseResult.skippedLines;
 
-          const normalizedData = normalizeConversation(parseResult, file.projectDir);
+          const normalizedData = normalizeConversation(
+            parseResult,
+            file.projectDir,
+            file.isSubagent ? file.sessionId : undefined,
+          );
           if (normalizedData === null) {
             status.progress.filesProcessed++;
             continue;

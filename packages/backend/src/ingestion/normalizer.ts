@@ -75,6 +75,7 @@ export interface NormalizedData {
 export function normalizeConversation(
   parseResult: ParseResult,
   projectDir: string,
+  sessionIdOverride?: string,
 ): NormalizedData | null {
   // Empty files produce no conversation
   if (
@@ -86,7 +87,7 @@ export function normalizeConversation(
 
   // ── Conversation record ─────────────────────────────────────────────
 
-  const conversationId = generateId('claude-code', parseResult.sessionId ?? '');
+  const conversationId = generateId('claude-code', sessionIdOverride ?? parseResult.sessionId ?? '');
   const project = deriveProjectName(projectDir);
 
   // Title: first non-empty user message content, truncated to 100 chars
@@ -108,7 +109,7 @@ export function normalizeConversation(
     title,
     createdAt,
     updatedAt,
-    model,
+    model: model as string | null,
   };
 
   // ── Message records ─────────────────────────────────────────────────

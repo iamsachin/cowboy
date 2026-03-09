@@ -121,7 +121,7 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
     // One-time data quality migration for existing conversations
     try {
       const migrationResult = runDataQualityMigration(db);
-      if (migrationResult.titlesFixed > 0 || migrationResult.modelsFixed > 0 || migrationResult.cursorProjectsFixed > 0 || migrationResult.cursorMessagesFixed > 0) {
+      if (migrationResult.titlesFixed > 0 || migrationResult.modelsFixed > 0 || migrationResult.cursorProjectsFixed > 0 || migrationResult.cursorMessagesFixed > 0 || migrationResult.contentFixed > 0) {
         app.log.info({ migrationResult }, 'Data quality migration applied');
       }
     } catch (err) {

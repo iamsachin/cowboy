@@ -387,6 +387,56 @@ export function fixCursorMessageContent(database: Database, cursorDbPath?: strin
   return fixedCount;
 }
 
+// ── Content XML cleanup ─────────────────────────────────────────────────
+
+/** Strip known system-injected XML tags from assistant message content. */
+const SYSTEM_TAG_PATTERN = /<\/?(system-reminder|local-command-caveat|local-command-stdout|command-name|command-message|command-args|antml:[a-z-]+)(?:\s[^>]*)?\s*\/?>/g;
+
+function stripSystemXmlTags(text: string): string {
+  return text.replace(SYSTEM_TAG_PATTERN, '').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+/**
+ * Fix existing assistant message content that contains system XML tags.
+ * Idempotent: running on already-clean content produces no changes.
+ * Returns the number of messages fixed.
+ */
+export function fixDuplicateContentBlocks(database: Database): number {
+  // Find all assistant messages that contain system XML tags
+  const assistantMessages = database
+    .select({ id: messages.id, content: messages.content })
+    .from(messages)
+    .where(eq(messages.role, 'assistant'))
+    .all();
+
+  let fixedCount = 0;
+
+  for (const msg of assistantMessages) {
+    if (!msg.content) continue;
+
+    // Check if content matches the system tag pattern
+    // Reset lastIndex since the regex has the global flag
+    SYSTEM_TAG_PATTERN.lastIndex = 0;
+    if (!SYSTEM_TAG_PATTERN.test(msg.content)) continue;
+
+    // Strip system tags
+    SYSTEM_TAG_PATTERN.lastIndex = 0;
+    const cleaned = stripSystemXmlTags(msg.content);
+
+    // Only update if content actually changed
+    if (cleaned !== msg.content) {
+      database
+        .update(messages)
+        .set({ content: cleaned || null })
+        .where(eq(messages.id, msg.id))
+        .run();
+      fixedCount++;
+    }
+  }
+
+  return fixedCount;
+}
+
 // ── Main migration runner ──────────────────────────────────────────────
 
 /**
@@ -395,7 +445,7 @@ export function fixCursorMessageContent(database: Database, cursorDbPath?: strin
  */
 export function runDataQualityMigration(
   database: Database,
-): { titlesFixed: number; modelsFixed: number; cursorProjectsFixed: number; cursorMessagesFixed: number } {
+): { titlesFixed: number; modelsFixed: number; cursorProjectsFixed: number; cursorMessagesFixed: number; contentFixed: number } {
   const titlesFixed = fixConversationTitles(database);
   const modelsFixed = fixConversationModels(database);
 
@@ -404,5 +454,8 @@ export function runDataQualityMigration(
   const cursorProjectsFixed = fixCursorProjects(database, cursorDbPath);
   const cursorMessagesFixed = fixCursorMessageContent(database, cursorDbPath);
 
-  return { titlesFixed, modelsFixed, cursorProjectsFixed, cursorMessagesFixed };
+  // Content cleanup: strip system XML tags from existing assistant messages
+  const contentFixed = fixDuplicateContentBlocks(database);
+
+  return { titlesFixed, modelsFixed, cursorProjectsFixed, cursorMessagesFixed, contentFixed };
 }

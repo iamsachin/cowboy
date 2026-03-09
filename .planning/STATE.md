@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: UX Overhaul
-status: completed
-stopped_at: Completed 28-02-PLAN.md
-last_updated: "2026-03-09T10:20:00.902Z"
-last_activity: 2026-03-09 — Completed 28-03 command palette plan
+status: executing
+stopped_at: Phase 29 context gathered
+last_updated: "2026-03-09T11:01:44.353Z"
+last_activity: 2026-03-09 — Completed 29-01 compaction detection backend plan
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 9
-  completed_plans: 9
-  percent: 100
+  total_plans: 11
+  completed_plans: 10
+  percent: 98
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 28 — Navigation & Search
+**Current focus:** Phase 29 — Compaction Detection
 
 ## Current Position
 
-Phase: 28 of 30 (Navigation & Search)
-Plan: 3 of 3 in current phase (28-03 complete)
-Status: Phase 28 complete
-Last activity: 2026-03-09 — Completed 28-03 command palette plan
+Phase: 29 of 30 (Compaction Detection)
+Plan: 1 of 2 in current phase (29-01 complete)
+Status: In progress
+Last activity: 2026-03-09 — Completed 29-01 compaction detection backend plan
 
-Progress: [██████████] 100%
+Progress: [██████████] 98%
 
 ## Performance Metrics
 
@@ -39,7 +39,7 @@ Progress: [██████████] 100%
 - v1.1: 8 plans, 4 phases
 - v1.2: 6 plans, 3 phases
 - v1.3: 21 plans, 8 phases
-- Total plans completed: 59
+- Total plans completed: 60
 
 ## Accumulated Context
 
@@ -67,6 +67,7 @@ Recent decisions affecting current work:
 - [Phase 28-01]: Singleton composable with ref-counted listener for keyboard shortcuts across components
 - [Phase 28-03]: Router injection via parameter for composable testability; Fuse.js fuzzy search with weighted keys for conversations
 - [Phase 28]: TreeWalker with text node splitting for match highlighting instead of innerHTML replacement
+- [Phase 29]: New compaction_events table instead of flags on messages table (keeps schema clean)
 
 ### Pending Todos
 
@@ -74,7 +75,6 @@ None.
 
 ### Blockers/Concerns
 
-- Phase 29 (Compaction): `isCompactSummary` field is undocumented; need real JSONL samples before planning
 - Phase 30 (Subagent): Three-phase matching algorithm is complex; need to verify current Claude Code directory structure
 
 ### Quick Tasks Completed
@@ -95,6 +95,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T10:20:00.898Z
-Stopped at: Completed 28-02-PLAN.md
-Resume file: None
+Last session: 2026-03-09T11:00:27Z
+Stopped at: Completed 29-01-PLAN.md
+Resume file: .planning/phases/29-compaction-detection/29-02-PLAN.md

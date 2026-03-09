@@ -141,7 +141,10 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Conversations that underwent compaction show amber boundary markers at the correct position in the turn list
   2. Each compaction marker displays the token delta (e.g., "45k -> 12k, 33k freed")
-**Plans**: TBD
+**Plans:** 1/2 plans executed
+Plans:
+- [ ] 29-01-PLAN.md — DB schema, parser detection, normalizer, and API for compaction events
+- [ ] 29-02-PLAN.md — CompactionDivider component, groupTurns extension, and conversation list indicator
 
 ### Phase 30: Subagent Resolution
 **Goal**: Users can see what subagents did within Task tool calls without leaving the parent conversation
@@ -184,9 +187,9 @@ Phases execute in numeric order: 25 -> 26 -> 27 -> 28 -> 29 -> 30
 | 22. Analytics & Agent Pages | v1.3 | 2/2 | Complete | 2026-03-08 |
 | 23. Cross-Cutting Polish | v1.3 | 2/2 | Complete | 2026-03-08 |
 | 24. Overview, Settings & Final Verification | v1.3 | 3/3 | Complete | 2026-03-08 |
-| 25. Data Quality & Code Cleanup | 2/2 | Complete    | 2026-03-09 | - |
-| 26. Display Quick Wins | 2/2 | Complete    | 2026-03-09 | - |
-| 27. Tool Viewers | 2/2 | Complete    | 2026-03-09 | - |
-| 28. Navigation & Search | 3/3 | Complete   | 2026-03-09 | - |
-| 29. Compaction Detection | v2.0 | 0/? | Not started | - |
+| 25. Data Quality & Code Cleanup | v2.0 | 2/2 | Complete | 2026-03-09 |
+| 26. Display Quick Wins | v2.0 | 2/2 | Complete | 2026-03-09 |
+| 27. Tool Viewers | v2.0 | 2/2 | Complete | 2026-03-09 |
+| 28. Navigation & Search | v2.0 | 3/3 | Complete | 2026-03-09 |
+| 29. Compaction Detection | 1/2 | In Progress|  | - |
 | 30. Subagent Resolution | v2.0 | 0/? | Not started | - |

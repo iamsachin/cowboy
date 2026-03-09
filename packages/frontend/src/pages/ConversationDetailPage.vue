@@ -31,10 +31,20 @@
     <!-- Success state -->
     <template v-else-if="data">
       <!-- Back link -->
-      <router-link to="/conversations" class="btn btn-ghost btn-sm gap-1 mb-4">
-        <ArrowLeft class="w-4 h-4" />
-        Back to conversations
-      </router-link>
+      <div class="flex items-center gap-1 mb-4">
+        <router-link to="/conversations" class="btn btn-ghost btn-sm gap-1">
+          <ArrowLeft class="w-4 h-4" />
+          Back to conversations
+        </router-link>
+        <router-link
+          v-if="data.conversation.parentConversationId"
+          :to="'/conversations/' + data.conversation.parentConversationId"
+          class="btn btn-ghost btn-sm gap-1"
+        >
+          <ArrowUpLeft class="w-4 h-4" />
+          Parent: {{ data.conversation.parentTitle || 'Unknown' }}
+        </router-link>
+      </div>
 
       <!-- Metadata header bar -->
       <div class="bg-base-200 rounded-lg p-4 mb-6">
@@ -125,7 +135,7 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
-import { ArrowLeft, AlertTriangle, ClipboardList } from 'lucide-vue-next';
+import { ArrowLeft, ArrowUpLeft, AlertTriangle, ClipboardList } from 'lucide-vue-next';
 import type { ConversationPlanEntry } from '@cowboy/shared';
 import { useConversationDetail } from '../composables/useConversationDetail';
 import ConversationDetail from '../components/ConversationDetail.vue';

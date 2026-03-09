@@ -120,8 +120,17 @@
                     class="pulse-dot shrink-0"
                     title="Running"
                   ></span>
+                  <BotIcon
+                    v-if="row.parentConversationId"
+                    class="w-3.5 h-3.5 text-info shrink-0"
+                    title="Subagent"
+                  />
                   <div class="min-w-0">
                     <div class="truncate">{{ cleanTitle(row.title ?? '') }}</div>
+                    <div
+                      v-if="row.parentTitle"
+                      class="text-xs text-base-content/50 truncate mt-0.5"
+                    >from: {{ row.parentTitle }}</div>
                     <div
                       v-if="searchQuery && 'snippet' in row && row.snippet"
                       class="text-xs text-base-content/60 truncate mt-0.5"
@@ -181,6 +190,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import DOMPurify from 'dompurify';
 import { useConversationBrowser } from '../composables/useConversationBrowser';
+import { Bot as BotIcon } from 'lucide-vue-next';
 import AgentBadge from './AgentBadge.vue';
 import { AGENTS, AGENT_LABELS } from '../utils/agent-constants';
 import { cleanTitle } from '../utils/content-sanitizer';

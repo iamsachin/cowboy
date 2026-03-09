@@ -72,7 +72,10 @@ export function isSystemInjected(content: string | null): boolean {
   if (/\[Image: source:/.test(trimmed)) return false;
 
   // Messages that start with XML-tagged system content
-  if (/^<(system-reminder|local-command|antml:)/.test(trimmed)) return true;
+  if (/^<(system-reminder|local-command|antml:|task-notification)/.test(trimmed)) return true;
+
+  // Interrupt markers injected by Claude Code
+  if (/^\[Request interrupted by user/.test(trimmed)) return true;
 
   // Skill/command expanded prompts — contain structured XML sections
   if (/<(objective|execution_context|context|process|success_criteria|files_to_read)>/.test(trimmed)) return true;

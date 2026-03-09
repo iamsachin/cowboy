@@ -5,46 +5,18 @@
   >
     <!-- Header -->
     <div class="p-3 flex items-center justify-between border-b border-base-300">
-      <!-- Collapsed: hat icon as expand button -->
-      <button
-        v-if="collapsed"
-        class="btn btn-ghost btn-sm btn-square mx-auto"
-        @click="collapsed = false"
-        aria-label="Expand sidebar"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          class="w-5 h-5 text-primary"
-        >
-          <path d="M2 14c0 0 1-3 3.5-4.5C5 7 4 4 4 4s3.5 1.5 5 4c.5-.2 1-.3 1.5-.35L12 3l1.5 4.65c.5.05 1 .15 1.5.35 1.5-2.5 5-4 5-4s-1 3-1.5 5.5C21 10.5 22 14 22 14H2z" />
-          <path d="M4 15c0 2.5 3.5 5 8 5s8-2.5 8-5H4z" opacity="0.3" />
-        </svg>
-      </button>
-      <!-- Expanded: hat + title + tagline -->
       <div v-if="!collapsed" class="flex flex-col">
-        <span class="flex items-center gap-1.5 text-lg font-bold text-primary tracking-tight">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            class="w-5 h-5 shrink-0"
-          >
-            <path d="M2 14c0 0 1-3 3.5-4.5C5 7 4 4 4 4s3.5 1.5 5 4c.5-.2 1-.3 1.5-.35L12 3l1.5 4.65c.5.05 1 .15 1.5.35 1.5-2.5 5-4 5-4s-1 3-1.5 5.5C21 10.5 22 14 22 14H2z" />
-            <path d="M4 15c0 2.5 3.5 5 8 5s8-2.5 8-5H4z" opacity="0.3" />
-          </svg>
+        <span class="text-lg font-bold text-primary tracking-tight">
           Cowboy
         </span>
         <span class="text-xs text-base-content/50 font-normal italic">Taming wild agents daily</span>
       </div>
       <button
-        v-if="!collapsed"
         class="btn btn-ghost btn-sm btn-square"
-        @click="collapsed = true"
-        aria-label="Collapse sidebar"
+        @click="collapsed = !collapsed"
+        :aria-label="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
       >
-        <ChevronLeft class="w-4 h-4" />
+        <component :is="collapsed ? ChevronRight : ChevronLeft" class="w-4 h-4" />
       </button>
     </div>
 

@@ -65,6 +65,16 @@ export const planSteps = sqliteTable('plan_steps', {
   createdAt: text('created_at').notNull(),
 });
 
+export const compactionEvents = sqliteTable('compaction_events', {
+  id: text('id').primaryKey(),
+  conversationId: text('conversation_id').notNull().references(() => conversations.id),
+  timestamp: text('timestamp').notNull(),
+  summary: text('summary'),
+  tokensBefore: integer('tokens_before'),
+  tokensAfter: integer('tokens_after'),
+  createdAt: text('created_at').notNull(),
+});
+
 export const settings = sqliteTable('settings', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   // Agent configuration

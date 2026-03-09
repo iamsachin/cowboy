@@ -33,10 +33,17 @@ export interface AssistantMessageData {
   stopReason: string;
 }
 
+export interface CompactionEventData {
+  uuid: string;
+  timestamp: string;
+  summary: string | null;
+}
+
 export interface ParseResult {
   sessionId: string | null;
   userMessages: UserMessageData[];
   assistantMessages: AssistantMessageData[];
+  compactionEvents: CompactionEventData[];
   skippedLines: number;
   timestamps: string[];
 }
@@ -66,6 +73,7 @@ export async function parseJsonlFile(filePath: string): Promise<ParseResult> {
     sessionId: null,
     userMessages: [],
     assistantMessages: [],
+    compactionEvents: [],
     skippedLines: 0,
     timestamps: [],
   };
@@ -123,6 +131,17 @@ export async function parseJsonlFile(filePath: string): Promise<ParseResult> {
     result.timestamps.push(timestamp);
 
     if (lineType === 'user') {
+      // Detect compaction summary before normal user processing
+      if ((parsed as Record<string, unknown>).isCompactSummary === true) {
+        const summaryContent = typeof message?.content === 'string'
+          ? message.content
+          : null;
+        result.compactionEvents.push({
+          uuid,
+          timestamp,
+          summary: summaryContent,
+        });
+      }
       processUserLine(result, uuid, timestamp, message);
     } else if (lineType === 'assistant') {
       processAssistantChunk(chunkMap, uuid, timestamp, message);

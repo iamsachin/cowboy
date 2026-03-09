@@ -16,6 +16,18 @@
       </div>
     </div>
 
+    <!-- Search bar (Cmd+F) -->
+    <ConversationSearchBar
+      :query="searchState.query.value"
+      :current-match="searchState.currentMatchDisplay.value"
+      :total-matches="searchState.totalMatches.value"
+      :visible="searchState.isOpen.value"
+      @update:query="searchState.query.value = $event"
+      @next="searchState.goNext()"
+      @prev="searchState.goPrev()"
+      @close="searchState.close()"
+    />
+
     <!-- Turn list -->
     <template v-for="turn in visibleTurns" :key="turnKey(turn)">
       <ChatMessage
@@ -69,6 +81,7 @@ import { ChevronsDown, ChevronsUp } from 'lucide-vue-next';
 import type { MessageRow, ToolCallRow, MessageTokenUsage } from '@cowboy/shared';
 import { groupTurns, type GroupedTurn } from '../composables/useGroupedTurns';
 import { useCollapseState } from '../composables/useCollapseState';
+import { useConversationSearch } from '../composables/useConversationSearch';
 import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts';
 import ChatMessage from './ChatMessage.vue';
 import AssistantGroupCard from './AssistantGroupCard.vue';
@@ -76,6 +89,7 @@ import SystemMessageIndicator from './SystemMessageIndicator.vue';
 import SlashCommandChip from './SlashCommandChip.vue';
 import ClearDivider from './ClearDivider.vue';
 import AgentPromptChip from './AgentPromptChip.vue';
+import ConversationSearchBar from './ConversationSearchBar.vue';
 
 const props = defineProps<{
   messages: MessageRow[];
@@ -125,7 +139,8 @@ function turnKey(turn: GroupedTurn): string {
   return turn.message.id;
 }
 
-const { isExpanded, toggle, expandAll, collapseAll, expandedCount } = useCollapseState();
+const collapseState = useCollapseState();
+const { isExpanded, toggle, expandAll, collapseAll, expandedCount } = collapseState;
 
 const groupIds = computed(() =>
   visibleTurns.value.filter(t => t.type === 'assistant-group').map(t => turnKey(t))
@@ -143,8 +158,11 @@ function toggleAll() {
   }
 }
 
-// --- Keyboard navigation (J/K/E) ---
+// --- In-conversation search (Cmd+F) ---
 const turnListRef = ref<HTMLElement | null>(null);
+const searchState = useConversationSearch(turnListRef, collapseState, groupIds);
+
+// --- Keyboard navigation (J/K/E) ---
 const focusedGroupIndex = ref(-1);
 
 const focusedGroupId = computed(() => {
@@ -165,6 +183,17 @@ function scrollFocusedIntoView() {
 }
 
 const { register, unregister } = useKeyboardShortcuts();
+
+register({
+  key: 'f',
+  meta: true,
+  handler: () => {
+    searchState.open();
+  },
+  description: 'Search in conversation',
+  label: 'Cmd+F',
+  group: 'Navigation',
+});
 
 register({
   key: 'j',
@@ -214,8 +243,10 @@ watch(() => props.messages.length, () => {
 });
 
 onUnmounted(() => {
+  unregister('f', true);
   unregister('j');
   unregister('k');
   unregister('e');
+  searchState.close();
 });
 </script>

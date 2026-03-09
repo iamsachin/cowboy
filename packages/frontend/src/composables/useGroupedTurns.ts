@@ -1,4 +1,4 @@
-import type { MessageRow, ToolCallRow } from '@cowboy/shared';
+import type { MessageRow, ToolCallRow, CompactionEvent } from '@cowboy/shared';
 import {
   isSystemInjected,
   isSlashCommand,
@@ -34,6 +34,8 @@ export type SystemMessageCategory =
   | 'skill-instruction'
   | 'objective'
   | 'system-caveat'
+  | 'task-notification'
+  | 'interrupt'
   | 'other';
 
 /** One or more consecutive system-injected user messages collapsed into a single indicator. */
@@ -57,13 +59,33 @@ export interface ClearDividerTurn {
   message: MessageRow;
 }
 
+/** A user-role message that is actually a prompt sent to a subagent (via Agent/Task tool). */
+export interface AgentPromptTurn {
+  type: 'agent-prompt';
+  message: MessageRow;
+  /** Short description from the Agent tool call input, if available */
+  description: string | null;
+}
+
+/** A compaction boundary — context was summarized to free token space. */
+export interface CompactionTurn {
+  type: 'compaction';
+  id: string;
+  timestamp: string;
+  summary: string | null;
+  tokensBefore: number | null;
+  tokensAfter: number | null;
+}
+
 export type Turn = UserTurn | AssistantTurn;
 export type GroupedTurn =
   | UserTurn
   | AssistantGroup
   | SystemGroup
   | SlashCommandTurn
-  | ClearDividerTurn;
+  | ClearDividerTurn
+  | AgentPromptTurn
+  | CompactionTurn;
 
 /**
  * Classify a system-injected message by examining its content.
@@ -82,6 +104,8 @@ export function classifySystemMessage(content: string): SystemMessageCategory {
     return 'skill-instruction';
   }
   if (/Caveat:/.test(content)) return 'system-caveat';
+  if (/<task-notification/.test(content)) return 'task-notification';
+  if (/^\[Request interrupted by user/.test(content)) return 'interrupt';
   return 'other';
 }
 
@@ -100,8 +124,19 @@ export function classifySystemMessage(content: string): SystemMessageCategory {
  *
  * Pure function -- no Vue reactivity dependency.
  */
-export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[]): GroupedTurn[] {
+export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[], compactionEvents?: CompactionEvent[]): GroupedTurn[] {
   if (messages.length === 0 && toolCalls.length === 0) return [];
+
+  // 0. Build a set of agent prompt strings from Agent/Task tool calls
+  const agentPrompts = new Map<string, string | null>(); // prompt content → description
+  for (const tc of toolCalls) {
+    if (tc.name === 'Agent' || tc.name === 'Task') {
+      const input = tc.input as Record<string, unknown> | null;
+      if (input && typeof input.prompt === 'string' && input.prompt.trim()) {
+        agentPrompts.set(input.prompt.trim(), typeof input.description === 'string' ? input.description : null);
+      }
+    }
+  }
 
   // 1. Index tool calls by messageId
   const messageIds = new Set(messages.map(m => m.id));
@@ -173,6 +208,7 @@ export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[]): Gr
   const grouped: GroupedTurn[] = [];
   let pendingAssistant: AssistantTurn[] = [];
   let pendingSystem: MessageRow[] = [];
+  let pendingAgentPrompts: { message: MessageRow; description: string | null }[] = [];
 
   function flushAssistant(): void {
     if (pendingAssistant.length === 0) return;
@@ -206,6 +242,14 @@ export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[]): Gr
     pendingSystem = [];
   }
 
+  function flushAgentPrompts(): void {
+    if (pendingAgentPrompts.length === 0) return;
+    for (const ap of pendingAgentPrompts) {
+      grouped.push({ type: 'agent-prompt', message: ap.message, description: ap.description });
+    }
+    pendingAgentPrompts = [];
+  }
+
   for (const msg of sorted) {
     if (msg.role === 'user') {
       const content = msg.content;
@@ -213,6 +257,7 @@ export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[]): Gr
       // Check for /clear first
       if (isClearCommand(content)) {
         flushAssistant();
+        flushAgentPrompts();
         flushSystem();
         grouped.push({ type: 'clear-divider', message: msg });
         continue;
@@ -221,12 +266,27 @@ export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[]): Gr
       // Check for other slash commands
       if (isSlashCommand(content)) {
         flushAssistant();
+        flushAgentPrompts();
         flushSystem();
         grouped.push({
           type: 'slash-command',
           message: msg,
           commandText: extractCommandText(content || ''),
         });
+        continue;
+      }
+
+      // Skip tool-result-only messages (no user-visible content)
+      if (!content || !content.trim()) {
+        continue;
+      }
+
+      // Check for agent/subagent prompts (Agent/Task tool call prompts replayed as user messages)
+      const agentDesc = agentPrompts.get(content.trim());
+      if (agentDesc !== undefined) {
+        // Don't flush assistant group — agent prompts appear between assistant turns
+        // just like system messages. Defer and flush after the group ends.
+        pendingAgentPrompts.push({ message: msg, description: agentDesc });
         continue;
       }
 
@@ -241,14 +301,15 @@ export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[]): Gr
 
       // Regular user message
       flushAssistant();
+      flushAgentPrompts();
       flushSystem();
       grouped.push({ type: 'user', message: msg });
     } else {
       // Assistant message
-      // Only flush system messages if there's no pending assistant group.
-      // If there IS a pending assistant group, system messages between assistant
-      // turns stay deferred and flush after the group ends (CONV-01/CONV-06).
+      // Only flush system/agent-prompt messages if there's no pending assistant group.
+      // If there IS a pending assistant group, they stay deferred and flush after the group ends.
       if (pendingAssistant.length === 0) {
+        flushAgentPrompts();
         flushSystem();
       }
       const turn = assistantTurnByMsgId.get(msg.id);
@@ -259,7 +320,55 @@ export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[]): Gr
   }
 
   flushAssistant();
+  flushAgentPrompts();
   flushSystem();
+
+  // Inject compaction events at correct chronological positions
+  if (compactionEvents && compactionEvents.length > 0) {
+    const sortedCompactions = [...compactionEvents].sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+
+    // Helper: get the latest timestamp from a grouped turn
+    function getLastTimestamp(turn: GroupedTurn): string {
+      switch (turn.type) {
+        case 'assistant-group':
+          return turn.lastTimestamp;
+        case 'user':
+        case 'slash-command':
+        case 'clear-divider':
+        case 'agent-prompt':
+          return turn.message.createdAt;
+        case 'system-group':
+          return turn.messages[turn.messages.length - 1].createdAt;
+        case 'compaction':
+          return turn.timestamp;
+      }
+    }
+
+    // Insert each compaction event after the last turn whose timestamp <= compaction timestamp
+    for (const ce of sortedCompactions) {
+      const ceTime = new Date(ce.timestamp).getTime();
+      const compactionTurn: CompactionTurn = {
+        type: 'compaction',
+        id: ce.id,
+        timestamp: ce.timestamp,
+        summary: ce.summary,
+        tokensBefore: ce.tokensBefore,
+        tokensAfter: ce.tokensAfter,
+      };
+
+      // Find insertion index: after the last turn whose timestamp <= ceTime
+      let insertIdx = 0;
+      for (let i = 0; i < grouped.length; i++) {
+        const turnTime = new Date(getLastTimestamp(grouped[i])).getTime();
+        if (turnTime <= ceTime) {
+          insertIdx = i + 1;
+        }
+      }
+      grouped.splice(insertIdx, 0, compactionTurn);
+    }
+  }
 
   return grouped;
 }

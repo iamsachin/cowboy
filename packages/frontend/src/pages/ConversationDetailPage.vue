@@ -116,6 +116,7 @@
         :messages="data.messages"
         :toolCalls="data.toolCalls"
         :tokenUsageByMessage="data.tokenUsageByMessage"
+        :compactionEvents="data.compactionEvents ?? []"
       />
     </template>
   </div>

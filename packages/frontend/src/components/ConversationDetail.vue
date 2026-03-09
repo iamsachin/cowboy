@@ -62,6 +62,10 @@
         v-else-if="turn.type === 'clear-divider'"
         :turn="turn"
       />
+      <CompactionDivider
+        v-else-if="turn.type === 'compaction'"
+        :turn="turn"
+      />
     </template>
 
     <!-- Load more button for large conversations -->
@@ -78,7 +82,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick, onUnmounted } from 'vue';
 import { ChevronsDown, ChevronsUp } from 'lucide-vue-next';
-import type { MessageRow, ToolCallRow, MessageTokenUsage } from '@cowboy/shared';
+import type { MessageRow, ToolCallRow, MessageTokenUsage, CompactionEvent } from '@cowboy/shared';
 import { groupTurns, type GroupedTurn } from '../composables/useGroupedTurns';
 import { useCollapseState } from '../composables/useCollapseState';
 import { useConversationSearch } from '../composables/useConversationSearch';
@@ -88,6 +92,7 @@ import AssistantGroupCard from './AssistantGroupCard.vue';
 import SystemMessageIndicator from './SystemMessageIndicator.vue';
 import SlashCommandChip from './SlashCommandChip.vue';
 import ClearDivider from './ClearDivider.vue';
+import CompactionDivider from './CompactionDivider.vue';
 import AgentPromptChip from './AgentPromptChip.vue';
 import ConversationSearchBar from './ConversationSearchBar.vue';
 
@@ -95,6 +100,7 @@ const props = defineProps<{
   messages: MessageRow[];
   toolCalls: ToolCallRow[];
   tokenUsageByMessage?: Record<string, MessageTokenUsage>;
+  compactionEvents?: CompactionEvent[];
 }>();
 
 // Sort all messages — groupTurns handles all classification internally
@@ -110,7 +116,7 @@ const activeToolCalls = computed(() => {
   return props.toolCalls.filter(tc => messageIds.has(tc.messageId));
 });
 
-const turns = computed(() => groupTurns(sortedMessages.value, activeToolCalls.value));
+const turns = computed(() => groupTurns(sortedMessages.value, activeToolCalls.value, props.compactionEvents));
 
 // Pagination: show first PAGE_SIZE groups, then load more on demand
 const PAGE_SIZE = 50;
@@ -135,6 +141,7 @@ function turnKey(turn: GroupedTurn): string {
   if (turn.type === 'system-group') return turn.messages[0].id;
   if (turn.type === 'slash-command') return turn.message.id;
   if (turn.type === 'agent-prompt') return turn.message.id;
+  if (turn.type === 'compaction') return turn.id;
   // clear-divider
   return turn.message.id;
 }

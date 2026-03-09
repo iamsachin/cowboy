@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: UX Overhaul
-status: executing
-stopped_at: Phase 29 complete, ready for Phase 30
-last_updated: "2026-03-09T11:09:00Z"
+status: verifying
+stopped_at: Phase 30 context gathered
+last_updated: "2026-03-09T12:45:39.585Z"
 last_activity: 2026-03-09 — Verified 29-02 compaction detection frontend (checkpoint approved)
 progress:
   total_phases: 6
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 29 — Compaction Detection
+**Current focus:** Phase 30 — Subagent Resolution
 
 ## Current Position
 
-Phase: 29 of 30 (Compaction Detection)
-Plan: 2 of 2 in current phase (29-02 complete)
-Status: Phase 29 complete (verified)
-Last activity: 2026-03-09 — Verified 29-02 compaction detection frontend (checkpoint approved)
+Phase: 30 of 30 (Subagent Resolution)
+Plan: 1 of 2 in current phase (30-01 complete)
+Status: Executing Phase 30
+Last activity: 2026-03-09 — Completed 30-01 subagent resolution backend
 
-Progress: [██████████] 100%
+Progress: [█████████░] 92%
 
 ## Performance Metrics
 
@@ -70,6 +70,9 @@ Recent decisions affecting current work:
 - [Phase 29]: New compaction_events table instead of flags on messages table (keeps schema clean)
 - [Phase 29-02]: Compaction events injected as post-processing after groupTurns main loop (preserves existing grouping logic)
 - [Phase 29-02]: Severity color defaults to amber when token data is missing
+- [Phase 30-01]: buildToolResultLookup concatenates multiple tool_results per toolUseId (preserves agentId)
+- [Phase 30-01]: Subagent linking runs post-ingestion to avoid ordering issues
+- [Phase 30-01]: SubagentSummary stored as JSON column on tool_calls (1:1 simplicity)
 
 ### Pending Todos
 
@@ -97,6 +100,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T11:09:00Z
-Stopped at: Completed 29-02-PLAN.md (all tasks verified)
-Resume file: Phase 30 next
+Last session: 2026-03-09T13:12:01Z
+Stopped at: Completed 30-01-PLAN.md
+Resume file: .planning/phases/30-subagent-resolution/30-02-PLAN.md

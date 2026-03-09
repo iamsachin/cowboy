@@ -39,7 +39,7 @@ Requirements for the v2.0 UX Overhaul milestone. Each maps to roadmap phases.
 
 ### Subagent Resolution
 
-- [ ] **AGENT-01**: Subagent JSONL files discovered and linked to parent Task tool calls via three-phase matching
+- [x] **AGENT-01**: Subagent JSONL files discovered and linked to parent Task tool calls via three-phase matching
 - [ ] **AGENT-02**: Subagent execution traces display as summary cards within Task tool call rows (tool names, statuses, files touched)
 
 ### Code Cleanup
@@ -98,7 +98,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | NAV-03 | Phase 28 | Complete |
 | COMP-01 | Phase 29 | Complete |
 | COMP-02 | Phase 29 | Complete |
-| AGENT-01 | Phase 30 | Pending |
+| AGENT-01 | Phase 30 | Complete |
 | AGENT-02 | Phase 30 | Pending |
 | CLEAN-01 | Phase 25 | Complete |
 | CLEAN-02 | Phase 25 | Complete |

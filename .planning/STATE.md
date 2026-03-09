@@ -1,35 +1,36 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.3
-milestone_name: Bug Fix & Quality Audit
-status: milestone_complete
-stopped_at: v1.3 milestone shipped
-last_updated: "2026-03-08"
-last_activity: 2026-03-09 - Completed quick task 14: Render thinking content as styled markdown
+milestone: v2.0
+milestone_name: UX Overhaul
+status: executing
+stopped_at: Completed 25-02-PLAN.md
+last_updated: "2026-03-09T07:31:26.826Z"
+last_activity: 2026-03-09 — Completed 25-02 code cleanup plan
 progress:
-  total_phases: 8
-  completed_phases: 8
-  total_plans: 21
-  completed_plans: 21
+  total_phases: 6
+  completed_phases: 0
+  total_plans: 2
+  completed_plans: 1
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-08)
+See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 23 - Cross-Cutting Polish (v1.3)
+**Current focus:** Phase 25 — Data Quality & Code Cleanup
 
 ## Current Position
 
-Phase: 24 of 24 (Overview, Settings & Final Verification)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-03-08 — Completed 24-02 (toast feedback, countdown clear, refresh modal, tokenUsage stat)
+Phase: 25 of 30 (Data Quality & Code Cleanup)
+Plan: 2 of 2 in current phase
+Status: Executing
+Last activity: 2026-03-09 — Completed 25-02 code cleanup plan
 
-Progress (v1.3): [██████████] 98% (42 plans completed)
+Progress: [██████████] 98%
 
 ## Performance Metrics
 
@@ -37,55 +38,20 @@ Progress (v1.3): [██████████] 98% (42 plans completed)
 - v1.0: 24 plans, ~124min total, ~5min avg
 - v1.1: 8 plans, 4 phases
 - v1.2: 6 plans, 3 phases
+- v1.3: 21 plans, 8 phases
+- Total plans completed: 59
 
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-- [19-01]: System-injected messages between assistant turns accumulate without flushing the assistant group
-- [19-01]: Null/empty content returns false from isSystemInjected (safe default: show message)
-- [19-02]: Use ChevronRight with rotate-90 as standard expand/collapse convention across all collapsible components
-- [18-03]: Use getFullYear/getMonth/getDate for local date formatting instead of toISOString (avoids UTC conversion)
-- [18-03]: Group timeseries by conversations.createdAt to match the WHERE filter source
-- [17-02]: Show cache read tokens as separate annotation rather than folding into total token count
-- [17-01]: JS sort for cost column instead of SQL subquery (avoids duplicating pricing logic)
-- [17-01]: Per-model secondary query for conversation list cost (multi-model accuracy)
-- [v1.3 roadmap]: 67 audit bugs organized into 8 phases by technical area
-- [v1.3 roadmap]: Critical cost bugs (COST-01..06) prioritized as Phase 17
-- [v1.3 roadmap]: Phase 24 includes browser verification of all fixes
-- [v1.2]: groupTurns handles all message classification (single source of truth)
-- [v1.2]: SystemMessageIndicator uses in-flow expansion (avoids z-index issues)
-- [Phase 18]: Remove duration columns entirely rather than estimate (JSONL lacks execution time data)
-- [Phase 18]: ExitPlanMode rejected status only applies on re-ingestion (acceptable tradeoff)
-- [Phase 18]: Duration from message span via backend firstMessageAt/lastMessageAt fields
-- [Phase 18]: NULL-model backfill expanded to all agents with message fallback
-- [Phase 19]: PAGE_SIZE=50 groups as initial render batch; append-based load-more preserves collapse state
-- [20-01]: Token sort uses sum(input + output) to match the displayed total in the UI
-- [20-01]: NULLS LAST via CASE WHEN IS NULL pattern for nullable column sorting
-- [20-01]: Unrecognized sort fields fall back to date (createdAt) as safe default
-- [20-02]: Manual setTimeout debounce (400ms) instead of external debounce library
-- [20-02]: DOMPurify with ALLOWED_TAGS: ['mark'] replaces regex sanitizer
-- [20-03]: API-driven filter dropdowns with fallback to hardcoded/page-derived values
-- [20-03]: Loading overlay with opacity + pointer-events-none pattern for subsequent fetches
-- [21-01]: cleanMarkdown strips heading prefixes, bold/italic markers, backticks from plan titles
-- [21-01]: conversationTitle optional 3rd param to extractPlans (backward-compatible)
-- [21-01]: Action verb threshold >50% (strict >, not >=) for numbered list acceptance
-- [21-01]: Word boundary regex for tool name matching (Write != rewrite/overwrite)
-- [21-01]: Completion threshold max(2, ceil(n*0.6)) for significant word overlap
-- [Phase 21-02]: Delete-then-insert pattern for plan re-ingestion (replaces onConflictDoNothing)
-- [Phase 21]: badge-neutral for not-started; badge-ghost+outline for unknown; HelpCircle icon on unknown
-- [Phase 21]: Frontend sort params pass column field names directly to API; backend maps to SQL columns
-- [22-02]: ANLYT-04 (Cursor tool calls) covered by existing behavior -- backend returns empty arrays, components show empty states
-- [22-02]: Cursor N/A check requires both activeTab === cursor AND agentOverview loaded (not null) to avoid flashing N/A during load
-- [Phase 22]: oklch CSS custom properties for heatmap colors to respect DaisyUI theme switching
-- [Phase 22]: Fallback to AGENT_LABELS keys when /api/analytics/filters fetch fails
-- [Phase 23-01]: Word-boundary regex uses model-string delimiters [-_./\s] instead of \b (digits are word chars in JS regex)
-- [Phase 23-01]: ConversationPlanEntry type separates by-conversation response from PlanDetailResponse
-- [Phase 23]: CSS custom properties (--chart-grid/text/legend) for theme-adaptive chart colors via getChartThemeColors() utility
-- [Phase 24-01]: Preset=all with conversationCount=0 means truly empty; other presets with count=0 means date-filtered empty
-- [Phase 24-01]: Overview table columns: Date, Agent, Project, Model, Title, Tokens (combined), Cost
-- [Phase 24-02]: useSettings save/clear/refresh methods return Promise<boolean> for toast feedback integration
+Recent decisions affecting current work:
+
+- [v2.0 Roadmap]: Bundle CLEAN-01..03 with DATA-01..03 in Phase 25 (cleanup is small, both are prerequisites)
+- [v2.0 Roadmap]: Defer subagent resolution to Phase 30 (highest risk, most unknowns)
+- [25-02]: Used non-scoped style @import for shared markdown CSS across components
+- [25-02]: Consolidated formatTurnCost into formatCost as canonical cost formatter
 
 ### Pending Todos
 
@@ -93,7 +59,8 @@ None.
 
 ### Blockers/Concerns
 
-None currently.
+- Phase 29 (Compaction): `isCompactSummary` field is undocumented; need real JSONL samples before planning
+- Phase 30 (Subagent): Three-phase matching algorithm is complex; need to verify current Claude Code directory structure
 
 ### Quick Tasks Completed
 
@@ -110,6 +77,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-09T19:12:00Z
-Stopped at: Completed quick task 14
-Resume file: None
+Last session: 2026-03-09T07:30:43Z
+Stopped at: Completed 25-02-PLAN.md
+Resume file: .planning/phases/25-data-quality-code-cleanup/25-02-SUMMARY.md

@@ -1,5 +1,9 @@
 <template>
-  <div class="text-xs">
+  <!-- Subagent card for Task/Agent tool calls -->
+  <SubagentSummaryCard v-if="isSubagentCall" :toolCall="toolCall" />
+
+  <!-- Standard tool call display -->
+  <div v-else class="text-xs">
     <!-- Compact row: always visible -->
     <div class="flex items-center gap-2 py-1 px-2 rounded bg-amber-500/5 border-l-2 border-amber-400">
       <component :is="toolIcon.icon" class="w-3.5 h-3.5 shrink-0" :class="toolIcon.colorClass" />
@@ -46,10 +50,14 @@ import DiffViewer from './tool-viewers/DiffViewer.vue';
 import CodeViewer from './tool-viewers/CodeViewer.vue';
 import BashViewer from './tool-viewers/BashViewer.vue';
 import JsonFallbackViewer from './tool-viewers/JsonFallbackViewer.vue';
+import SubagentSummaryCard from './SubagentSummaryCard.vue';
 
 const props = defineProps<{
   toolCall: ToolCallRow;
 }>();
 
 const toolIcon = computed(() => getToolIcon(props.toolCall.name));
+const isSubagentCall = computed(() =>
+  props.toolCall.name === 'Task' || props.toolCall.name === 'Agent'
+);
 </script>

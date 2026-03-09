@@ -15,7 +15,7 @@ Requirements for the v2.0 UX Overhaul milestone. Each maps to roadmap phases.
 
 ### Conversation Display
 
-- [ ] **DISP-01**: User can see the last AI text response on collapsed assistant groups without expanding
+- [x] **DISP-01**: User can see the last AI text response on collapsed assistant groups without expanding
 - [ ] **DISP-02**: User messages longer than 500 characters are truncated with a "Show more" toggle
 - [ ] **DISP-03**: Thinking blocks, tool calls, and tool results have distinct semantic color tints (purple/amber/green/red)
 
@@ -86,7 +86,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-01 | Phase 25 | Complete |
 | DATA-02 | Phase 25 | Complete |
 | DATA-03 | Phase 25 | Complete |
-| DISP-01 | Phase 26 | Pending |
+| DISP-01 | Phase 26 | Complete |
 | DISP-02 | Phase 26 | Pending |
 | DISP-03 | Phase 26 | Pending |
 | TOOL-01 | Phase 27 | Pending |

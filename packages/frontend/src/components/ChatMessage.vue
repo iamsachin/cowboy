@@ -30,19 +30,27 @@
           <ImageIcon class="w-3.5 h-3.5" />
           <span>{{ imageCount }} image{{ imageCount > 1 ? 's' : '' }} attached</span>
         </div>
+        <button
+          v-if="isLong"
+          class="text-xs text-info hover:underline mt-1"
+          @click.stop="showFull = !showFull"
+        >
+          {{ showFull ? 'Show less' : 'Show more' }}
+        </button>
       </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { ImageIcon } from 'lucide-vue-next';
 import DOMPurify from 'dompurify';
 import type { MessageRow } from '@cowboy/shared';
 import CodeBlock from './CodeBlock.vue';
 import { parseContent, formatTime } from '../utils/content-parser';
 import { isSlashCommand, extractCommandText } from '../utils/content-sanitizer';
+import { truncateAtWordBoundary } from '../utils/turn-helpers';
 
 const IMAGE_RE = /\[Image: source: [^\]]+\]/g;
 const URL_RE = /(https?:\/\/[^\s<>"')\]]+)/g;
@@ -57,6 +65,19 @@ const props = defineProps<{
   message: MessageRow;
 }>();
 
+const TRUNCATE_LIMIT = 500;
+const showFull = ref(false);
+
+const isLong = computed(() => {
+  return (props.message.content?.length ?? 0) > TRUNCATE_LIMIT;
+});
+
+const displayContent = computed(() => {
+  if (!props.message.content) return null;
+  if (!isLong.value || showFull.value) return props.message.content;
+  return truncateAtWordBoundary(props.message.content, TRUNCATE_LIMIT);
+});
+
 const commandText = computed(() => {
   if (!props.message.content || !isSlashCommand(props.message.content)) return null;
   return extractCommandText(props.message.content);
@@ -68,9 +89,9 @@ const imageCount = computed(() => {
 });
 
 const parsedContent = computed(() => {
-  if (props.message.content == null) return [];
+  if (displayContent.value == null) return [];
   // Strip image references from content before parsing
-  const cleaned = props.message.content.replace(IMAGE_RE, '').trim();
+  const cleaned = displayContent.value.replace(IMAGE_RE, '').trim();
   if (!cleaned) return [];
   return parseContent(cleaned);
 });

@@ -128,7 +128,11 @@ Plans:
   2. User can press Cmd+K from any page to open a command palette that searches conversations, pages, and actions with fuzzy matching
   3. Keyboard shortcuts work for sidebar toggle (Cmd+B), conversation navigation (J/K), expand/collapse (E), and a cheat sheet (?)
   4. Shortcuts do not fire when focus is inside a text input or textarea
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 28-01-PLAN.md — Keyboard shortcuts composable, sidebar toggle, J/K/E navigation, cheat sheet
+- [ ] 28-02-PLAN.md — In-conversation search via Cmd+F with match highlighting and navigation
+- [ ] 28-03-PLAN.md — Command palette via Cmd+K with Fuse.js fuzzy search
 
 ### Phase 29: Compaction Detection
 **Goal**: Users can see where Claude compacted context during a conversation and understand the token impact
@@ -182,7 +186,7 @@ Phases execute in numeric order: 25 -> 26 -> 27 -> 28 -> 29 -> 30
 | 24. Overview, Settings & Final Verification | v1.3 | 3/3 | Complete | 2026-03-08 |
 | 25. Data Quality & Code Cleanup | 2/2 | Complete    | 2026-03-09 | - |
 | 26. Display Quick Wins | 2/2 | Complete    | 2026-03-09 | - |
-| 27. Tool Viewers | 2/2 | Complete   | 2026-03-09 | - |
-| 28. Navigation & Search | v2.0 | 0/? | Not started | - |
+| 27. Tool Viewers | 2/2 | Complete    | 2026-03-09 | - |
+| 28. Navigation & Search | v2.0 | 0/3 | Not started | - |
 | 29. Compaction Detection | v2.0 | 0/? | Not started | - |
 | 30. Subagent Resolution | v2.0 | 0/? | Not started | - |

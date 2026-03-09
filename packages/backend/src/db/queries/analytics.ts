@@ -341,6 +341,7 @@ export function getConversationList(
       cacheCreationTokens: sql<number>`coalesce(sum(${tokenUsage.cacheCreationTokens}), 0)`,
       isActive: sql<boolean>`CASE WHEN ${conversations.status} = 'active' THEN 1 ELSE 0 END`,
       hasCompaction: sql<boolean>`EXISTS (SELECT 1 FROM ${compactionEvents} WHERE ${compactionEvents.conversationId} = ${conversations.id})`,
+      parentConversationId: conversations.parentConversationId,
     })
     .from(conversations)
     .leftJoin(tokenUsage, sql`${tokenUsage.conversationId} = ${conversations.id}`)
@@ -405,6 +406,20 @@ export function getConversationList(
     }
   }
 
+  // Look up parent titles for subagent conversations
+  const parentConvIds = [...new Set(rows.filter(r => r.parentConversationId).map(r => r.parentConversationId!))];
+  const parentTitleMap = new Map<string, string | null>();
+  if (parentConvIds.length > 0) {
+    const parentRows = db
+      .select({ id: conversations.id, title: conversations.title })
+      .from(conversations)
+      .where(sql`${conversations.id} IN (${sql.join(parentConvIds.map(id => sql`${id}`), sql`, `)})`)
+      .all();
+    for (const pr of parentRows) {
+      parentTitleMap.set(pr.id, pr.title);
+    }
+  }
+
   const conversationRows: ConversationRow[] = rows.map(row => {
     const input = Number(row.inputTokens);
     const output = Number(row.outputTokens);
@@ -428,6 +443,8 @@ export function getConversationList(
       savings: convCost?.savings ?? null,
       isActive: Number(row.isActive) === 1,
       hasCompaction: Number(row.hasCompaction) === 1,
+      parentConversationId: row.parentConversationId ?? null,
+      parentTitle: row.parentConversationId ? (parentTitleMap.get(row.parentConversationId) ?? null) : null,
     };
 
     // If search was provided, extract a snippet from matching message content
@@ -543,6 +560,8 @@ export function getConversationDetail(conversationId: string): ConversationDetai
       status: toolCalls.status,
       duration: toolCalls.duration,
       createdAt: toolCalls.createdAt,
+      subagentConversationId: toolCalls.subagentConversationId,
+      subagentSummary: toolCalls.subagentSummary,
     })
     .from(toolCalls)
     .where(eq(toolCalls.conversationId, conversationId))
@@ -641,6 +660,17 @@ export function getConversationDetail(conversationId: string): ConversationDetai
   const firstMessageAt = msgs.length > 0 ? msgs[0].createdAt : conv.createdAt;
   const lastMessageAt = msgs.length > 0 ? msgs[msgs.length - 1].createdAt : conv.updatedAt;
 
+  // Look up parent title if this is a subagent conversation
+  let parentTitle: string | null = null;
+  if (conv.parentConversationId) {
+    const parentConv = db
+      .select({ title: conversations.title })
+      .from(conversations)
+      .where(eq(conversations.id, conv.parentConversationId))
+      .get();
+    parentTitle = parentConv?.title ?? null;
+  }
+
   return {
     conversation: {
       id: conv.id,
@@ -652,6 +682,8 @@ export function getConversationDetail(conversationId: string): ConversationDetai
       model: conv.model,
       firstMessageAt,
       lastMessageAt,
+      parentConversationId: conv.parentConversationId ?? null,
+      parentTitle,
     },
     messages: msgs,
     toolCalls: tools,

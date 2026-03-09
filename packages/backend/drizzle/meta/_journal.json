@@ -43,6 +43,13 @@
       "when": 1773053778913,
       "tag": "0005_chunky_wolfsbane",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1773061785927,
+      "tag": "0006_melodic_vanisher",
+      "breakpoints": true
     }
   ]
 }

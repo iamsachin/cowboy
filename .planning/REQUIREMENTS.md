@@ -21,8 +21,8 @@ Requirements for the v2.0 UX Overhaul milestone. Each maps to roadmap phases.
 
 ### Tool Viewers
 
-- [ ] **TOOL-01**: Edit tool calls display a line-level LCS diff with red/green highlighting, line numbers, and +N/-M stats
-- [ ] **TOOL-02**: Read/Write tool results display syntax-highlighted code with line numbers and language badge from file extension
+- [x] **TOOL-01**: Edit tool calls display a line-level LCS diff with red/green highlighting, line numbers, and +N/-M stats
+- [x] **TOOL-02**: Read/Write tool results display syntax-highlighted code with line numbers and language badge from file extension
 - [ ] **TOOL-03**: Bash tool calls display description as label and command in terminal-styled code block
 - [ ] **TOOL-04**: Tool input rendering dispatches by tool name (Edit->diff, Read->code, Bash->terminal, others->JSON fallback)
 
@@ -89,8 +89,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DISP-01 | Phase 26 | Complete |
 | DISP-02 | Phase 26 | Complete |
 | DISP-03 | Phase 26 | Complete |
-| TOOL-01 | Phase 27 | Pending |
-| TOOL-02 | Phase 27 | Pending |
+| TOOL-01 | Phase 27 | Complete |
+| TOOL-02 | Phase 27 | Complete |
 | TOOL-03 | Phase 27 | Pending |
 | TOOL-04 | Phase 27 | Pending |
 | NAV-01 | Phase 28 | Pending |

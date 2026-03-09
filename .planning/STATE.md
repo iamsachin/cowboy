@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: UX Overhaul
 status: in-progress
-stopped_at: Completed 26-02 truncation and color tints plan
-last_updated: "2026-03-09T08:10:16.000Z"
-last_activity: 2026-03-09 — Completed 26-02 truncation and color tints plan
+stopped_at: Completed 27-01 diff and language utils plan
+last_updated: "2026-03-09T08:31:20Z"
+last_activity: 2026-03-09 — Completed 27-01 diff and language utils plan
 progress:
   total_phases: 6
-  completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 2
+  total_plans: 6
+  completed_plans: 5
   percent: 100
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 26 — Display Quick Wins
+**Current focus:** Phase 27 — Tool Viewers
 
 ## Current Position
 
-Phase: 26 of 30 (Display Quick Wins)
-Plan: 2 of 2 in current phase (26-02 complete)
-Status: Phase 26 complete
-Last activity: 2026-03-09 — Completed 26-02 truncation and color tints plan
+Phase: 27 of 30 (Tool Viewers)
+Plan: 1 of 2 in current phase (27-01 complete)
+Status: Phase 27 in progress
+Last activity: 2026-03-09 — Completed 27-01 diff and language utils plan
 
-Progress: [██████████] 100%
+Progress: [██████████] 98%
 
 ## Performance Metrics
 
@@ -59,6 +59,9 @@ Recent decisions affecting current work:
 - [26-01]: Tool summary uses verb mapping (Read/Edited/Wrote/Ran/Searched/Scanned) for natural language
 - [26-02]: Truncation applied before parseContent() -- incomplete fences acceptable tradeoff
 - [26-02]: Semantic tints only inside expanded groups; collapsed cards remain neutral
+- [27-01]: Hand-rolled LCS diff (~77 lines) instead of external dependency
+- [27-01]: Truncation guard at 500 lines to prevent O(n*m) performance issues
+- [27-01]: Only map extensions for 12 registered highlight.js languages; unknown returns undefined
 
 ### Pending Todos
 
@@ -84,6 +87,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T08:10:16Z
-Stopped at: Completed 26-02 truncation and color tints plan
-Resume file: .planning/phases/26-display-quick-wins/26-02-SUMMARY.md
+Last session: 2026-03-09T08:28:49Z
+Stopped at: Completed 27-01 diff and language utils plan
+Resume file: .planning/phases/27-tool-viewers/27-01-SUMMARY.md

@@ -29,7 +29,7 @@
           {{ formatTokenCount(groupTokens.inputTokens) }} in / {{ formatTokenCount(groupTokens.outputTokens) }} out
         </span>
         <span v-if="groupTokens?.cost != null" class="text-success/70">
-          {{ formatTurnCost(groupTokens.cost) }}
+          {{ formatCost(groupTokens.cost) }}
         </span>
         <span class="text-base-content/40 ml-auto">{{ formatTime(group.firstTimestamp) }}</span>
       </div>
@@ -84,7 +84,7 @@
         <!-- Per-turn token info -->
         <div v-if="getTurnTokens(turn)" class="text-xs text-base-content/40 mt-1">
           {{ formatTokenCount(getTurnTokens(turn)!.inputTokens) }} in / {{ formatTokenCount(getTurnTokens(turn)!.outputTokens) }} out
-          <span v-if="getTurnTokens(turn)!.cost != null"> &middot; {{ formatTurnCost(getTurnTokens(turn)!.cost!) }}</span>
+          <span v-if="getTurnTokens(turn)!.cost != null"> &middot; {{ formatCost(getTurnTokens(turn)!.cost!) }}</span>
         </div>
       </div>
     </div>
@@ -99,7 +99,7 @@ import type { AssistantGroup, AssistantTurn } from '../composables/useGroupedTur
 import { parseContent, formatTime } from '../utils/content-parser';
 import { stripXmlTags } from '../utils/content-sanitizer';
 import { getPreviewSnippet, formatMs } from '../utils/turn-helpers';
-import { formatTokenCount, formatTurnCost } from '../utils/format-tokens';
+import { formatTokenCount, formatCost } from '../utils/format-tokens';
 import { getModelBadge } from '../utils/model-labels';
 import { renderMarkdown } from '../utils/render-markdown';
 import CodeBlock from './CodeBlock.vue';

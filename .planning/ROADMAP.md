@@ -69,7 +69,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Milestone Goal:** Close the UX gap with claude-devtools by overhauling conversation display, adding tool-specific viewers, fixing data quality issues, and introducing modern navigation patterns.
 
 - [x] **Phase 25: Data Quality & Code Cleanup** — Fix parser bugs, streaming deduplication, and consolidate dead code before building new features (completed 2026-03-09)
-- [ ] **Phase 26: Display Quick Wins** — Always-visible AI responses, user message truncation, and semantic message colors
+- [x] **Phase 26: Display Quick Wins** — Always-visible AI responses, user message truncation, and semantic message colors (completed 2026-03-09)
 - [ ] **Phase 27: Tool Viewers** — LCS diff viewer for Edit, syntax-highlighted code for Read/Write, terminal display for Bash, and dispatch routing
 - [ ] **Phase 28: Navigation & Search** — In-conversation search, command palette, and keyboard shortcuts
 - [ ] **Phase 29: Compaction Detection** — Detect compaction boundaries during ingestion and render them as token-delta markers
@@ -100,7 +100,7 @@ Plans:
   1. User can read the last AI text response on a collapsed assistant group without expanding it
   2. User messages longer than 500 characters show truncated text with a "Show more" toggle that reveals full content
   3. Thinking blocks, tool calls, and tool results are visually distinguishable by their background color tints (purple, amber, green/red)
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 26-01-PLAN.md — Rendered markdown preview, file names row, and tool summary on collapsed cards
 - [ ] 26-02-PLAN.md — User message truncation and semantic color tints
@@ -178,7 +178,7 @@ Phases execute in numeric order: 25 -> 26 -> 27 -> 28 -> 29 -> 30
 | 23. Cross-Cutting Polish | v1.3 | 2/2 | Complete | 2026-03-08 |
 | 24. Overview, Settings & Final Verification | v1.3 | 3/3 | Complete | 2026-03-08 |
 | 25. Data Quality & Code Cleanup | 2/2 | Complete    | 2026-03-09 | - |
-| 26. Display Quick Wins | 1/2 | In Progress|  | - |
+| 26. Display Quick Wins | 2/2 | Complete   | 2026-03-09 | - |
 | 27. Tool Viewers | v2.0 | 0/? | Not started | - |
 | 28. Navigation & Search | v2.0 | 0/? | Not started | - |
 | 29. Compaction Detection | v2.0 | 0/? | Not started | - |

@@ -1,5 +1,5 @@
 import { stripXmlTags } from './content-sanitizer';
-import type { AssistantTurn, Turn } from '../composables/useGroupedTurns';
+import type { AssistantTurn, AssistantGroup, Turn } from '../composables/useGroupedTurns';
 
 /**
  * Extract a short preview snippet from an assistant turn for collapsed header display.
@@ -99,4 +99,92 @@ export function truncateOutput(
   }
 
   return { text: lines.slice(0, maxLines).join('\n'), truncated: true };
+}
+
+/**
+ * Get the last text content from an assistant group, walking turns in reverse.
+ * Returns stripped content or null if no turn has text.
+ */
+export function getLastTextContent(group: AssistantGroup): string | null {
+  for (let i = group.turns.length - 1; i >= 0; i--) {
+    const turn = group.turns[i];
+    if (turn.message.content) {
+      const cleaned = stripXmlTags(turn.message.content);
+      if (cleaned) return cleaned;
+    }
+  }
+  return null;
+}
+
+const TOOL_VERBS: Record<string, string> = {
+  Read: 'Read',
+  Edit: 'Edited',
+  Write: 'Wrote',
+  Bash: 'Ran',
+  Grep: 'Searched',
+  Glob: 'Scanned',
+  Agent: 'Spawned',
+  WebSearch: 'Searched web',
+};
+
+/**
+ * Generate a human-readable tool summary for a group.
+ * e.g. "Read 3 files, Edited 2 files"
+ */
+export function getToolSummary(group: AssistantGroup): string {
+  const allToolCalls = group.turns.flatMap(t => t.toolCalls);
+  if (allToolCalls.length === 0) return 'Assistant response';
+
+  const counts = new Map<string, number>();
+  for (const tc of allToolCalls) {
+    counts.set(tc.name, (counts.get(tc.name) || 0) + 1);
+  }
+
+  const parts: string[] = [];
+  for (const [name, count] of counts) {
+    const verb = TOOL_VERBS[name] || name;
+    if (['Read', 'Edit', 'Write'].includes(name)) {
+      parts.push(`${verb} ${count} file${count > 1 ? 's' : ''}`);
+    } else if (name === 'Bash') {
+      parts.push(`${verb} ${count} command${count > 1 ? 's' : ''}`);
+    } else {
+      parts.push(`${verb} (${count})`);
+    }
+  }
+  return parts.join(', ');
+}
+
+/**
+ * Extract unique file basenames from tool call inputs in a group.
+ * Only processes Read, Edit, Write, Glob, Grep tools.
+ */
+export function extractFilenames(group: AssistantGroup): string[] {
+  const files = new Set<string>();
+  for (const turn of group.turns) {
+    for (const tc of turn.toolCalls) {
+      if (!['Read', 'Edit', 'Write', 'Glob', 'Grep'].includes(tc.name)) continue;
+      const input = tc.input as Record<string, unknown> | null;
+      if (!input) continue;
+      const filePath = (input.file_path || input.path) as string | undefined;
+      if (filePath) {
+        const basename = filePath.split('/').pop() || filePath;
+        files.add(basename);
+      }
+    }
+  }
+  return [...files];
+}
+
+/**
+ * Truncate text at a word boundary near the given limit.
+ * Searches backwards up to 50 chars for whitespace; hard cuts if none found.
+ */
+export function truncateAtWordBoundary(text: string, limit: number): string {
+  if (text.length <= limit) return text;
+  let cutoff = limit;
+  while (cutoff > limit - 50 && cutoff > 0 && !/\s/.test(text[cutoff])) {
+    cutoff--;
+  }
+  if (cutoff <= limit - 50) cutoff = limit;
+  return text.slice(0, cutoff);
 }

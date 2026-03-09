@@ -1,6 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { getPreviewSnippet, calculateDuration, formatMs, truncateOutput } from '../../src/utils/turn-helpers';
-import type { AssistantTurn, Turn } from '../../src/composables/useGroupedTurns';
+import {
+  getPreviewSnippet,
+  calculateDuration,
+  formatMs,
+  truncateOutput,
+  getLastTextContent,
+  getToolSummary,
+  extractFilenames,
+  truncateAtWordBoundary,
+} from '../../src/utils/turn-helpers';
+import type { AssistantTurn, AssistantGroup, Turn } from '../../src/composables/useGroupedTurns';
 import type { MessageRow, ToolCallRow } from '@cowboy/shared';
 
 function makeMessage(overrides: Partial<MessageRow> = {}): MessageRow {
@@ -37,6 +46,20 @@ function makeAssistantTurn(
     type: 'assistant',
     message: makeMessage(messageOverrides),
     toolCalls,
+  };
+}
+
+function makeGroup(
+  turns: AssistantTurn[],
+): AssistantGroup {
+  return {
+    type: 'assistant-group',
+    turns,
+    model: 'claude-3',
+    messageCount: turns.length,
+    toolCallCount: turns.reduce((s, t) => s + t.toolCalls.length, 0),
+    firstTimestamp: turns[0]?.message.createdAt ?? '2026-01-01T00:00:00Z',
+    lastTimestamp: turns[turns.length - 1]?.message.createdAt ?? '2026-01-01T00:00:00Z',
   };
 }
 
@@ -225,5 +248,186 @@ describe('truncateOutput', () => {
     const result = truncateOutput(text, 5);
     expect(result.truncated).toBe(true);
     expect(result.text.split('\n')).toHaveLength(5);
+  });
+});
+
+// ── getLastTextContent ────────────────────────────────────────
+
+describe('getLastTextContent', () => {
+  it('returns stripped content of last turn with text', () => {
+    const group = makeGroup([
+      makeAssistantTurn({ content: 'First response' }),
+      makeAssistantTurn({ content: 'Second response' }),
+    ]);
+    expect(getLastTextContent(group)).toBe('Second response');
+  });
+
+  it('skips turns with null content and returns last with text', () => {
+    const group = makeGroup([
+      makeAssistantTurn({ content: 'Only text turn' }),
+      makeAssistantTurn({ content: null }, [makeToolCall()]),
+    ]);
+    expect(getLastTextContent(group)).toBe('Only text turn');
+  });
+
+  it('returns null for tool-only groups', () => {
+    const group = makeGroup([
+      makeAssistantTurn({ content: null }, [makeToolCall()]),
+      makeAssistantTurn({ content: null }, [makeToolCall({ id: 'tc-2' })]),
+    ]);
+    expect(getLastTextContent(group)).toBeNull();
+  });
+
+  it('strips XML tags from content', () => {
+    const group = makeGroup([
+      makeAssistantTurn({ content: '<antThinking>plan</antThinking>Clean text here' }),
+    ]);
+    const result = getLastTextContent(group);
+    expect(result).not.toContain('<antThinking>');
+    expect(result).toContain('Clean text here');
+  });
+
+  it('returns null when content is only XML tags', () => {
+    const group = makeGroup([
+      makeAssistantTurn({ content: '<antThinking/><result/>' }),
+    ]);
+    expect(getLastTextContent(group)).toBeNull();
+  });
+});
+
+// ── getToolSummary ────────────────────────────────────────────
+
+describe('getToolSummary', () => {
+  it('returns "Assistant response" for groups with no tool calls', () => {
+    const group = makeGroup([makeAssistantTurn({ content: 'hi' })]);
+    expect(getToolSummary(group)).toBe('Assistant response');
+  });
+
+  it('returns verb-based summary for file tools', () => {
+    const group = makeGroup([
+      makeAssistantTurn({ content: null }, [
+        makeToolCall({ name: 'Read' }),
+        makeToolCall({ id: 'tc-2', name: 'Read' }),
+        makeToolCall({ id: 'tc-3', name: 'Read' }),
+        makeToolCall({ id: 'tc-4', name: 'Edit' }),
+        makeToolCall({ id: 'tc-5', name: 'Edit' }),
+      ]),
+    ]);
+    expect(getToolSummary(group)).toBe('Read 3 files, Edited 2 files');
+  });
+
+  it('handles Bash tool with command pluralization', () => {
+    const group = makeGroup([
+      makeAssistantTurn({ content: null }, [
+        makeToolCall({ name: 'Bash' }),
+      ]),
+    ]);
+    expect(getToolSummary(group)).toBe('Ran 1 command');
+  });
+
+  it('handles multiple Bash commands', () => {
+    const group = makeGroup([
+      makeAssistantTurn({ content: null }, [
+        makeToolCall({ name: 'Bash' }),
+        makeToolCall({ id: 'tc-2', name: 'Bash' }),
+      ]),
+    ]);
+    expect(getToolSummary(group)).toBe('Ran 2 commands');
+  });
+
+  it('handles mixed tools with parenthetical counts', () => {
+    const group = makeGroup([
+      makeAssistantTurn({ content: null }, [
+        makeToolCall({ name: 'Grep' }),
+        makeToolCall({ id: 'tc-2', name: 'Grep' }),
+      ]),
+    ]);
+    expect(getToolSummary(group)).toBe('Searched (2)');
+  });
+
+  it('uses tool name as fallback for unknown tools', () => {
+    const group = makeGroup([
+      makeAssistantTurn({ content: null }, [
+        makeToolCall({ name: 'CustomTool' }),
+      ]),
+    ]);
+    expect(getToolSummary(group)).toBe('CustomTool (1)');
+  });
+});
+
+// ── extractFilenames ──────────────────────────────────────────
+
+describe('extractFilenames', () => {
+  it('extracts basenames from file_path in tool inputs', () => {
+    const group = makeGroup([
+      makeAssistantTurn({ content: null }, [
+        makeToolCall({ name: 'Read', input: { file_path: '/src/utils/helpers.ts' } }),
+        makeToolCall({ id: 'tc-2', name: 'Edit', input: { file_path: '/src/App.vue' } }),
+      ]),
+    ]);
+    const files = extractFilenames(group);
+    expect(files).toContain('helpers.ts');
+    expect(files).toContain('App.vue');
+  });
+
+  it('extracts basenames from path field', () => {
+    const group = makeGroup([
+      makeAssistantTurn({ content: null }, [
+        makeToolCall({ name: 'Glob', input: { path: '/src/components' } }),
+      ]),
+    ]);
+    expect(extractFilenames(group)).toContain('components');
+  });
+
+  it('deduplicates file names', () => {
+    const group = makeGroup([
+      makeAssistantTurn({ content: null }, [
+        makeToolCall({ name: 'Read', input: { file_path: '/src/App.vue' } }),
+        makeToolCall({ id: 'tc-2', name: 'Edit', input: { file_path: '/src/App.vue' } }),
+      ]),
+    ]);
+    expect(extractFilenames(group)).toEqual(['App.vue']);
+  });
+
+  it('ignores non-file tools like Bash', () => {
+    const group = makeGroup([
+      makeAssistantTurn({ content: null }, [
+        makeToolCall({ name: 'Bash', input: { command: 'ls' } }),
+      ]),
+    ]);
+    expect(extractFilenames(group)).toEqual([]);
+  });
+
+  it('returns empty array when no file tools present', () => {
+    const group = makeGroup([
+      makeAssistantTurn({ content: 'hi' }),
+    ]);
+    expect(extractFilenames(group)).toEqual([]);
+  });
+});
+
+// ── truncateAtWordBoundary ────────────────────────────────────
+
+describe('truncateAtWordBoundary', () => {
+  it('returns text unchanged if under limit', () => {
+    expect(truncateAtWordBoundary('hello world', 100)).toBe('hello world');
+  });
+
+  it('cuts at nearest whitespace within 50 chars of limit', () => {
+    const text = 'word '.repeat(30); // 150 chars
+    const result = truncateAtWordBoundary(text, 100);
+    expect(result.length).toBeLessThanOrEqual(100);
+    expect(result.endsWith(' ')).toBe(false); // should not end with trailing space after slice
+  });
+
+  it('hard cuts at limit if no whitespace within 50 chars', () => {
+    const text = 'A'.repeat(200); // no spaces
+    const result = truncateAtWordBoundary(text, 100);
+    expect(result.length).toBe(100);
+  });
+
+  it('handles exact limit length', () => {
+    const text = 'A'.repeat(100);
+    expect(truncateAtWordBoundary(text, 100)).toBe(text);
   });
 });

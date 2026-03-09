@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: UX Overhaul
 status: executing
-stopped_at: Completed 27-02 tool viewer components plan
-last_updated: "2026-03-09T08:36:41.141Z"
-last_activity: 2026-03-09 — Completed 27-02 tool viewer components plan
+stopped_at: Completed 28-01-PLAN.md
+last_updated: "2026-03-09T09:10:47.483Z"
+last_activity: 2026-03-09 — Completed 28-01 keyboard shortcuts plan
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
-  percent: 98
+  total_plans: 9
+  completed_plans: 7
+  percent: 33
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 27 — Tool Viewers
+**Current focus:** Phase 28 — Navigation & Search
 
 ## Current Position
 
-Phase: 27 of 30 (Tool Viewers)
-Plan: 2 of 2 in current phase (27-02 complete)
-Status: Phase 27 complete
-Last activity: 2026-03-09 — Completed 27-02 tool viewer components plan
+Phase: 28 of 30 (Navigation & Search)
+Plan: 1 of 3 in current phase (28-01 complete)
+Status: In progress
+Last activity: 2026-03-09 — Completed 28-01 keyboard shortcuts plan
 
-Progress: [██████████] 100%
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
@@ -64,6 +64,7 @@ Recent decisions affecting current work:
 - [27-01]: Only map extensions for 12 registered highlight.js languages; unknown returns undefined
 - [Phase 27]: Each viewer guards its own input and falls back to JsonFallbackViewer for malformed data
 - [Phase 27]: ToolCallRow simplified from 151 to 48 lines via component dispatcher pattern
+- [Phase 28-01]: Singleton composable with ref-counted listener for keyboard shortcuts across components
 
 ### Pending Todos
 
@@ -87,9 +88,10 @@ None.
 | 13 | Extract Cursor tool call data from toolFormerData | 2026-03-09 | 94314c1 | [13-extract-cursor-tool-call-data-from-toolf](./quick/13-extract-cursor-tool-call-data-from-toolf/) |
 | 14 | Render thinking content as styled markdown | 2026-03-09 | a9b8d1e | [14-in-the-thinking-portion-we-must-display-](./quick/14-in-the-thinking-portion-we-must-display-/) |
 | Phase 27 P02 | 2min | 2 tasks | 5 files |
+| Phase 28 P01 | 3min | 2 tasks | 6 files |
 
 ## Session Continuity
 
-Last session: 2026-03-09T08:36:41.138Z
-Stopped at: Completed 27-02 tool viewer components plan
+Last session: 2026-03-09T09:10:44.018Z
+Stopped at: Completed 28-01-PLAN.md
 Resume file: None

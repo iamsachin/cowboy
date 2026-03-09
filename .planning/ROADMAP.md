@@ -70,7 +70,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 25: Data Quality & Code Cleanup** — Fix parser bugs, streaming deduplication, and consolidate dead code before building new features (completed 2026-03-09)
 - [x] **Phase 26: Display Quick Wins** — Always-visible AI responses, user message truncation, and semantic message colors (completed 2026-03-09)
-- [ ] **Phase 27: Tool Viewers** — LCS diff viewer for Edit, syntax-highlighted code for Read/Write, terminal display for Bash, and dispatch routing
+- [x] **Phase 27: Tool Viewers** — LCS diff viewer for Edit, syntax-highlighted code for Read/Write, terminal display for Bash, and dispatch routing (completed 2026-03-09)
 - [ ] **Phase 28: Navigation & Search** — In-conversation search, command palette, and keyboard shortcuts
 - [ ] **Phase 29: Compaction Detection** — Detect compaction boundaries during ingestion and render them as token-delta markers
 - [ ] **Phase 30: Subagent Resolution** — Discover and link subagent JSONL files to parent Task tool calls with summary cards
@@ -114,7 +114,7 @@ Plans:
   2. Read and Write tool results display syntax-highlighted code with line numbers and a language badge derived from file extension
   3. Bash tool calls display the description as a label and the command in a terminal-styled code block
   4. Tool calls not matching Edit/Read/Write/Bash fall back to formatted JSON display
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 27-01-PLAN.md — LCS diff algorithm and file extension language mapper with tests
 - [ ] 27-02-PLAN.md — Tool viewer components (Diff, Code, Bash, JSON) and ToolCallRow dispatcher
@@ -182,7 +182,7 @@ Phases execute in numeric order: 25 -> 26 -> 27 -> 28 -> 29 -> 30
 | 24. Overview, Settings & Final Verification | v1.3 | 3/3 | Complete | 2026-03-08 |
 | 25. Data Quality & Code Cleanup | 2/2 | Complete    | 2026-03-09 | - |
 | 26. Display Quick Wins | 2/2 | Complete    | 2026-03-09 | - |
-| 27. Tool Viewers | 1/2 | In Progress|  | - |
+| 27. Tool Viewers | 2/2 | Complete   | 2026-03-09 | - |
 | 28. Navigation & Search | v2.0 | 0/? | Not started | - |
 | 29. Compaction Detection | v2.0 | 0/? | Not started | - |
 | 30. Subagent Resolution | v2.0 | 0/? | Not started | - |

@@ -5,16 +5,22 @@
       <slot />
     </main>
     <ShortcutCheatSheet />
+    <CommandPalette />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import AppSidebar from '../components/AppSidebar.vue';
 import ShortcutCheatSheet from '../components/ShortcutCheatSheet.vue';
+import CommandPalette from '../components/CommandPalette.vue';
 import { useKeyboardShortcuts, showCheatSheet } from '../composables/useKeyboardShortcuts';
+import { useCommandPalette } from '../composables/useCommandPalette';
 
 const { register } = useKeyboardShortcuts();
+const router = useRouter();
+const { open: openPalette } = useCommandPalette(router);
 
 // Sidebar fully-hidden state (separate from the sidebar's own collapse toggle)
 const sidebarHidden = ref(localStorage.getItem('sidebar-hidden') === 'true');
@@ -32,6 +38,18 @@ register({
   },
   description: 'Toggle sidebar',
   label: 'Cmd+B',
+  group: 'App',
+});
+
+// Cmd+K: open command palette
+register({
+  key: 'k',
+  meta: true,
+  handler: () => {
+    openPalette();
+  },
+  description: 'Open command palette',
+  label: 'Cmd+K',
   group: 'App',
 });
 

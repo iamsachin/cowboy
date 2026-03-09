@@ -152,6 +152,43 @@ describe('parseJsonlFile', () => {
     });
   });
 
+  describe('streaming-conversation.jsonl', () => {
+    it('produces exactly 1 assistant message from 3 streaming chunks sharing the same message.id', async () => {
+      const result = await parseJsonlFile(join(FIXTURES, 'streaming-conversation.jsonl'));
+      expect(result.assistantMessages).toHaveLength(1);
+      expect(result.assistantMessages[0].messageId).toBe('msg_stream_dedup');
+    });
+
+    it('uses content blocks from the final chunk (not concatenated from all chunks)', async () => {
+      const result = await parseJsonlFile(join(FIXTURES, 'streaming-conversation.jsonl'));
+      const msg = result.assistantMessages[0];
+      // Final chunk has 3 content blocks: text, tool_use, text
+      // Without dedup fix, we'd get 1+2+3=6 content blocks (push from all chunks)
+      expect(msg.contentBlocks).toHaveLength(3);
+      expect(msg.contentBlocks[0]).toEqual({ type: 'text', text: 'Streaming is a technique for processing data' });
+      expect(msg.contentBlocks[2]).toEqual({ type: 'text', text: ' incrementally as it arrives.' });
+    });
+
+    it('uses tool_use blocks from the final chunk (no duplicates)', async () => {
+      const result = await parseJsonlFile(join(FIXTURES, 'streaming-conversation.jsonl'));
+      const msg = result.assistantMessages[0];
+      // Only 1 tool_use block (from the final chunk), not 2 (from chunks 2+3)
+      expect(msg.toolUseBlocks).toHaveLength(1);
+      expect(msg.toolUseBlocks[0].id).toBe('toolu_dedup_01');
+      expect(msg.toolUseBlocks[0].name).toBe('Read');
+    });
+
+    it('uses token usage from the chunk with stop_reason only', async () => {
+      const result = await parseJsonlFile(join(FIXTURES, 'streaming-conversation.jsonl'));
+      const msg = result.assistantMessages[0];
+      expect(msg.usage).not.toBeNull();
+      // Final chunk: output_tokens=30, cache_read=50, cache_creation=10
+      expect(msg.usage!.output_tokens).toBe(30);
+      expect(msg.usage!.cache_read_input_tokens).toBe(50);
+      expect(msg.usage!.cache_creation_input_tokens).toBe(10);
+    });
+  });
+
   describe('content handling', () => {
     it('handles user messages with array content (tool_result blocks)', async () => {
       const result = await parseJsonlFile(join(FIXTURES, 'tool-use-flow.jsonl'));

@@ -241,9 +241,14 @@ function processAssistantChunk(
     chunkMap.set(messageId, accumulator);
   }
 
-  // Append content blocks
-  accumulator.contentBlocks.push(...contentBlocks);
-  accumulator.toolUseBlocks.push(...toolUseBlocks);
+  // Each streaming chunk contains the FULL content up to that point (cumulative, not delta).
+  // Replace, don't append — the last chunk has the complete content.
+  if (contentBlocks.length > 0) {
+    accumulator.contentBlocks = contentBlocks;
+  }
+  if (toolUseBlocks.length > 0) {
+    accumulator.toolUseBlocks = toolUseBlocks;
+  }
 
   // Track earliest timestamp
   if (timestamp < accumulator.earliestTimestamp) {

@@ -97,52 +97,8 @@ const summaryLabel = computed(() => {
 .fade-leave-to {
   opacity: 0;
 }
-.thinking-content :deep(h1),
-.thinking-content :deep(h2),
-.thinking-content :deep(h3),
-.thinking-content :deep(h4) {
-  font-weight: 600;
-  margin-top: 0.75em;
-  margin-bottom: 0.25em;
-}
-.thinking-content :deep(h1) { font-size: 1.1em; }
-.thinking-content :deep(h2) { font-size: 1.05em; }
-.thinking-content :deep(h3) { font-size: 1em; }
-.thinking-content :deep(ul),
-.thinking-content :deep(ol) {
-  padding-left: 1.5em;
-  margin: 0.25em 0;
-}
-.thinking-content :deep(ul) { list-style-type: disc; }
-.thinking-content :deep(ol) { list-style-type: decimal; }
-.thinking-content :deep(li) { margin: 0.1em 0; }
-.thinking-content :deep(code) {
-  background: oklch(0.25 0 0 / 0.5);
-  padding: 0.1em 0.3em;
-  border-radius: 0.25em;
-  font-size: 0.9em;
-}
-.thinking-content :deep(pre) {
-  background: oklch(0.2 0 0 / 0.5);
-  padding: 0.75em;
-  border-radius: 0.375em;
-  overflow-x: auto;
-  margin: 0.5em 0;
-}
-.thinking-content :deep(pre code) {
-  background: none;
-  padding: 0;
-}
-.thinking-content :deep(p) { margin: 0.25em 0; }
-.thinking-content :deep(strong) { font-weight: 600; }
-.thinking-content :deep(table) {
-  border-collapse: collapse;
-  margin: 0.5em 0;
-  font-size: 0.9em;
-}
-.thinking-content :deep(th),
-.thinking-content :deep(td) {
-  border: 1px solid oklch(0.4 0 0);
-  padding: 0.25em 0.5em;
-}
+</style>
+
+<style>
+@import '../styles/markdown-content.css';
 </style>

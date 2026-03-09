@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-3">
+  <div ref="turnListRef" class="space-y-3">
     <!-- Sticky toolbar -->
     <div
       v-if="totalGroups > 0"
@@ -22,19 +22,28 @@
         v-if="turn.type === 'user'"
         :message="turn.message"
       />
-      <AssistantGroupCard
+      <div
         v-else-if="turn.type === 'assistant-group'"
-        :group="turn"
-        :expanded="isExpanded(turnKey(turn))"
-        :tokenUsageByMessage="tokenUsageByMessage"
-        @toggle="toggle(turnKey(turn))"
-      />
+        :data-group-id="turnKey(turn)"
+        :class="{ 'ring-2 ring-primary rounded-lg': turnKey(turn) === focusedGroupId }"
+      >
+        <AssistantGroupCard
+          :group="turn"
+          :expanded="isExpanded(turnKey(turn))"
+          :tokenUsageByMessage="tokenUsageByMessage"
+          @toggle="toggle(turnKey(turn))"
+        />
+      </div>
       <SystemMessageIndicator
         v-else-if="turn.type === 'system-group'"
         :group="turn"
       />
       <SlashCommandChip
         v-else-if="turn.type === 'slash-command'"
+        :turn="turn"
+      />
+      <AgentPromptChip
+        v-else-if="turn.type === 'agent-prompt'"
         :turn="turn"
       />
       <ClearDivider
@@ -55,16 +64,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, nextTick, onUnmounted } from 'vue';
 import { ChevronsDown, ChevronsUp } from 'lucide-vue-next';
 import type { MessageRow, ToolCallRow, MessageTokenUsage } from '@cowboy/shared';
 import { groupTurns, type GroupedTurn } from '../composables/useGroupedTurns';
 import { useCollapseState } from '../composables/useCollapseState';
+import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts';
 import ChatMessage from './ChatMessage.vue';
 import AssistantGroupCard from './AssistantGroupCard.vue';
 import SystemMessageIndicator from './SystemMessageIndicator.vue';
 import SlashCommandChip from './SlashCommandChip.vue';
 import ClearDivider from './ClearDivider.vue';
+import AgentPromptChip from './AgentPromptChip.vue';
 
 const props = defineProps<{
   messages: MessageRow[];
@@ -109,6 +120,7 @@ function turnKey(turn: GroupedTurn): string {
   if (turn.type === 'assistant-group') return turn.turns[0].message.id;
   if (turn.type === 'system-group') return turn.messages[0].id;
   if (turn.type === 'slash-command') return turn.message.id;
+  if (turn.type === 'agent-prompt') return turn.message.id;
   // clear-divider
   return turn.message.id;
 }
@@ -130,4 +142,80 @@ function toggleAll() {
     expandAll(groupIds.value);
   }
 }
+
+// --- Keyboard navigation (J/K/E) ---
+const turnListRef = ref<HTMLElement | null>(null);
+const focusedGroupIndex = ref(-1);
+
+const focusedGroupId = computed(() => {
+  const ids = groupIds.value;
+  const idx = focusedGroupIndex.value;
+  if (idx >= 0 && idx < ids.length) return ids[idx];
+  return null;
+});
+
+function scrollFocusedIntoView() {
+  nextTick(() => {
+    if (!turnListRef.value || !focusedGroupId.value) return;
+    const el = turnListRef.value.querySelector(
+      `[data-group-id="${focusedGroupId.value}"]`
+    );
+    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+}
+
+const { register, unregister } = useKeyboardShortcuts();
+
+register({
+  key: 'j',
+  handler: () => {
+    if (groupIds.value.length === 0) return;
+    focusedGroupIndex.value = Math.min(
+      focusedGroupIndex.value + 1,
+      groupIds.value.length - 1
+    );
+    scrollFocusedIntoView();
+  },
+  description: 'Next assistant group',
+  label: 'J',
+  group: 'Navigation',
+});
+
+register({
+  key: 'k',
+  handler: () => {
+    if (groupIds.value.length === 0) return;
+    focusedGroupIndex.value = Math.max(
+      focusedGroupIndex.value - 1,
+      0
+    );
+    scrollFocusedIntoView();
+  },
+  description: 'Previous assistant group',
+  label: 'K',
+  group: 'Navigation',
+});
+
+register({
+  key: 'e',
+  handler: () => {
+    if (focusedGroupIndex.value >= 0 && focusedGroupId.value) {
+      toggle(focusedGroupId.value);
+    }
+  },
+  description: 'Expand/collapse focused group',
+  label: 'E',
+  group: 'Navigation',
+});
+
+// Reset focus when conversation changes
+watch(() => props.messages.length, () => {
+  focusedGroupIndex.value = -1;
+});
+
+onUnmounted(() => {
+  unregister('j');
+  unregister('k');
+  unregister('e');
+});
 </script>

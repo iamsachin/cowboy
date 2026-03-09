@@ -34,9 +34,19 @@
         <span class="text-base-content/40 ml-auto">{{ formatTime(group.firstTimestamp) }}</span>
       </div>
 
-      <!-- Preview: first turn's snippet -->
-      <div class="text-xs text-base-content/50 truncate pl-6">
-        {{ previewSnippet }}
+      <!-- File names row -->
+      <div v-if="displayedFilenames" class="text-xs text-base-content/40 pl-6 truncate">
+        {{ displayedFilenames }}
+      </div>
+
+      <!-- Rendered markdown preview (text groups) -->
+      <div v-if="previewHtml" class="preview-clamp pl-6">
+        <div class="thinking-content text-xs text-base-content/60" v-html="previewHtml"></div>
+      </div>
+
+      <!-- Tool summary (tool-only groups) -->
+      <div v-if="toolSummaryText" class="text-xs text-base-content/50 pl-6">
+        {{ toolSummaryText }}
       </div>
     </div>
 
@@ -98,7 +108,7 @@ import type { MessageTokenUsage } from '@cowboy/shared';
 import type { AssistantGroup, AssistantTurn } from '../composables/useGroupedTurns';
 import { parseContent, formatTime } from '../utils/content-parser';
 import { stripXmlTags } from '../utils/content-sanitizer';
-import { getPreviewSnippet, formatMs } from '../utils/turn-helpers';
+import { getLastTextContent, getToolSummary, extractFilenames, formatMs } from '../utils/turn-helpers';
 import { formatTokenCount, formatCost } from '../utils/format-tokens';
 import { getModelBadge } from '../utils/model-labels';
 import { renderMarkdown } from '../utils/render-markdown';
@@ -117,15 +127,25 @@ defineEmits<{
 
 const modelBadge = computed(() => getModelBadge(props.group.model));
 
-const previewSnippet = computed(() => {
-  // Use first turn with content for preview
-  for (const turn of props.group.turns) {
-    const snippet = getPreviewSnippet(turn);
-    if (snippet) return snippet;
+const lastTextContent = computed(() => getLastTextContent(props.group));
+
+const previewHtml = computed(() => {
+  if (lastTextContent.value) {
+    return renderMarkdown(lastTextContent.value);
   }
-  return props.group.toolCallCount > 0
-    ? `Used ${props.group.toolCallCount} tool call${props.group.toolCallCount === 1 ? '' : 's'}`
-    : 'Assistant response';
+  return null;
+});
+
+const toolSummaryText = computed(() => {
+  if (lastTextContent.value) return null; // only show for tool-only groups
+  return getToolSummary(props.group);
+});
+
+const displayedFilenames = computed(() => {
+  const files = extractFilenames(props.group);
+  if (files.length === 0) return null;
+  if (files.length <= 3) return files.join(', ');
+  return files.slice(0, 3).join(', ') + ` +${files.length - 3} more`;
 });
 
 const duration = computed(() => {
@@ -176,4 +196,20 @@ function getTurnContent(turn: AssistantTurn) {
 
 <style>
 @import '../styles/markdown-content.css';
+
+.preview-clamp {
+  max-height: 3.6em;
+  overflow: hidden;
+  position: relative;
+}
+.preview-clamp::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1.2em;
+  background: linear-gradient(to bottom, transparent, oklch(var(--b2)));
+  pointer-events: none;
+}
 </style>

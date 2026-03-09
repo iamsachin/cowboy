@@ -57,7 +57,21 @@
               </div>
             </td>
             <td>
-              <div class="max-w-[16rem] truncate">{{ cleanTitle(row.title ?? '') || '--' }}</div>
+              <div class="max-w-[16rem] flex items-center gap-1.5">
+                <span
+                  v-if="('isActive' in row) && row.isActive"
+                  class="pulse-dot shrink-0"
+                  title="Running"
+                ></span>
+                <div class="truncate">{{ cleanTitle(row.title ?? '') || '--' }}</div>
+                <div
+                  v-if="row.hasCompaction"
+                  class="tooltip tooltip-top shrink-0"
+                  data-tip="Context was compacted"
+                >
+                  <Scissors class="w-3 h-3 text-amber-400" />
+                </div>
+              </div>
             </td>
             <td class="text-right font-mono">
               {{ formatTokens(row.inputTokens + row.outputTokens) }}
@@ -123,6 +137,7 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useConversations } from '../composables/useConversations';
+import { Scissors } from 'lucide-vue-next';
 import AgentBadge from './AgentBadge.vue';
 import { formatCost } from '../utils/format-tokens';
 import { cleanTitle } from '../utils/content-sanitizer';
@@ -196,3 +211,18 @@ const visiblePages = computed(() => {
   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 });
 </script>
+
+<style scoped>
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: oklch(0.72 0.19 142);
+  animation: pulse-fade 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-fade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+</style>

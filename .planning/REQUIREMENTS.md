@@ -9,9 +9,9 @@ Requirements for the v2.0 UX Overhaul milestone. Each maps to roadmap phases.
 
 ### Data Quality
 
-- [ ] **DATA-01**: Streaming entries deduplicated by requestId so token counts reflect final values only
-- [ ] **DATA-02**: Parser content blocks use replace-not-append to eliminate phantom duplicate tool calls
-- [ ] **DATA-03**: getTurnContent passes sanitized (XML-stripped) content to parseContent instead of raw content
+- [x] **DATA-01**: Streaming entries deduplicated by requestId so token counts reflect final values only
+- [x] **DATA-02**: Parser content blocks use replace-not-append to eliminate phantom duplicate tool calls
+- [x] **DATA-03**: getTurnContent passes sanitized (XML-stripped) content to parseContent instead of raw content
 
 ### Conversation Display
 
@@ -83,9 +83,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 25 | Pending |
-| DATA-02 | Phase 25 | Pending |
-| DATA-03 | Phase 25 | Pending |
+| DATA-01 | Phase 25 | Complete |
+| DATA-02 | Phase 25 | Complete |
+| DATA-03 | Phase 25 | Complete |
 | DISP-01 | Phase 26 | Pending |
 | DISP-02 | Phase 26 | Pending |
 | DISP-03 | Phase 26 | Pending |

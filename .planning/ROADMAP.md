@@ -68,7 +68,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Milestone Goal:** Close the UX gap with claude-devtools by overhauling conversation display, adding tool-specific viewers, fixing data quality issues, and introducing modern navigation patterns.
 
-- [ ] **Phase 25: Data Quality & Code Cleanup** — Fix parser bugs, streaming deduplication, and consolidate dead code before building new features
+- [x] **Phase 25: Data Quality & Code Cleanup** — Fix parser bugs, streaming deduplication, and consolidate dead code before building new features (completed 2026-03-09)
 - [ ] **Phase 26: Display Quick Wins** — Always-visible AI responses, user message truncation, and semantic message colors
 - [ ] **Phase 27: Tool Viewers** — LCS diff viewer for Edit, syntax-highlighted code for Read/Write, terminal display for Bash, and dispatch routing
 - [ ] **Phase 28: Navigation & Search** — In-conversation search, command palette, and keyboard shortcuts
@@ -87,7 +87,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Tool call content displayed in the conversation view contains no raw XML system tags
   4. No unused component files exist in the codebase (ToolCallCard.vue removed)
   5. Cost formatting uses a single shared utility across all views
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 25-01-PLAN.md — Fix streaming dedup, XML sanitization, and getTurnContent bug
 - [ ] 25-02-PLAN.md — Remove dead code, extract shared CSS, consolidate cost formatters
@@ -174,7 +174,7 @@ Phases execute in numeric order: 25 -> 26 -> 27 -> 28 -> 29 -> 30
 | 22. Analytics & Agent Pages | v1.3 | 2/2 | Complete | 2026-03-08 |
 | 23. Cross-Cutting Polish | v1.3 | 2/2 | Complete | 2026-03-08 |
 | 24. Overview, Settings & Final Verification | v1.3 | 3/3 | Complete | 2026-03-08 |
-| 25. Data Quality & Code Cleanup | 1/2 | In Progress|  | - |
+| 25. Data Quality & Code Cleanup | 2/2 | Complete   | 2026-03-09 | - |
 | 26. Display Quick Wins | v2.0 | 0/? | Not started | - |
 | 27. Tool Viewers | v2.0 | 0/? | Not started | - |
 | 28. Navigation & Search | v2.0 | 0/? | Not started | - |

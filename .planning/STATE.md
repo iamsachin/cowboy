@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 25 of 30 (Data Quality & Code Cleanup)
-Plan: 2 of 2 in current phase
-Status: Executing
-Last activity: 2026-03-09 — Completed 25-02 code cleanup plan
+Plan: 2 of 2 in current phase (all complete)
+Status: Phase complete
+Last activity: 2026-03-09 — Completed 25-01 data quality fixes plan
 
-Progress: [██████████] 98%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -50,6 +50,9 @@ Recent decisions affecting current work:
 
 - [v2.0 Roadmap]: Bundle CLEAN-01..03 with DATA-01..03 in Phase 25 (cleanup is small, both are prerequisites)
 - [v2.0 Roadmap]: Defer subagent resolution to Phase 30 (highest risk, most unknowns)
+- [25-01]: Streaming chunks are cumulative (replace-not-append) matching Claude Code JSONL format
+- [25-01]: XML stripping uses allowlist SYSTEM_TAG_PATTERN to preserve legitimate user XML
+- [25-01]: Migration strips XML from existing data; parser fix prevents new duplicates
 - [25-02]: Used non-scoped style @import for shared markdown CSS across components
 - [25-02]: Consolidated formatTurnCost into formatCost as canonical cost formatter
 
@@ -77,6 +80,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T07:30:43Z
-Stopped at: Completed 25-02-PLAN.md
+Last session: 2026-03-09T07:34:11Z
+Stopped at: Completed 25-01-PLAN.md (phase 25 complete)
 Resume file: .planning/phases/25-data-quality-code-cleanup/25-02-SUMMARY.md

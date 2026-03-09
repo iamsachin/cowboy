@@ -73,7 +73,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 27: Tool Viewers** — LCS diff viewer for Edit, syntax-highlighted code for Read/Write, terminal display for Bash, and dispatch routing (completed 2026-03-09)
 - [x] **Phase 28: Navigation & Search** — In-conversation search, command palette, and keyboard shortcuts (completed 2026-03-09)
 - [x] **Phase 29: Compaction Detection** — Detect compaction boundaries during ingestion and render them as token-delta markers (completed 2026-03-09)
-- [ ] **Phase 30: Subagent Resolution** — Discover and link subagent JSONL files to parent Task tool calls with summary cards
+- [x] **Phase 30: Subagent Resolution** — Discover and link subagent JSONL files to parent Task tool calls with summary cards (completed 2026-03-09)
 
 ## Phase Details
 
@@ -154,7 +154,7 @@ Plans:
   1. Subagent JSONL files are discovered and linked to their parent Task tool calls during ingestion
   2. Task tool call rows display a summary card showing the subagent's tool names, statuses, and files touched
   3. Subagents that failed or were interrupted show a distinct visual indicator
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 30-01-PLAN.md — Backend: DB schema, three-phase matching, subagent summarizer, ingestion integration, API extensions
 - [ ] 30-02-PLAN.md — Frontend: SubagentSummaryCard component, ToolCallRow dispatch, conversation list badges, parent breadcrumbs
@@ -195,4 +195,4 @@ Phases execute in numeric order: 25 -> 26 -> 27 -> 28 -> 29 -> 30
 | 27. Tool Viewers | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 28. Navigation & Search | v2.0 | 3/3 | Complete | 2026-03-09 |
 | 29. Compaction Detection | v2.0 | 2/2 | Complete | 2026-03-09 |
-| 30. Subagent Resolution | 1/2 | In Progress|  | - |
+| 30. Subagent Resolution | 2/2 | Complete   | 2026-03-09 | - |

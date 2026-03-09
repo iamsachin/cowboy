@@ -1,7 +1,7 @@
 <template>
   <div class="text-xs">
     <!-- Compact row: always visible -->
-    <div class="flex items-center gap-2 py-1 px-2 rounded bg-base-300/50">
+    <div class="flex items-center gap-2 py-1 px-2 rounded bg-amber-500/5 border-l-2 border-amber-400">
       <component :is="toolIcon.icon" class="w-3.5 h-3.5 shrink-0" :class="toolIcon.colorClass" />
       <span class="truncate">{{ toolCall.name }}</span>
       <span
@@ -55,7 +55,10 @@
               <Check v-if="copiedOutput" class="w-3 h-3 text-success" />
               <Copy v-else class="w-3 h-3" />
             </button>
-            <pre class="bg-base-300 rounded p-2 text-xs whitespace-pre-wrap break-words max-h-80 overflow-y-auto"><code v-html="highlight(displayedOutput)"></code></pre>
+            <pre :class="[
+              'rounded p-2 text-xs whitespace-pre-wrap break-words max-h-80 overflow-y-auto',
+              toolCall.status === 'completed' ? 'bg-green-500/5' : 'bg-red-500/5'
+            ]"><code v-html="highlight(displayedOutput)"></code></pre>
           </div>
           <button
             v-if="outputTruncated && !showFullOutput"

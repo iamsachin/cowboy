@@ -55,16 +55,18 @@
       <div
         v-for="turn in group.turns"
         :key="turn.message.id"
-        class="border-l-2 border-base-300 pl-3"
+        class="pl-3"
       >
         <!-- Thinking section -->
-        <details v-if="turn.message.thinking" class="mb-2">
-          <summary class="flex items-center gap-2 text-sm font-medium cursor-pointer select-none">
-            <Brain class="w-4 h-4 text-info shrink-0" />
-            <span>Thinking</span>
-          </summary>
-          <div class="thinking-content text-xs mt-1 pl-6 text-base-content/70" v-html="renderMarkdown(turn.message.thinking!)"></div>
-        </details>
+        <div v-if="turn.message.thinking" class="bg-purple-500/5 border-l-2 border-purple-400 rounded-r mb-2">
+          <details class="pl-3 py-1">
+            <summary class="flex items-center gap-2 text-sm font-medium cursor-pointer select-none">
+              <Brain class="w-4 h-4 text-purple-400 shrink-0" />
+              <span>Thinking</span>
+            </summary>
+            <div class="thinking-content text-xs mt-1 pl-6 text-base-content/70" v-html="renderMarkdown(turn.message.thinking!)"></div>
+          </details>
+        </div>
 
         <!-- Turn text content -->
         <div v-if="getTurnContent(turn).length > 0">

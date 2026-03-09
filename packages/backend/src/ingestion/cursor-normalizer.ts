@@ -237,6 +237,7 @@ export function normalizeCursorConversation(
     messages: normalizedMessages,
     toolCalls: normalizedToolCalls,
     tokenUsage: normalizedTokenUsage,
+    compactionEvents: [],
   };
 }
 

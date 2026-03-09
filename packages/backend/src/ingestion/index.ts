@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { db } from '../db/index.js';
-import { conversations, messages, toolCalls, tokenUsage, plans, planSteps } from '../db/schema.js';
+import { conversations, messages, toolCalls, tokenUsage, compactionEvents, plans, planSteps } from '../db/schema.js';
 import { eq, and, lte } from 'drizzle-orm';
 import { discoverJsonlFiles } from './file-discovery.js';
 import { parseJsonlFile } from './claude-code-parser.js';
@@ -175,6 +175,13 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
               tx.insert(tokenUsage)
                 .values(normalizedData.tokenUsage)
                 .onConflictDoNothing({ target: tokenUsage.id })
+                .run();
+            }
+
+            if (normalizedData.compactionEvents.length > 0) {
+              tx.insert(compactionEvents)
+                .values(normalizedData.compactionEvents)
+                .onConflictDoNothing({ target: compactionEvents.id })
                 .run();
             }
 

@@ -46,6 +46,7 @@ export interface ConversationRow {
   cost: number | null;
   savings: number | null;
   isActive?: boolean;
+  hasCompaction?: boolean;
 }
 
 export interface ConversationListResponse {
@@ -83,6 +84,14 @@ export interface MessageTokenUsage {
   cost: number | null;
 }
 
+export interface CompactionEvent {
+  id: string;
+  timestamp: string;
+  summary: string | null;
+  tokensBefore: number | null;
+  tokensAfter: number | null;
+}
+
 export interface ConversationDetailResponse {
   conversation: {
     id: string;
@@ -106,6 +115,7 @@ export interface ConversationDetailResponse {
     savings: number | null;
   };
   tokenUsageByMessage: Record<string, MessageTokenUsage>;
+  compactionEvents?: CompactionEvent[];
 }
 
 export interface ModelDistributionEntry {

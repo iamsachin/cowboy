@@ -1,6 +1,7 @@
 import { generateId } from './id-generator.js';
 import { deriveProjectName } from './file-discovery.js';
 import { shouldSkipForTitle } from './title-utils.js';
+import { stripCompactionPreamble, computeTokenDelta } from './compaction-utils.js';
 import type { ContentBlock, ToolUseBlock } from './types.js';
 import type {
   ParseResult,
@@ -49,6 +50,15 @@ export interface NormalizedData {
     outputTokens: number;
     cacheReadTokens: number;
     cacheCreationTokens: number;
+    createdAt: string;
+  }>;
+  compactionEvents: Array<{
+    id: string;
+    conversationId: string;
+    timestamp: string;
+    summary: string | null;
+    tokensBefore: number | null;
+    tokensAfter: number | null;
     createdAt: string;
   }>;
 }
@@ -183,12 +193,35 @@ export function normalizeConversation(
     });
   }
 
+  // ── Compaction event records ──────────────────────────────────────
+
+  const compactionEvents: NormalizedData['compactionEvents'] = [];
+
+  if (parseResult.compactionEvents) {
+    for (const event of parseResult.compactionEvents) {
+      const strippedSummary = event.summary
+        ? stripCompactionPreamble(event.summary)
+        : null;
+      const delta = computeTokenDelta(event.timestamp, parseResult.assistantMessages);
+
+      compactionEvents.push({
+        id: generateId(conversationId, 'compaction', event.uuid),
+        conversationId,
+        timestamp: event.timestamp,
+        summary: strippedSummary,
+        tokensBefore: delta.before,
+        tokensAfter: delta.after,
+        createdAt: event.timestamp,
+      });
+    }
+  }
+
   // Model: most frequent model from assistant messages, with token_usage fallback
   model = deriveMostCommonModel(parseResult.assistantMessages)
     ?? deriveMostCommonModelFromTokenUsage(tokenUsage);
   conversation.model = model;
 
-  return { conversation, messages, toolCalls, tokenUsage };
+  return { conversation, messages, toolCalls, tokenUsage, compactionEvents };
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────

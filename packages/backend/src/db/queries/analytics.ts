@@ -1,5 +1,5 @@
 import { db } from '../index.js';
-import { conversations, messages, toolCalls, tokenUsage } from '../schema.js';
+import { conversations, messages, toolCalls, tokenUsage, compactionEvents } from '../schema.js';
 import { sql, and, gte, lte, eq, like, or } from 'drizzle-orm';
 import { calculateCost } from '@cowboy/shared';
 import type { OverviewStats, TimeSeriesPoint, ConversationRow, ConversationListResponse, ConversationDetailResponse, MessageTokenUsage, ToolStatsRow, HeatmapDay, ProjectStatsRow, ProjectModelEntry } from '@cowboy/shared';
@@ -340,6 +340,7 @@ export function getConversationList(
       cacheReadTokens: sql<number>`coalesce(sum(${tokenUsage.cacheReadTokens}), 0)`,
       cacheCreationTokens: sql<number>`coalesce(sum(${tokenUsage.cacheCreationTokens}), 0)`,
       isActive: sql<boolean>`CASE WHEN ${conversations.status} = 'active' THEN 1 ELSE 0 END`,
+      hasCompaction: sql<boolean>`EXISTS (SELECT 1 FROM ${compactionEvents} WHERE ${compactionEvents.conversationId} = ${conversations.id})`,
     })
     .from(conversations)
     .leftJoin(tokenUsage, sql`${tokenUsage.conversationId} = ${conversations.id}`)
@@ -426,6 +427,7 @@ export function getConversationList(
       cost: convCost?.cost ?? null,
       savings: convCost?.savings ?? null,
       isActive: Number(row.isActive) === 1,
+      hasCompaction: Number(row.hasCompaction) === 1,
     };
 
     // If search was provided, extract a snippet from matching message content
@@ -622,6 +624,20 @@ export function getConversationDetail(conversationId: string): ConversationDetai
     };
   }
 
+  // Compaction events for this conversation
+  const compactions = db
+    .select({
+      id: compactionEvents.id,
+      timestamp: compactionEvents.timestamp,
+      summary: compactionEvents.summary,
+      tokensBefore: compactionEvents.tokensBefore,
+      tokensAfter: compactionEvents.tokensAfter,
+    })
+    .from(compactionEvents)
+    .where(eq(compactionEvents.conversationId, conversationId))
+    .orderBy(compactionEvents.timestamp)
+    .all();
+
   const firstMessageAt = msgs.length > 0 ? msgs[0].createdAt : conv.createdAt;
   const lastMessageAt = msgs.length > 0 ? msgs[msgs.length - 1].createdAt : conv.updatedAt;
 
@@ -648,6 +664,7 @@ export function getConversationDetail(conversationId: string): ConversationDetai
       savings: hasCost ? totalSavings : null,
     },
     tokenUsageByMessage,
+    compactionEvents: compactions,
   };
 }
 

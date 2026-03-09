@@ -28,124 +28,28 @@
     <!-- Expandable I/O details -->
     <details class="ml-6 mt-1" @click.stop>
       <summary class="text-xs text-info cursor-pointer">Show details</summary>
-      <div class="mt-2 space-y-3">
-        <!-- Input section -->
-        <div>
-          <div class="text-xs text-base-content/50 mb-1">Input</div>
-          <div class="relative group">
-            <button
-              class="btn btn-xs btn-ghost absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-              @click.stop="copyInput"
-            >
-              <Check v-if="copiedInput" class="w-3 h-3 text-success" />
-              <Copy v-else class="w-3 h-3" />
-            </button>
-            <pre class="bg-base-300 rounded p-2 text-xs whitespace-pre-wrap break-words max-h-80 overflow-y-auto"><code v-html="highlight(inputText)"></code></pre>
-          </div>
-        </div>
-
-        <!-- Output section -->
-        <div>
-          <div class="text-xs text-base-content/50 mb-1">Output</div>
-          <div class="relative group">
-            <button
-              class="btn btn-xs btn-ghost absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-              @click.stop="copyOutput"
-            >
-              <Check v-if="copiedOutput" class="w-3 h-3 text-success" />
-              <Copy v-else class="w-3 h-3" />
-            </button>
-            <pre :class="[
-              'rounded p-2 text-xs whitespace-pre-wrap break-words max-h-80 overflow-y-auto',
-              toolCall.status === 'completed' ? 'bg-green-500/5' : 'bg-red-500/5'
-            ]"><code v-html="highlight(displayedOutput)"></code></pre>
-          </div>
-          <button
-            v-if="outputTruncated && !showFullOutput"
-            class="btn btn-xs btn-ghost mt-1"
-            @click.stop="showFullOutput = true"
-          >
-            Show full output
-          </button>
-        </div>
+      <div class="mt-2">
+        <DiffViewer v-if="toolCall.name === 'Edit'" :input="toolCall.input" :output="toolCall.output" />
+        <CodeViewer v-else-if="toolCall.name === 'Read' || toolCall.name === 'Write'" :input="toolCall.input" :output="toolCall.output" :toolName="toolCall.name" />
+        <BashViewer v-else-if="toolCall.name === 'Bash'" :input="toolCall.input" :output="toolCall.output" />
+        <JsonFallbackViewer v-else :input="toolCall.input" :output="toolCall.output" />
       </div>
     </details>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { Copy, Check } from 'lucide-vue-next';
-import hljs from 'highlight.js/lib/core';
-import json from 'highlight.js/lib/languages/json';
+import { computed } from 'vue';
 import type { ToolCallRow } from '@cowboy/shared';
-import { truncateOutput } from '../utils/turn-helpers';
 import { getToolIcon } from '../utils/tool-icons';
-
-hljs.registerLanguage('json', json);
-
-function highlight(text: string): string {
-  // Try JSON highlighting; fall back to escaped plain text
-  try {
-    JSON.parse(text);
-    return hljs.highlight(text, { language: 'json' }).value;
-  } catch {
-    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
-}
+import DiffViewer from './tool-viewers/DiffViewer.vue';
+import CodeViewer from './tool-viewers/CodeViewer.vue';
+import BashViewer from './tool-viewers/BashViewer.vue';
+import JsonFallbackViewer from './tool-viewers/JsonFallbackViewer.vue';
 
 const props = defineProps<{
   toolCall: ToolCallRow;
 }>();
 
 const toolIcon = computed(() => getToolIcon(props.toolCall.name));
-const showFullOutput = ref(false);
-const copiedInput = ref(false);
-const copiedOutput = ref(false);
-
-const inputText = computed(() => {
-  if (props.toolCall.input == null) return '(none)';
-  return typeof props.toolCall.input === 'string'
-    ? props.toolCall.input
-    : JSON.stringify(props.toolCall.input, null, 2);
-});
-
-const fullOutputText = computed(() => {
-  if (props.toolCall.output == null) return '(none)';
-  return typeof props.toolCall.output === 'string'
-    ? props.toolCall.output
-    : JSON.stringify(props.toolCall.output, null, 2);
-});
-
-const truncatedResult = computed(() => truncateOutput(props.toolCall.output));
-
-const outputTruncated = computed(() => truncatedResult.value.truncated);
-
-const displayedOutput = computed(() => {
-  if (props.toolCall.output == null) return '(none)';
-  if (showFullOutput.value || !outputTruncated.value) {
-    return fullOutputText.value;
-  }
-  return truncatedResult.value.text;
-});
-
-async function copyInput(): Promise<void> {
-  try {
-    await navigator.clipboard.writeText(inputText.value);
-    copiedInput.value = true;
-    setTimeout(() => { copiedInput.value = false; }, 1500);
-  } catch {
-    // Clipboard API not available
-  }
-}
-
-async function copyOutput(): Promise<void> {
-  try {
-    await navigator.clipboard.writeText(fullOutputText.value);
-    copiedOutput.value = true;
-    setTimeout(() => { copiedOutput.value = false; }, 1500);
-  } catch {
-    // Clipboard API not available
-  }
-}
 </script>

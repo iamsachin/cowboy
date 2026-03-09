@@ -289,6 +289,13 @@ function buildToolResultLookup(
   return lookup;
 }
 
+/** Strip known system-injected XML tags, preserving legitimate XML in user content. */
+const SYSTEM_TAG_PATTERN = /<\/?(system-reminder|local-command-caveat|local-command-stdout|command-name|command-message|command-args|antml:[a-z-]+)(?:\s[^>]*)?\s*\/?>/g;
+
+function stripSystemXmlTags(text: string): string {
+  return text.replace(SYSTEM_TAG_PATTERN, '').replace(/\n{3,}/g, '\n\n').trim();
+}
+
 function extractAssistantContent(blocks: ContentBlock[]): { content: string | null; thinking: string | null } {
   // Separate text blocks from thinking blocks.
   // Consecutive text blocks are concatenated without separator (streaming chunks).
@@ -319,8 +326,11 @@ function extractAssistantContent(blocks: ContentBlock[]): { content: string | nu
     textSegments.push(currentText);
   }
 
+  const rawContent = textSegments.length > 0 ? textSegments.join('\n') : null;
+  const content = rawContent ? stripSystemXmlTags(rawContent) : null;
+
   return {
-    content: textSegments.length > 0 ? textSegments.join('\n') : null,
+    content: content || null,
     thinking: thinkingSegments.length > 0 ? thinkingSegments.join('\n') : null,
   };
 }

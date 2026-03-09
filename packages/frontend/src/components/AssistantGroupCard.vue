@@ -170,7 +170,7 @@ function getTurnContent(turn: AssistantTurn) {
   if (turn.message.content == null) return [];
   const cleaned = stripXmlTags(turn.message.content);
   if (!cleaned) return [];
-  return parseContent(turn.message.content);
+  return parseContent(cleaned);
 }
 </script>
 

@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: UX Overhaul
-status: executing
-stopped_at: Completed 28-01-PLAN.md
-last_updated: "2026-03-09T09:10:47.483Z"
-last_activity: 2026-03-09 — Completed 28-01 keyboard shortcuts plan
+status: completed
+stopped_at: Completed 28-02-PLAN.md
+last_updated: "2026-03-09T10:20:00.902Z"
+last_activity: 2026-03-09 — Completed 28-03 command palette plan
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 9
-  completed_plans: 7
-  percent: 33
+  completed_plans: 9
+  percent: 100
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 28 of 30 (Navigation & Search)
-Plan: 1 of 3 in current phase (28-01 complete)
-Status: In progress
-Last activity: 2026-03-09 — Completed 28-01 keyboard shortcuts plan
+Plan: 3 of 3 in current phase (28-03 complete)
+Status: Phase 28 complete
+Last activity: 2026-03-09 — Completed 28-03 command palette plan
 
-Progress: [███░░░░░░░] 33%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -65,6 +65,8 @@ Recent decisions affecting current work:
 - [Phase 27]: Each viewer guards its own input and falls back to JsonFallbackViewer for malformed data
 - [Phase 27]: ToolCallRow simplified from 151 to 48 lines via component dispatcher pattern
 - [Phase 28-01]: Singleton composable with ref-counted listener for keyboard shortcuts across components
+- [Phase 28-03]: Router injection via parameter for composable testability; Fuse.js fuzzy search with weighted keys for conversations
+- [Phase 28]: TreeWalker with text node splitting for match highlighting instead of innerHTML replacement
 
 ### Pending Todos
 
@@ -89,9 +91,10 @@ None.
 | 14 | Render thinking content as styled markdown | 2026-03-09 | a9b8d1e | [14-in-the-thinking-portion-we-must-display-](./quick/14-in-the-thinking-portion-we-must-display-/) |
 | Phase 27 P02 | 2min | 2 tasks | 5 files |
 | Phase 28 P01 | 3min | 2 tasks | 6 files |
+| Phase 28 P02 | 3min | 2 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-03-09T09:10:44.018Z
-Stopped at: Completed 28-01-PLAN.md
+Last session: 2026-03-09T10:20:00.898Z
+Stopped at: Completed 28-02-PLAN.md
 Resume file: None

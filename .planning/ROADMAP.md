@@ -71,7 +71,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 25: Data Quality & Code Cleanup** — Fix parser bugs, streaming deduplication, and consolidate dead code before building new features (completed 2026-03-09)
 - [x] **Phase 26: Display Quick Wins** — Always-visible AI responses, user message truncation, and semantic message colors (completed 2026-03-09)
 - [x] **Phase 27: Tool Viewers** — LCS diff viewer for Edit, syntax-highlighted code for Read/Write, terminal display for Bash, and dispatch routing (completed 2026-03-09)
-- [ ] **Phase 28: Navigation & Search** — In-conversation search, command palette, and keyboard shortcuts
+- [x] **Phase 28: Navigation & Search** — In-conversation search, command palette, and keyboard shortcuts (completed 2026-03-09)
 - [ ] **Phase 29: Compaction Detection** — Detect compaction boundaries during ingestion and render them as token-delta markers
 - [ ] **Phase 30: Subagent Resolution** — Discover and link subagent JSONL files to parent Task tool calls with summary cards
 
@@ -128,7 +128,7 @@ Plans:
   2. User can press Cmd+K from any page to open a command palette that searches conversations, pages, and actions with fuzzy matching
   3. Keyboard shortcuts work for sidebar toggle (Cmd+B), conversation navigation (J/K), expand/collapse (E), and a cheat sheet (?)
   4. Shortcuts do not fire when focus is inside a text input or textarea
-**Plans:** 1/3 plans executed
+**Plans:** 3/3 plans complete
 Plans:
 - [ ] 28-01-PLAN.md — Keyboard shortcuts composable, sidebar toggle, J/K/E navigation, cheat sheet
 - [ ] 28-02-PLAN.md — In-conversation search via Cmd+F with match highlighting and navigation
@@ -187,6 +187,6 @@ Phases execute in numeric order: 25 -> 26 -> 27 -> 28 -> 29 -> 30
 | 25. Data Quality & Code Cleanup | 2/2 | Complete    | 2026-03-09 | - |
 | 26. Display Quick Wins | 2/2 | Complete    | 2026-03-09 | - |
 | 27. Tool Viewers | 2/2 | Complete    | 2026-03-09 | - |
-| 28. Navigation & Search | 1/3 | In Progress|  | - |
+| 28. Navigation & Search | 3/3 | Complete   | 2026-03-09 | - |
 | 29. Compaction Detection | v2.0 | 0/? | Not started | - |
 | 30. Subagent Resolution | v2.0 | 0/? | Not started | - |

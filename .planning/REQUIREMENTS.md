@@ -28,8 +28,8 @@ Requirements for the v2.0 UX Overhaul milestone. Each maps to roadmap phases.
 
 ### Navigation & Search
 
-- [ ] **NAV-01**: User can search within a conversation via Cmd+F with match highlighting and "X of Y" navigation
-- [ ] **NAV-02**: User can open a command palette via Cmd+K to jump to conversations, pages, or actions
+- [x] **NAV-01**: User can search within a conversation via Cmd+F with match highlighting and "X of Y" navigation
+- [x] **NAV-02**: User can open a command palette via Cmd+K to jump to conversations, pages, or actions
 - [x] **NAV-03**: Keyboard shortcuts work for common actions (Cmd+B sidebar, J/K navigation, E expand/collapse, ? cheat sheet)
 
 ### Compaction Detection
@@ -93,8 +93,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOOL-02 | Phase 27 | Complete |
 | TOOL-03 | Phase 27 | Complete |
 | TOOL-04 | Phase 27 | Complete |
-| NAV-01 | Phase 28 | Pending |
-| NAV-02 | Phase 28 | Pending |
+| NAV-01 | Phase 28 | Complete |
+| NAV-02 | Phase 28 | Complete |
 | NAV-03 | Phase 28 | Complete |
 | COMP-01 | Phase 29 | Pending |
 | COMP-02 | Phase 29 | Pending |

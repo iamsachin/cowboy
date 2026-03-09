@@ -72,7 +72,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 26: Display Quick Wins** — Always-visible AI responses, user message truncation, and semantic message colors (completed 2026-03-09)
 - [x] **Phase 27: Tool Viewers** — LCS diff viewer for Edit, syntax-highlighted code for Read/Write, terminal display for Bash, and dispatch routing (completed 2026-03-09)
 - [x] **Phase 28: Navigation & Search** — In-conversation search, command palette, and keyboard shortcuts (completed 2026-03-09)
-- [ ] **Phase 29: Compaction Detection** — Detect compaction boundaries during ingestion and render them as token-delta markers
+- [x] **Phase 29: Compaction Detection** — Detect compaction boundaries during ingestion and render them as token-delta markers (completed 2026-03-09)
 - [ ] **Phase 30: Subagent Resolution** — Discover and link subagent JSONL files to parent Task tool calls with summary cards
 
 ## Phase Details
@@ -141,7 +141,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Conversations that underwent compaction show amber boundary markers at the correct position in the turn list
   2. Each compaction marker displays the token delta (e.g., "45k -> 12k, 33k freed")
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 29-01-PLAN.md — DB schema, parser detection, normalizer, and API for compaction events
 - [ ] 29-02-PLAN.md — CompactionDivider component, groupTurns extension, and conversation list indicator
@@ -191,5 +191,5 @@ Phases execute in numeric order: 25 -> 26 -> 27 -> 28 -> 29 -> 30
 | 26. Display Quick Wins | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 27. Tool Viewers | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 28. Navigation & Search | v2.0 | 3/3 | Complete | 2026-03-09 |
-| 29. Compaction Detection | 1/2 | In Progress|  | - |
+| 29. Compaction Detection | 2/2 | Complete   | 2026-03-09 | - |
 | 30. Subagent Resolution | v2.0 | 0/? | Not started | - |

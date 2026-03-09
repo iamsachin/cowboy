@@ -4,14 +4,14 @@ milestone: v2.0
 milestone_name: UX Overhaul
 status: executing
 stopped_at: Phase 29 context gathered
-last_updated: "2026-03-09T11:01:44.353Z"
-last_activity: 2026-03-09 — Completed 29-01 compaction detection backend plan
+last_updated: "2026-03-09T11:07:18Z"
+last_activity: 2026-03-09 — Completed 29-02 compaction detection frontend plan
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 11
-  completed_plans: 10
-  percent: 98
+  completed_plans: 11
+  percent: 100
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 29 of 30 (Compaction Detection)
-Plan: 1 of 2 in current phase (29-01 complete)
-Status: In progress
-Last activity: 2026-03-09 — Completed 29-01 compaction detection backend plan
+Plan: 2 of 2 in current phase (29-02 complete)
+Status: Phase 29 complete
+Last activity: 2026-03-09 — Completed 29-02 compaction detection frontend plan
 
-Progress: [██████████] 98%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -68,6 +68,8 @@ Recent decisions affecting current work:
 - [Phase 28-03]: Router injection via parameter for composable testability; Fuse.js fuzzy search with weighted keys for conversations
 - [Phase 28]: TreeWalker with text node splitting for match highlighting instead of innerHTML replacement
 - [Phase 29]: New compaction_events table instead of flags on messages table (keeps schema clean)
+- [Phase 29-02]: Compaction events injected as post-processing after groupTurns main loop (preserves existing grouping logic)
+- [Phase 29-02]: Severity color defaults to amber when token data is missing
 
 ### Pending Todos
 
@@ -95,6 +97,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T11:00:27Z
-Stopped at: Completed 29-01-PLAN.md
+Last session: 2026-03-09T11:07:18Z
+Stopped at: Completed 29-02-PLAN.md (checkpoint pending visual verification)
 Resume file: .planning/phases/29-compaction-detection/29-02-PLAN.md

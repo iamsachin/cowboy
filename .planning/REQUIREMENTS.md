@@ -35,7 +35,7 @@ Requirements for the v2.0 UX Overhaul milestone. Each maps to roadmap phases.
 ### Compaction Detection
 
 - [x] **COMP-01**: Compaction boundaries detected during ingestion from JSONL compaction signals
-- [ ] **COMP-02**: Compaction boundaries render as amber markers with token delta ("45k -> 12k, 33k freed")
+- [x] **COMP-02**: Compaction boundaries render as amber markers with token delta ("45k -> 12k, 33k freed")
 
 ### Subagent Resolution
 
@@ -97,7 +97,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | NAV-02 | Phase 28 | Complete |
 | NAV-03 | Phase 28 | Complete |
 | COMP-01 | Phase 29 | Complete |
-| COMP-02 | Phase 29 | Pending |
+| COMP-02 | Phase 29 | Complete |
 | AGENT-01 | Phase 30 | Pending |
 | AGENT-02 | Phase 30 | Pending |
 | CLEAN-01 | Phase 25 | Complete |

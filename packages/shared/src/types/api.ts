@@ -1,3 +1,17 @@
+// ── Subagent Types ──────────────────────────────────────────────────
+
+export interface SubagentSummary {
+  toolBreakdown: Record<string, number>;
+  filesTouched: string[];
+  totalToolCalls: number;
+  status: 'success' | 'error' | 'interrupted';
+  durationMs: number;
+  inputTokens: number;
+  outputTokens: number;
+  lastError: string | null;
+  matchConfidence: 'high' | 'medium' | 'low';
+}
+
 export interface HealthResponse {
   status: 'ok' | 'error';
   timestamp: string;
@@ -47,6 +61,8 @@ export interface ConversationRow {
   savings: number | null;
   isActive?: boolean;
   hasCompaction?: boolean;
+  parentConversationId?: string | null;
+  parentTitle?: string | null;
 }
 
 export interface ConversationListResponse {
@@ -74,6 +90,8 @@ export interface ToolCallRow {
   status: string | null;
   duration: number | null;
   createdAt: string;
+  subagentConversationId?: string | null;
+  subagentSummary?: SubagentSummary | null;
 }
 
 export interface MessageTokenUsage {
@@ -103,6 +121,8 @@ export interface ConversationDetailResponse {
     model: string | null;
     firstMessageAt?: string;
     lastMessageAt?: string;
+    parentConversationId?: string | null;
+    parentTitle?: string | null;
   };
   messages: MessageRow[];
   toolCalls: ToolCallRow[];

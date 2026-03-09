@@ -316,7 +316,14 @@ function buildToolResultLookup(
   const lookup = new Map<string, ToolResultData>();
   for (const user of parseResult.userMessages) {
     for (const tr of user.toolResults) {
-      lookup.set(tr.toolUseId, tr);
+      const existing = lookup.get(tr.toolUseId);
+      if (existing) {
+        // Concatenate content -- agentId is often in the second tool_result block
+        existing.content += '\n' + tr.content;
+        existing.isError = existing.isError || tr.isError;
+      } else {
+        lookup.set(tr.toolUseId, { ...tr });
+      }
     }
   }
   return lookup;

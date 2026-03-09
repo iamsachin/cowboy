@@ -9,6 +9,7 @@ export const conversations = sqliteTable('conversations', {
   updatedAt: text('updated_at').notNull(),
   model: text('model'),
   status: text('status').notNull().default('completed'),
+  parentConversationId: text('parent_conversation_id'),
 });
 
 export const messages = sqliteTable('messages', {
@@ -31,6 +32,8 @@ export const toolCalls = sqliteTable('tool_calls', {
   status: text('status'),
   duration: integer('duration'),
   createdAt: text('created_at').notNull(),
+  subagentConversationId: text('subagent_conversation_id'),
+  subagentSummary: text('subagent_summary', { mode: 'json' }),
 });
 
 export const tokenUsage = sqliteTable('token_usage', {

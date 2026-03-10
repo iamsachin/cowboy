@@ -1,6 +1,6 @@
 <template>
   <span
-    class="badge badge-sm"
+    class="badge badge-sm whitespace-nowrap"
     :class="badgeClass"
   >
     {{ label }}

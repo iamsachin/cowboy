@@ -192,6 +192,14 @@ export interface ProjectStatsRow {
   topModels: ProjectModelEntry[];
 }
 
+// ── Token Rate Types ────────────────────────────────────────────────
+
+export interface TokenRatePoint {
+  minute: string;        // e.g. "2026-03-10T14:23"
+  inputTokens: number;
+  outputTokens: number;
+}
+
 // ── Plan Tracking Types ─────────────────────────────────────────────
 
 export interface PlanRow {

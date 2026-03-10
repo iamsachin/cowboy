@@ -142,8 +142,8 @@ Plans:
   5. Backend provides a token rate endpoint that returns per-minute token aggregation for the rolling window
 **Plans**: 2 plans
 Plans:
-- [ ] 31-01-PLAN.md — Shared event types and backend typed event emission
-- [ ] 31-02-PLAN.md — Frontend typed event router and composable migration
+- [ ] 34-01-PLAN.md — Backend token rate endpoint, shared TokenRatePoint type, and unit tests
+- [ ] 34-02-PLAN.md — Frontend floating pill widget, chart popover, dismiss/restore, sidebar integration
 
 ### Phase 35: Conversation Timeline
 **Goal**: Users can navigate conversation history through a visual event timeline
@@ -156,8 +156,8 @@ Plans:
   4. Timeline updates live when new messages are pushed to the conversation
 **Plans**: 2 plans
 Plans:
-- [ ] 31-01-PLAN.md — Shared event types and backend typed event emission
-- [ ] 31-02-PLAN.md — Frontend typed event router and composable migration
+- [ ] 35-01-PLAN.md — [To be planned]
+- [ ] 35-02-PLAN.md — [To be planned]
 
 ## Progress
 
@@ -196,8 +196,8 @@ Phases execute in numeric order: 31 → 32 → 33 → 34 → 35
 | 28. Navigation & Search | v2.0 | 3/3 | Complete | 2026-03-09 |
 | 29. Compaction Detection | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 30. Subagent Resolution | v2.0 | 2/2 | Complete | 2026-03-09 |
-| 31. WebSocket Event Infrastructure | 2/2 | Complete    | 2026-03-10 | - |
-| 32. Realtime Conversation Detail | 2/2 | Complete    | 2026-03-10 | - |
-| 33. Realtime Conversation Discovery | 2/2 | Complete   | 2026-03-10 | - |
-| 34. Live Token Usage Widget | v2.1 | 0/0 | Not started | - |
+| 31. WebSocket Event Infrastructure | v2.1 | 2/2 | Complete | 2026-03-10 |
+| 32. Realtime Conversation Detail | v2.1 | 2/2 | Complete | 2026-03-10 |
+| 33. Realtime Conversation Discovery | v2.1 | 2/2 | Complete | 2026-03-10 |
+| 34. Live Token Usage Widget | v2.1 | 0/2 | Not started | - |
 | 35. Conversation Timeline | v2.1 | 0/0 | Not started | - |

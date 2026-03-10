@@ -13,7 +13,13 @@ export function useConversationBrowser() {
 
   const data = ref<BrowserResponse | null>(null);
   const loading = ref(false);
+  const refreshing = ref(false);
   const error = ref<string | null>(null);
+
+  // New-row tracking for UI highlights
+  const previousIds = new Set<string>();
+  const newIds = ref<Set<string>>(new Set());
+  let newIdsClearTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Pagination state — initialize from URL query param
   const initialPage = parseInt(route.query.page as string, 10);
@@ -37,8 +43,34 @@ export function useConversationBrowser() {
   const project = ref('');
   const searchQuery = ref('');
 
-  async function fetchConversations(): Promise<void> {
-    loading.value = true;
+  function trackNewRows(rows: { id: string }[]): void {
+    const currentIds = new Set(rows.map((r) => r.id));
+    if (previousIds.size === 0) {
+      currentIds.forEach((id) => previousIds.add(id));
+      return;
+    }
+    const added = new Set<string>();
+    currentIds.forEach((id) => {
+      if (!previousIds.has(id)) added.add(id);
+    });
+    newIds.value = added;
+    previousIds.clear();
+    currentIds.forEach((id) => previousIds.add(id));
+    if (newIdsClearTimer) clearTimeout(newIdsClearTimer);
+    if (added.size > 0) {
+      newIdsClearTimer = setTimeout(() => {
+        newIds.value = new Set();
+        newIdsClearTimer = null;
+      }, 2000);
+    }
+  }
+
+  async function fetchConversations(isLive = false): Promise<void> {
+    if (isLive) {
+      refreshing.value = true;
+    } else {
+      loading.value = true;
+    }
     error.value = null;
     try {
       const { from, to } = dateRange.value;
@@ -61,11 +93,14 @@ export function useConversationBrowser() {
       }
       const res = await fetch(`/api/analytics/conversations?${params}`);
       if (!res.ok) throw new Error(`Conversations fetch failed: ${res.status}`);
-      data.value = await res.json();
+      const result: BrowserResponse = await res.json();
+      data.value = result;
+      trackNewRows(result.rows);
     } catch (e) {
       error.value = e instanceof Error ? e.message : String(e);
     } finally {
       loading.value = false;
+      refreshing.value = false;
     }
   }
 
@@ -135,10 +170,28 @@ export function useConversationBrowser() {
     }
   });
 
+  // Debounced WS refetch — coalesces rapid events into one fetch
+  let wsDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  function debouncedWsRefetch(): void {
+    if (wsDebounceTimer) clearTimeout(wsDebounceTimer);
+    wsDebounceTimer = setTimeout(() => {
+      wsDebounceTimer = null;
+      fetchConversations(true);
+    }, 500);
+  }
+
   onScopeDispose(() => {
     if (searchTimeout) {
       clearTimeout(searchTimeout);
       searchTimeout = null;
+    }
+    if (wsDebounceTimer) {
+      clearTimeout(wsDebounceTimer);
+      wsDebounceTimer = null;
+    }
+    if (newIdsClearTimer) {
+      clearTimeout(newIdsClearTimer);
+      newIdsClearTimer = null;
     }
   });
 
@@ -173,15 +226,16 @@ export function useConversationBrowser() {
     { deep: true, immediate: true }
   );
 
-  // Live refetch on typed WebSocket events (preserves filter/sort/page state)
+  // Live refetch on typed WebSocket events (debounced, preserves filter/sort/page state)
   const { on } = useWebSocket();
-  on('conversation:changed', () => fetchConversations());
-  on('conversation:created', () => fetchConversations());
-  on('system:full-refresh', () => fetchConversations());
+  on('conversation:changed', debouncedWsRefetch);
+  on('conversation:created', debouncedWsRefetch);
+  on('system:full-refresh', debouncedWsRefetch);
 
   return {
     data,
     loading,
+    refreshing,
     error,
     page,
     limit,
@@ -190,6 +244,7 @@ export function useConversationBrowser() {
     agent,
     project,
     searchQuery,
+    newIds,
     setSort,
     setPage,
     setAgent,

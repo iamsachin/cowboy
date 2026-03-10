@@ -11,10 +11,10 @@
         <AlertTriangle class="w-5 h-5" />
         <span>Conversation not found</span>
       </div>
-      <router-link to="/conversations" class="btn btn-ghost btn-sm gap-1">
+      <button class="btn btn-ghost btn-sm gap-1" @click="goBack">
         <ArrowLeft class="w-4 h-4" />
         Back to conversations
-      </router-link>
+      </button>
     </div>
 
     <!-- Error state -->
@@ -22,20 +22,20 @@
       <div role="alert" class="alert alert-error max-w-md">
         <span>{{ error }}</span>
       </div>
-      <router-link to="/conversations" class="btn btn-ghost btn-sm gap-1">
+      <button class="btn btn-ghost btn-sm gap-1" @click="goBack">
         <ArrowLeft class="w-4 h-4" />
         Back to conversations
-      </router-link>
+      </button>
     </div>
 
     <!-- Success state -->
     <template v-else-if="data">
       <!-- Back link -->
       <div class="flex items-center gap-1 mb-4">
-        <router-link to="/conversations" class="btn btn-ghost btn-sm gap-1">
+        <button class="btn btn-ghost btn-sm gap-1" @click="goBack">
           <ArrowLeft class="w-4 h-4" />
           Back to conversations
-        </router-link>
+        </button>
         <router-link
           v-if="data.conversation.parentConversationId"
           :to="'/conversations/' + data.conversation.parentConversationId"
@@ -134,7 +134,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, ArrowUpLeft, AlertTriangle, ClipboardList } from 'lucide-vue-next';
 import type { ConversationPlanEntry } from '@cowboy/shared';
 import { useConversationDetail } from '../composables/useConversationDetail';
@@ -144,7 +144,16 @@ import { cleanTitle } from '../utils/content-sanitizer';
 import { formatCost } from '../utils/format-tokens';
 
 const route = useRoute();
+const router = useRouter();
 const id = route.params.id as string;
+
+function goBack() {
+  if (window.history.state?.back) {
+    router.back();
+  } else {
+    router.push('/conversations');
+  }
+}
 
 const { data, loading, error, notFound } = useConversationDetail(id);
 

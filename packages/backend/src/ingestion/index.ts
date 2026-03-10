@@ -91,6 +91,46 @@ function insertExtractedPlans(
   }
 }
 
+/**
+ * Determine if a conversation appears to still be running by inspecting
+ * its message sequence. A conversation is "ongoing" if the last activity
+ * suggests the agent is mid-turn (e.g., tool calls dispatched but not yet
+ * followed by a final text response).
+ */
+export function isConversationOngoing(normalizedData: NormalizedData): boolean {
+  const msgs = normalizedData.messages;
+  if (msgs.length === 0) return false;
+
+  // Sort by createdAt descending to find the last message
+  const sorted = [...msgs].sort((a, b) =>
+    b.createdAt.localeCompare(a.createdAt)
+  );
+  const lastMsg = sorted[0];
+
+  if (lastMsg.role === 'assistant') {
+    // Check if this assistant message has associated tool calls
+    const hasToolCalls = normalizedData.toolCalls.some(
+      tc => tc.messageId === lastMsg.id
+    );
+    // If the assistant's last action was invoking tools, it's ongoing
+    // If it was pure text, the conversation turn is complete
+    return hasToolCalls;
+  }
+
+  // Last message is from user. Check if it looks like a tool_result
+  // flow (tool calls exist that are newer than the last assistant message).
+  const lastAssistant = sorted.find(m => m.role === 'assistant');
+  if (!lastAssistant) return false; // Only user messages = not ongoing
+
+  const toolCallsAfterAssistant = normalizedData.toolCalls.filter(
+    tc => tc.createdAt >= lastAssistant.createdAt
+  );
+  // If there are tool calls at/after the last assistant message,
+  // tool results are still flowing back
+  return toolCallsAfterAssistant.length > 0
+    && normalizedData.toolCalls.some(tc => tc.messageId === lastAssistant.id);
+}
+
 const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
   app: FastifyInstance,
   opts: IngestionPluginOptions,
@@ -158,7 +198,7 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
                 target: conversations.id,
                 set: {
                   updatedAt: normalizedData.conversation.updatedAt,
-                  status: 'active',
+                  status: isConversationOngoing(normalizedData) ? 'active' : 'completed',
                 },
               })
               .run();
@@ -340,7 +380,7 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
                     target: conversations.id,
                     set: {
                       updatedAt: normalizedData.conversation.updatedAt,
-                      status: 'active',
+                      status: isConversationOngoing(normalizedData) ? 'active' : 'completed',
                     },
                   })
                   .run();

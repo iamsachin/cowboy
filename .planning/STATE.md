@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Realtime & Live Insights
 status: executing
-stopped_at: Completed 31-01-PLAN.md
-last_updated: "2026-03-10T11:35:00.000Z"
+stopped_at: Completed 31-02-PLAN.md
+last_updated: "2026-03-10T11:42:33.143Z"
 last_activity: 2026-03-10 — Completed 31-01 backend WebSocket event infrastructure
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -47,6 +47,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 
 - 31-01: Used WebSocketEventPayload distributive type to preserve union narrowing
 - 31-01: Pre/post snapshot comparison for ingestion change detection
+- [Phase 31]: on() auto-cleans via onScopeDispose; consumers don't need explicit cleanup
+- [Phase 31]: Tab visibility and gap detection both emit synthetic system:full-refresh for normalized catch-up
 
 ### Pending Todos
 
@@ -72,9 +74,10 @@ None.
 | 15 | Fix pill badge responsiveness on smaller screens | 2026-03-10 | 5964738 | [15-fix-pill-badge-responsiveness-on-smaller](./quick/15-fix-pill-badge-responsiveness-on-smaller/) |
 | 16 | Preserve pagination state when navigating back | 2026-03-10 | aede542 | [16-preserve-pagination-state-when-navigatin](./quick/16-preserve-pagination-state-when-navigatin/) |
 | 17 | Fix active conversation marking for all conversations | 2026-03-10 | 51d09b1 | [17-fix-active-conversation-marking-all-conv](./quick/17-fix-active-conversation-marking-all-conv/) |
+| Phase 31 P02 | 4min | 2 tasks | 9 files |
 
 ## Session Continuity
 
-Last session: 2026-03-10T11:35:00.000Z
-Stopped at: Completed 31-01-PLAN.md
-Resume file: .planning/phases/31-websocket-event-infrastructure/31-01-SUMMARY.md
+Last session: 2026-03-10T11:42:33.141Z
+Stopped at: Completed 31-02-PLAN.md
+Resume file: None

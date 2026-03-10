@@ -81,7 +81,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Milestone Goal:** Add realtime data pushing, live token usage monitoring, and conversation timeline navigation.
 
-- [ ] **Phase 31: WebSocket Event Infrastructure** — Typed, conversation-scoped WebSocket events replacing the untyped broadcast
+- [x] **Phase 31: WebSocket Event Infrastructure** — Typed, conversation-scoped WebSocket events replacing the untyped broadcast (completed 2026-03-10)
 - [ ] **Phase 32: Realtime Conversation Detail** — Push new messages to open conversation pages with scroll preservation
 - [ ] **Phase 33: Realtime Conversation Discovery** — New conversations auto-appear in list and overview without refresh
 - [ ] **Phase 34: Live Token Usage Widget** — Floating dismissable token rate widget with expandable chart and sidebar toggle
@@ -196,7 +196,7 @@ Phases execute in numeric order: 31 → 32 → 33 → 34 → 35
 | 28. Navigation & Search | v2.0 | 3/3 | Complete | 2026-03-09 |
 | 29. Compaction Detection | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 30. Subagent Resolution | v2.0 | 2/2 | Complete | 2026-03-09 |
-| 31. WebSocket Event Infrastructure | 1/2 | In Progress|  | - |
+| 31. WebSocket Event Infrastructure | 2/2 | Complete   | 2026-03-10 | - |
 | 32. Realtime Conversation Detail | v2.1 | 0/0 | Not started | - |
 | 33. Realtime Conversation Discovery | v2.1 | 0/0 | Not started | - |
 | 34. Live Token Usage Widget | v2.1 | 0/0 | Not started | - |

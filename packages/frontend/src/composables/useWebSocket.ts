@@ -20,10 +20,13 @@ let started = false;
 
 // Exported for testability
 export function getReconnectDelay(attempt: number): number {
+  // First two attempts: fast retry (server likely already up on hard refresh)
+  if (attempt < 2) return 500;
+
   const baseDelay = 1000;
-  const maxDelay = 30000;
-  const exponential = Math.min(maxDelay, baseDelay * Math.pow(2, attempt));
-  const jitter = Math.random() * exponential * 0.5;
+  const maxDelay = 5000;
+  const exponential = Math.min(maxDelay, baseDelay * Math.pow(2, attempt - 2));
+  const jitter = Math.random() * exponential * 0.3;
   return exponential + jitter;
 }
 

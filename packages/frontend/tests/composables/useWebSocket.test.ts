@@ -133,17 +133,24 @@ describe('useWebSocket', () => {
   it('exponential backoff delay calculations', async () => {
     const { getReconnectDelay } = await getModule();
 
+    // First two attempts: fast 500ms retry (hard refresh case)
+    expect(getReconnectDelay(0)).toBe(500);
+    expect(getReconnectDelay(1)).toBe(500);
+
+    // After that: exponential backoff from 1000ms base, capped at 5000ms
     vi.spyOn(Math, 'random').mockReturnValue(0);
-    expect(getReconnectDelay(0)).toBe(1000);
-    expect(getReconnectDelay(1)).toBe(2000);
+    expect(getReconnectDelay(2)).toBe(1000); // 1000 * 2^0 = 1000
+    expect(getReconnectDelay(3)).toBe(2000); // 1000 * 2^1 = 2000
 
     vi.spyOn(Math, 'random').mockReturnValue(1);
-    expect(getReconnectDelay(0)).toBe(1500);
-    expect(getReconnectDelay(1)).toBe(3000);
+    expect(getReconnectDelay(2)).toBe(1300); // 1000 + 1000*0.3
+    expect(getReconnectDelay(3)).toBe(2600); // 2000 + 2000*0.3
 
+    // High attempts cap at 5000ms + jitter
     vi.spyOn(Math, 'random').mockReturnValue(1);
-    const delay5 = getReconnectDelay(5);
-    expect(delay5).toBeLessThanOrEqual(45000);
+    const delay10 = getReconnectDelay(10);
+    expect(delay10).toBeLessThanOrEqual(6500); // 5000 + 5000*0.3
+    expect(delay10).toBeGreaterThanOrEqual(5000);
   });
 
   it('schedules reconnect with correct delay after close', async () => {
@@ -153,8 +160,7 @@ describe('useWebSocket', () => {
     const ws = mockWs.instances[0];
     ws.simulateOpen();
 
-    vi.spyOn(Math, 'random').mockReturnValue(0);
-    const expectedDelay = getReconnectDelay(0);
+    const expectedDelay = getReconnectDelay(0); // 500ms for first attempt
 
     ws.simulateClose();
 
@@ -339,9 +345,8 @@ describe('useWebSocket', () => {
     });
 
     // Simulate reconnect
-    vi.spyOn(Math, 'random').mockReturnValue(0);
     ws1.simulateClose();
-    vi.advanceTimersByTime(1500); // base delay 1000 + jitter margin
+    vi.advanceTimersByTime(500); // first attempt uses 500ms fast retry
 
     const ws2 = mockWs.instances[1];
     ws2.simulateOpen(); // resets lastSeq to 0

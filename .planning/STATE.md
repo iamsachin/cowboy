@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Status: Between milestones — v2.1 shipped, next milestone not started
-Last activity: 2026-03-10 - Completed quick task 22: fix slow app boot and hard refresh performance
+Last activity: 2026-03-10 - Completed quick task 23: show conversations with parent ID as sub-rows
 
 ## Performance Metrics
 
@@ -72,9 +72,10 @@ None.
 | 20 | Move pagination buttons to left side | 2026-03-10 | 50d3b2f | [20-move-pagination-buttons-to-left-side-to-](./quick/20-move-pagination-buttons-to-left-side-to-/) |
 | 21 | Fix title overflow and auto-expand single assistant group | 2026-03-10 | 76f2928 | [21-fix-title-overflow-and-auto-expand-singl](./quick/21-fix-title-overflow-and-auto-expand-singl/) |
 | 22 | Fix slow app boot and hard refresh performance | 2026-03-10 | 7563cc3 | [22-fix-slow-app-boot-and-hard-refresh-perfo](./quick/22-fix-slow-app-boot-and-hard-refresh-perfo/) |
+| 23 | Show conversations with parent ID as sub-rows | 2026-03-10 | 708fe92 | [23-show-conversations-with-parent-id-as-sub](./quick/23-show-conversations-with-parent-id-as-sub/) |
 
 ## Session Continuity
 
-Last session: 2026-03-10T17:43:47Z
-Stopped at: Completed quick task 22
+Last session: 2026-03-10T17:57:41Z
+Stopped at: Completed quick task 23
 Resume file: None

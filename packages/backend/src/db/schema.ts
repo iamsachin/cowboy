@@ -78,6 +78,13 @@ export const compactionEvents = sqliteTable('compaction_events', {
   createdAt: text('created_at').notNull(),
 });
 
+export const ingestedFiles = sqliteTable('ingested_files', {
+  filePath: text('file_path').primaryKey(),
+  mtimeMs: integer('mtime_ms').notNull(),
+  size: integer('size').notNull(),
+  ingestedAt: text('ingested_at').notNull(),
+});
+
 export const settings = sqliteTable('settings', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   // Agent configuration

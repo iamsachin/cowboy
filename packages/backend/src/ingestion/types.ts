@@ -75,6 +75,7 @@ export interface DiscoveredFile {
 
 export interface IngestionStats {
   filesScanned: number;
+  filesSkipped: number;
   conversationsFound: number;
   messagesParsed: number;
   toolCallsExtracted: number;

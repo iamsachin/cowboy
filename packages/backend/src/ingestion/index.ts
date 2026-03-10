@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
+import { stat } from 'node:fs/promises';
 import { db } from '../db/index.js';
-import { conversations, messages, toolCalls, tokenUsage, compactionEvents, plans, planSteps } from '../db/schema.js';
+import { conversations, messages, toolCalls, tokenUsage, compactionEvents, plans, planSteps, ingestedFiles } from '../db/schema.js';
 import { eq, and, lte, sql } from 'drizzle-orm';
 import type { WebSocketEventPayload, ChangeType } from '@cowboy/shared';
 import { discoverJsonlFiles } from './file-discovery.js';
@@ -252,6 +253,7 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
 
     const stats: IngestionStats = {
       filesScanned: 0,
+      filesSkipped: 0,
       conversationsFound: 0,
       messagesParsed: 0,
       toolCallsExtracted: 0,
@@ -259,6 +261,14 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
       skippedLines: 0,
       duration: 0,
     };
+
+    // Ensure ingested_files tracking table exists
+    db.run(sql`CREATE TABLE IF NOT EXISTS ingested_files (
+      file_path TEXT PRIMARY KEY,
+      mtime_ms INTEGER NOT NULL,
+      size INTEGER NOT NULL,
+      ingested_at TEXT NOT NULL
+    )`);
 
     // One-time data quality migration for existing conversations
     try {
@@ -279,6 +289,22 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
 
       for (const file of files) {
         try {
+          // Check if file has changed since last ingestion
+          const fileStat = await stat(file.filePath);
+          const mtimeMs = Math.floor(fileStat.mtimeMs);
+          const fileSize = fileStat.size;
+
+          const cached = db.select()
+            .from(ingestedFiles)
+            .where(eq(ingestedFiles.filePath, file.filePath))
+            .get();
+
+          if (cached && cached.mtimeMs === mtimeMs && cached.size === fileSize) {
+            stats.filesSkipped++;
+            status.progress!.filesProcessed++;
+            continue;
+          }
+
           const parseResult = await parseJsonlFile(file.filePath);
           stats.skippedLines += parseResult.skippedLines;
 
@@ -343,6 +369,17 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
           // Track what changed after transaction committed
           trackChanges(normalizedData.conversation.id, normalizedData, snapshot, collectedEvents);
 
+          // Record file as ingested for future skip-unchanged checks
+          db.insert(ingestedFiles).values({
+            filePath: file.filePath,
+            mtimeMs,
+            size: fileSize,
+            ingestedAt: new Date().toISOString(),
+          }).onConflictDoUpdate({
+            target: ingestedFiles.filePath,
+            set: { mtimeMs, size: fileSize, ingestedAt: new Date().toISOString() },
+          }).run();
+
           stats.conversationsFound++;
           stats.messagesParsed += normalizedData.messages.length;
           stats.toolCallsExtracted += normalizedData.toolCalls.length;
@@ -351,7 +388,7 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
           app.log.error({ err, file: file.filePath }, 'Error processing JSONL file');
         }
 
-        status.progress.filesProcessed++;
+        status.progress!.filesProcessed++;
       }
 
       // ── Subagent linking (post-processing) ─────────────────────────────
@@ -558,7 +595,7 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
         completedAt: new Date().toISOString(),
         stats,
       };
-      app.log.info({ stats, events: collectedEvents.length }, 'Ingestion complete');
+      app.log.info({ stats, skipped: stats.filesSkipped, events: collectedEvents.length }, 'Ingestion complete');
       opts.onIngestionComplete?.(collectedEvents);
     }
   }

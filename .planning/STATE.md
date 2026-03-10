@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Realtime & Live Insights
-status: executing
-stopped_at: Completed 32-02-PLAN.md
-last_updated: "2026-03-10T12:32:11Z"
-last_activity: 2026-03-10 — Completed 32-02 realtime conversation detail UI
+status: in-progress
+stopped_at: Completed 33-01-PLAN.md
+last_updated: "2026-03-10T12:59:24.000Z"
+last_activity: 2026-03-10 — Completed 33-01 composable logic core
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 6
+  completed_plans: 5
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 33 — Realtime Dashboard (next)
+**Current focus:** Phase 33 — Realtime Conversation Discovery
 
 ## Current Position
 
-Phase: 32 of 35 (Realtime Conversation Detail) -- COMPLETE
-Plan: 2 of 2 in current phase (all done)
-Status: Phase 32 complete
-Last activity: 2026-03-10 — Completed 32-02 realtime conversation detail UI
+Phase: 33 of 35 (Realtime Conversation Discovery)
+Plan: 1 of 2 in current phase
+Status: Plan 33-01 complete, 33-02 next
+Last activity: 2026-03-10 — Completed 33-01 composable logic core
 
 ## Performance Metrics
 
@@ -37,7 +37,7 @@ Last activity: 2026-03-10 — Completed 32-02 realtime conversation detail UI
 - v1.2: 6 plans, 3 phases
 - v1.3: 21 plans, 8 phases
 - v2.0: 13 plans, 6 phases
-- Total plans completed: 73
+- Total plans completed: 74
 
 ## Accumulated Context
 
@@ -55,6 +55,9 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - 32-02: NewMessagesPill uses fixed positioning with z-50 for viewport-anchored floating pill
 - 32-02: Pagination auto-expands when user is at bottom so new messages are never hidden
 - 32-02: Fade-in uses pure CSS animation keyed on newGroupKeys set (no JS cleanup)
+- 33-01: 500ms debounce coalesces burst WS events into single API call
+- 33-01: previousIds starts empty; initial load populates without marking new (prevents flash)
+- 33-01: newIds auto-clears after 2000ms for transient highlight animation
 
 ### Pending Todos
 
@@ -84,6 +87,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-10T12:32:11Z
-Stopped at: Completed 32-02-PLAN.md (Phase 32 complete)
-Resume file: Next phase (33)
+Last session: 2026-03-10T12:55:21Z
+Stopped at: Completed 33-01-PLAN.md
+Resume file: 33-02-PLAN.md

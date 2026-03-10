@@ -52,7 +52,8 @@ const filledTokenRate = computed<TokenRatePoint[]>(() => {
 
   for (let i = 59; i >= 0; i--) {
     const d = new Date(now.getTime() - i * 60_000);
-    const minute = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    // Use UTC to match backend strftime which returns UTC timestamps
+    const minute = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}T${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
     const existing = lookup.get(minute);
     slots.push(existing ?? { minute, inputTokens: 0, outputTokens: 0 });
   }

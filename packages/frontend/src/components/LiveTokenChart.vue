@@ -32,9 +32,9 @@ const props = defineProps<{
 
 const chartData = computed(() => ({
   labels: props.data.map((p) => {
-    // Extract HH:MM from minute string like "2026-03-10T14:23"
-    const parts = p.minute.split('T');
-    return parts.length > 1 ? parts[1] : p.minute;
+    // Convert UTC minute string to local HH:MM for display
+    const d = new Date(p.minute + ':00Z');
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   }),
   datasets: [
     {

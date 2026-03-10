@@ -30,7 +30,7 @@
 
     <!-- Turn list -->
     <template v-for="turn in visibleTurns" :key="turnKey(turn)">
-      <div :class="{ 'group-fade-in': newGroupKeys.has(turnKey(turn)) }">
+      <div :data-turn-key="turnKey(turn)" :class="{ 'group-fade-in': newGroupKeys.has(turnKey(turn)) }">
         <ChatMessage
           v-if="turn.type === 'user'"
           :message="turn.message"
@@ -297,6 +297,20 @@ onUnmounted(() => {
   unregister('k');
   unregister('e');
   searchState.close();
+});
+
+defineExpose({
+  loadUpTo(index: number) {
+    if (index >= visibleCount.value) {
+      visibleCount.value = index + 1;
+    }
+  },
+  expandGroup(key: string) {
+    if (!collapseState.isExpanded(key)) {
+      collapseState.toggle(key);
+    }
+  },
+  turns,
 });
 </script>
 

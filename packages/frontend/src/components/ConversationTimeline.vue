@@ -15,13 +15,14 @@
         :class="{ 'bg-base-200/70': event.key === activeKey }"
         @click="$emit('navigate', event.key, event.turnIndex)"
       >
-        <!-- Dot -->
-        <div class="relative z-10 mt-1 w-[15px] shrink-0 flex justify-center">
-          <span
-            class="block w-2 h-2 rounded-full"
+        <!-- Icon -->
+        <div class="relative z-10 mt-0.5 w-[15px] shrink-0 flex justify-center">
+          <component
+            :is="iconConfig(event).icon"
+            :size="14"
             :class="[
-              dotColor(event),
-              isActive && idx === events.length - 1 ? 'pulse-dot' : '',
+              iconConfig(event).colorClass,
+              isActive && idx === events.length - 1 ? 'pulse-icon' : '',
             ]"
           />
         </div>
@@ -38,6 +39,7 @@
 </template>
 
 <script setup lang="ts">
+import { User, Bot, Minimize2 } from 'lucide-vue-next';
 import type { TimelineEvent } from '../composables/useTimeline';
 
 defineProps<{
@@ -50,14 +52,14 @@ defineEmits<{
   navigate: [key: string, turnIndex: number];
 }>();
 
-function dotColor(event: TimelineEvent): string {
+function iconConfig(event: TimelineEvent) {
   switch (event.type) {
     case 'user':
-      return 'bg-primary';
+      return { icon: User, colorClass: 'text-primary' };
     case 'assistant-group':
-      return 'bg-secondary';
+      return { icon: Bot, colorClass: 'text-secondary' };
     case 'compaction':
-      return 'bg-warning';
+      return { icon: Minimize2, colorClass: 'text-warning' };
   }
 }
 
@@ -74,8 +76,7 @@ function labelClass(event: TimelineEvent): string {
 </script>
 
 <style scoped>
-.pulse-dot {
-  background-color: oklch(0.75 0.18 142);
+.pulse-icon {
   animation: pulse-fade 1.5s ease-in-out infinite;
 }
 

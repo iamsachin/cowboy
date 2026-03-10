@@ -5,14 +5,17 @@
   <!-- Standard tool call display -->
   <div v-else class="text-xs">
     <!-- Compact row: always visible -->
-    <div class="flex items-center gap-2 py-1 px-2 rounded bg-amber-500/5 border-l-2 border-amber-400">
+    <div
+      class="flex items-center gap-2 py-1 px-2 rounded border-l-2"
+      :class="isSuccess ? 'bg-success/5 border-success' : 'bg-amber-500/5 border-amber-400'"
+    >
       <component :is="toolIcon.icon" class="w-3.5 h-3.5 shrink-0" :class="toolIcon.colorClass" />
       <span class="truncate">{{ toolCall.name }}</span>
       <span
-        v-if="toolCall.status === 'completed'"
+        v-if="isSuccess"
         class="badge badge-xs badge-success"
       >
-        {{ toolCall.status }}
+        success
       </span>
       <span
         v-else-if="toolCall.status"
@@ -57,6 +60,9 @@ const props = defineProps<{
 }>();
 
 const toolIcon = computed(() => getToolIcon(props.toolCall.name));
+const isSuccess = computed(() =>
+  props.toolCall.status === 'completed' || props.toolCall.status === 'success'
+);
 const isSubagentCall = computed(() =>
   props.toolCall.name === 'Task' || props.toolCall.name === 'Agent'
 );

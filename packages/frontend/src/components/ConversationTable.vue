@@ -50,8 +50,8 @@
               }"
               @click="router.push({ name: 'conversation-detail', params: { id: row.id } })"
             >
-              <td class="whitespace-nowrap" :class="{ 'pl-8 border-l-2 border-base-content/20': row._isChild }">
-                <span v-if="row._isChild" class="text-base-content/30 mr-1">&#x2514;</span>{{ formatDate(row.date) }}
+              <td class="whitespace-nowrap" :class="{ 'pl-8': row._isChild }">
+                <BotIcon v-if="row._isChild" class="w-3 h-3 text-base-content/30 mr-1 inline" />{{ formatDate(row.date) }}
               </td>
               <td><AgentBadge :agent="row.agent" /></td>
               <td>{{ row.project ?? '--' }}</td>
@@ -83,6 +83,7 @@
               </td>
               <td class="text-right font-mono">
                 {{ formatTokens(row.inputTokens + row.outputTokens) }}
+                <span v-if="row._childrenTokens" class="text-base-content/40 text-xs ml-1">(+{{ formatTokens(row._childrenTokens) }})</span>
               </td>
               <td class="whitespace-nowrap">
                 <template v-if="row.cost !== null">
@@ -146,7 +147,7 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useConversations } from '../composables/useConversations';
-import { Scissors } from 'lucide-vue-next';
+import { Scissors, Bot as BotIcon } from 'lucide-vue-next';
 import AgentBadge from './AgentBadge.vue';
 import { formatCost } from '../utils/format-tokens';
 import { cleanTitle } from '../utils/content-sanitizer';
@@ -163,9 +164,12 @@ const { data, loading, refreshing, page, sortField, sortOrder, setSort, setPage,
 
 const displayRows = computed(() => {
   if (!data.value) return [];
-  const result: Array<ConversationRow & { _isChild?: boolean }> = [];
+  const result: Array<ConversationRow & { _isChild?: boolean; _childrenTokens?: number }> = [];
   for (const row of data.value.rows) {
-    result.push(row);
+    const childrenTokens = row.children
+      ? row.children.reduce((sum, c) => sum + c.inputTokens + c.outputTokens, 0)
+      : 0;
+    result.push({ ...row, _childrenTokens: childrenTokens || undefined });
     if (row.children) {
       for (const child of row.children) {
         result.push({ ...child, _isChild: true });

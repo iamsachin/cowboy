@@ -37,9 +37,14 @@
 /* Sub-row (child conversation) styling */
 tr.sub-row {
   background-color: oklch(0.25 0 0 / 0.3) !important;
+  color: oklch(0.6 0 0);
 }
 tr.sub-row:hover {
   background-color: oklch(0.3 0 0 / 0.4) !important;
+}
+/* Ensure parent rows keep hover effect alongside zebra striping */
+table.table-zebra tbody tr.hover:not(.sub-row):hover td {
+  background-color: oklch(0.3 0 0 / 0.3);
 }
 
 /* Override highlight.js background so the DaisyUI container provides it */

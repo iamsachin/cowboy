@@ -37,7 +37,7 @@ export async function buildApp(opts?: AppOptions): Promise<FastifyInstance> {
     prefix: '/api',
     ...opts?.ingestion,
     onIngestionComplete: () => {
-      app.broadcast({ type: 'data-changed', timestamp: new Date().toISOString() });
+      app.broadcastEvent({ type: 'system:full-refresh', timestamp: new Date().toISOString() });
     },
   });
 

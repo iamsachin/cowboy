@@ -2,12 +2,15 @@ import websocket from '@fastify/websocket';
 import fp from 'fastify-plugin';
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { WebSocket } from 'ws';
+import type { WebSocketEvent } from '@cowboy/shared';
 
 declare module 'fastify' {
   interface FastifyInstance {
-    broadcast: (message: object) => void;
+    broadcastEvent: (event: Omit<WebSocketEvent, 'seq'>) => void;
   }
 }
+
+let seq = 0;
 
 const websocketPluginInner: FastifyPluginAsync = async (app: FastifyInstance) => {
   await app.register(websocket);
@@ -24,9 +27,9 @@ const websocketPluginInner: FastifyPluginAsync = async (app: FastifyInstance) =>
     socket.send(JSON.stringify({ type: 'connected' }));
   });
 
-  // Decorate app with broadcast function
-  app.decorate('broadcast', (message: object) => {
-    const payload = JSON.stringify(message);
+  // Decorate app with typed broadcastEvent function
+  app.decorate('broadcastEvent', (event: Omit<WebSocketEvent, 'seq'>) => {
+    const payload = JSON.stringify({ ...event, seq: ++seq });
     for (const client of app.websocketServer.clients) {
       if (client.readyState === WebSocket.OPEN) {
         client.send(payload);
@@ -35,9 +38,14 @@ const websocketPluginInner: FastifyPluginAsync = async (app: FastifyInstance) =>
   });
 };
 
-// Use fp to break encapsulation so broadcast decorator propagates to parent
+// Use fp to break encapsulation so broadcastEvent decorator propagates to parent
 const websocketPlugin = fp(websocketPluginInner, {
   name: 'cowboy-websocket',
 });
 
 export default websocketPlugin;
+
+// Export for testing — allows resetting the sequence counter
+export function _resetSeqForTest(): void {
+  seq = 0;
+}

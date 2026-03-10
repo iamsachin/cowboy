@@ -191,7 +191,7 @@ export default async function settingsRoutes(app: FastifyInstance) {
     await clearDataTables(agent);
 
     try {
-      app.broadcast({ type: 'data-changed', timestamp: new Date().toISOString() });
+      app.broadcastEvent({ type: 'system:full-refresh', timestamp: new Date().toISOString() });
     } catch {
       // broadcast may not exist in test contexts
     }
@@ -207,7 +207,7 @@ export default async function settingsRoutes(app: FastifyInstance) {
     await clearDataTables(agent);
 
     try {
-      app.broadcast({ type: 'data-changed', timestamp: new Date().toISOString() });
+      app.broadcastEvent({ type: 'system:full-refresh', timestamp: new Date().toISOString() });
     } catch {
       // broadcast may not exist in test contexts
     }

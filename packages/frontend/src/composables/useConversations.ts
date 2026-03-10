@@ -1,17 +1,22 @@
 import { ref, watch, type Ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import type { ConversationListResponse } from '@cowboy/shared';
 import { useDateRange } from './useDateRange';
 
 export function useConversations(agentFilter?: Ref<string | undefined>) {
+  const route = useRoute();
+  const router = useRouter();
   const { dateRange } = useDateRange();
 
   const data = ref<ConversationListResponse | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
-  // Pagination state
-  const page = ref(1);
+  // Pagination state — initialize from URL query
+  const initialPage = Number(route.query.page) || 1;
+  const page = ref(initialPage);
   const limit = ref(20);
+  let isInitialLoad = true;
 
   // Sort state
   const sortField = ref('date');
@@ -59,11 +64,25 @@ export function useConversations(agentFilter?: Ref<string | undefined>) {
     fetchConversations();
   }
 
+  // Sync page to URL query param
+  watch(page, (newPage) => {
+    const query = { ...route.query };
+    if (newPage > 1) {
+      query.page = String(newPage);
+    } else {
+      delete query.page;
+    }
+    router.replace({ query });
+  });
+
   // Watch dateRange and agentFilter changes: reset page to 1 and re-fetch
   watch(
     [() => dateRange.value, () => agentFilter?.value],
     () => {
-      page.value = 1;
+      if (!isInitialLoad) {
+        page.value = 1;
+      }
+      isInitialLoad = false;
       fetchConversations();
     },
     { deep: true, immediate: true }

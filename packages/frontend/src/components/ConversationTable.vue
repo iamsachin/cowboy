@@ -37,62 +37,70 @@
           </tr>
 
           <!-- Data rows -->
-          <tr
+          <template
             v-else
-            v-for="row in data.rows"
+            v-for="row in displayRows"
             :key="row.id"
-            class="cursor-pointer hover"
-            :class="{ 'row-highlight': newIds.has(row.id) }"
-            @click="router.push({ name: 'conversation-detail', params: { id: row.id } })"
           >
-            <td class="whitespace-nowrap">{{ formatDate(row.date) }}</td>
-            <td><AgentBadge :agent="row.agent" /></td>
-            <td>{{ row.project ?? '--' }}</td>
-            <td>
-              <div
-                class="max-w-[12rem] truncate"
-                :class="{ 'tooltip': row.model && row.model.length > 20 }"
-                :data-tip="row.model"
-              >
-                {{ row.model ?? '--' }}
-              </div>
-            </td>
-            <td>
-              <div class="max-w-[16rem] flex items-center gap-1.5">
-                <span
-                  v-if="('isActive' in row) && row.isActive"
-                  class="pulse-dot shrink-0"
-                  title="Running"
-                ></span>
-                <div class="truncate">{{ cleanTitle(row.title ?? '') || '--' }}</div>
+            <tr
+              class="cursor-pointer hover"
+              :class="{
+                'row-highlight': newIds.has(row.id),
+                'sub-row': row._isChild,
+              }"
+              @click="router.push({ name: 'conversation-detail', params: { id: row.id } })"
+            >
+              <td class="whitespace-nowrap" :class="{ 'pl-8 border-l-2 border-base-content/20': row._isChild }">
+                <span v-if="row._isChild" class="text-base-content/30 mr-1">&#x2514;</span>{{ formatDate(row.date) }}
+              </td>
+              <td><AgentBadge :agent="row.agent" /></td>
+              <td>{{ row.project ?? '--' }}</td>
+              <td>
                 <div
-                  v-if="row.hasCompaction"
-                  class="tooltip tooltip-top shrink-0"
-                  data-tip="Context was compacted"
+                  class="max-w-[12rem] truncate"
+                  :class="{ 'tooltip': row.model && row.model.length > 20 }"
+                  :data-tip="row.model"
                 >
-                  <Scissors class="w-3 h-3 text-amber-400" />
+                  {{ row.model ?? '--' }}
                 </div>
-              </div>
-            </td>
-            <td class="text-right font-mono">
-              {{ formatTokens(row.inputTokens + row.outputTokens) }}
-            </td>
-            <td class="whitespace-nowrap">
-              <template v-if="row.cost !== null">
-                <span class="text-primary font-mono">{{ formatCost(row.cost) }}</span>
-                <span v-if="row.savings !== null && row.savings > 0" class="text-success text-xs ml-1">
-                  (saved {{ formatCost(row.savings) }})
+              </td>
+              <td>
+                <div class="max-w-[16rem] flex items-center gap-1.5">
+                  <span
+                    v-if="('isActive' in row) && row.isActive"
+                    class="pulse-dot shrink-0"
+                    title="Running"
+                  ></span>
+                  <div class="truncate">{{ cleanTitle(row.title ?? '') || '--' }}</div>
+                  <div
+                    v-if="row.hasCompaction"
+                    class="tooltip tooltip-top shrink-0"
+                    data-tip="Context was compacted"
+                  >
+                    <Scissors class="w-3 h-3 text-amber-400" />
+                  </div>
+                </div>
+              </td>
+              <td class="text-right font-mono">
+                {{ formatTokens(row.inputTokens + row.outputTokens) }}
+              </td>
+              <td class="whitespace-nowrap">
+                <template v-if="row.cost !== null">
+                  <span class="text-primary font-mono">{{ formatCost(row.cost) }}</span>
+                  <span v-if="row.savings !== null && row.savings > 0" class="text-success text-xs ml-1">
+                    (saved {{ formatCost(row.savings) }})
+                  </span>
+                </template>
+                <span
+                  v-else
+                  class="text-base-content/40 tooltip"
+                  data-tip="Unknown model"
+                >
+                  N/A
                 </span>
-              </template>
-              <span
-                v-else
-                class="text-base-content/40 tooltip"
-                data-tip="Unknown model"
-              >
-                N/A
-              </span>
-            </td>
-          </tr>
+              </td>
+            </tr>
+          </template>
         </tbody>
       </table>
     </div>
@@ -142,6 +150,7 @@ import { Scissors } from 'lucide-vue-next';
 import AgentBadge from './AgentBadge.vue';
 import { formatCost } from '../utils/format-tokens';
 import { cleanTitle } from '../utils/content-sanitizer';
+import type { ConversationRow } from '@cowboy/shared';
 
 const props = defineProps<{
   agent?: string;
@@ -151,6 +160,20 @@ const router = useRouter();
 
 const agentRef = computed(() => props.agent);
 const { data, loading, refreshing, page, sortField, sortOrder, setSort, setPage, newIds } = useConversations(agentRef);
+
+const displayRows = computed(() => {
+  if (!data.value) return [];
+  const result: Array<ConversationRow & { _isChild?: boolean }> = [];
+  for (const row of data.value.rows) {
+    result.push(row);
+    if (row.children) {
+      for (const child of row.children) {
+        result.push({ ...child, _isChild: true });
+      }
+    }
+  }
+  return result;
+});
 
 const columns = [
   { field: 'date', label: 'Date' },

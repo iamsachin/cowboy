@@ -7,6 +7,8 @@
 [data-theme="forest"] {
   --color-primary: oklch(0.55 0.18 250);
   --color-primary-content: oklch(0.98 0 0);
+  --color-success: oklch(0.60 0.18 145);
+  --color-success-content: oklch(0.98 0 0);
 
   /* Chart theming: neutral tones that adapt with theme */
   --chart-grid: oklch(0.40 0 0 / 0.3);
@@ -31,6 +33,14 @@
 .badge-model-o3      { background-color: oklch(0.35 0.12 55);  color: oklch(0.80 0.12 55); }
 .badge-model-gemini  { background-color: oklch(0.35 0.12 250); color: oklch(0.80 0.12 250); }
 .badge-model-deepseek { background-color: oklch(0.35 0.12 220); color: oklch(0.80 0.12 220); }
+
+/* Sub-row (child conversation) styling */
+tr.sub-row {
+  background-color: oklch(0.25 0 0 / 0.3) !important;
+}
+tr.sub-row:hover {
+  background-color: oklch(0.3 0 0 / 0.4) !important;
+}
 
 /* Override highlight.js background so the DaisyUI container provides it */
 .hljs {

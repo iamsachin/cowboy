@@ -98,13 +98,18 @@
           </tr>
 
           <!-- Data rows -->
-          <template v-else v-for="row in data.rows" :key="row.id">
+          <template v-else v-for="row in displayRows" :key="row.id">
             <tr
               class="cursor-pointer hover"
-              :class="{ 'row-highlight': newIds.has(row.id) }"
+              :class="{
+                'row-highlight': newIds.has(row.id),
+                'sub-row': row._isChild,
+              }"
               @click="navigateToDetail(row.id)"
             >
-              <td class="whitespace-nowrap">{{ formatDate(row.date) }}</td>
+              <td class="whitespace-nowrap" :class="{ 'pl-8 border-l-2 border-base-content/20': row._isChild }">
+                <span v-if="row._isChild" class="text-base-content/30 mr-1">&#x2514;</span>{{ formatDate(row.date) }}
+              </td>
               <td>
                 <AgentBadge :agent="row.agent" />
               </td>
@@ -122,16 +127,12 @@
                     title="Running"
                   ></span>
                   <BotIcon
-                    v-if="row.parentConversationId"
+                    v-if="row._isChild"
                     class="w-3.5 h-3.5 text-info shrink-0"
                     title="Subagent"
                   />
                   <div class="min-w-0">
                     <div class="truncate">{{ cleanTitle(row.title ?? '') }}</div>
-                    <div
-                      v-if="row.parentTitle"
-                      class="text-xs text-base-content/50 truncate mt-0.5"
-                    >from: {{ row.parentTitle }}</div>
                     <div
                       v-if="searchQuery && 'snippet' in row && row.snippet"
                       class="text-xs text-base-content/60 truncate mt-0.5"
@@ -195,6 +196,7 @@ import { Bot as BotIcon } from 'lucide-vue-next';
 import AgentBadge from './AgentBadge.vue';
 import { AGENTS, AGENT_LABELS } from '../utils/agent-constants';
 import { cleanTitle } from '../utils/content-sanitizer';
+import type { ConversationRow } from '@cowboy/shared';
 
 const router = useRouter();
 
@@ -217,6 +219,20 @@ const {
   filterOptions,
   newIds,
 } = useConversationBrowser();
+
+const displayRows = computed(() => {
+  if (!data.value) return [];
+  const result: Array<ConversationRow & { _isChild?: boolean }> = [];
+  for (const row of data.value.rows) {
+    result.push(row);
+    if (row.children) {
+      for (const child of row.children) {
+        result.push({ ...child, _isChild: true });
+      }
+    }
+  }
+  return result;
+});
 
 const columns = [
   { field: 'date', label: 'Date' },

@@ -2,11 +2,11 @@ import websocket from '@fastify/websocket';
 import fp from 'fastify-plugin';
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { WebSocket } from 'ws';
-import type { WebSocketEvent } from '@cowboy/shared';
+import type { WebSocketEventPayload } from '@cowboy/shared';
 
 declare module 'fastify' {
   interface FastifyInstance {
-    broadcastEvent: (event: Omit<WebSocketEvent, 'seq'>) => void;
+    broadcastEvent: (event: WebSocketEventPayload) => void;
   }
 }
 
@@ -28,7 +28,7 @@ const websocketPluginInner: FastifyPluginAsync = async (app: FastifyInstance) =>
   });
 
   // Decorate app with typed broadcastEvent function
-  app.decorate('broadcastEvent', (event: Omit<WebSocketEvent, 'seq'>) => {
+  app.decorate('broadcastEvent', (event: WebSocketEventPayload) => {
     const payload = JSON.stringify({ ...event, seq: ++seq });
     for (const client of app.websocketServer.clients) {
       if (client.readyState === WebSocket.OPEN) {

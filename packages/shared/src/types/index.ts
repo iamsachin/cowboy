@@ -4,5 +4,5 @@ export type { ModelPricing } from './pricing.js';
 export { MODEL_PRICING, calculateCost } from './pricing.js';
 export type { Granularity } from './analytics.js';
 export { autoGranularity } from './analytics.js';
-export type { ChangeType, ConversationChangedEvent, ConversationCreatedEvent, SystemFullRefreshEvent, WebSocketEvent, WebSocketEventType } from './websocket-events.js';
+export type { ChangeType, ConversationChangedEvent, ConversationCreatedEvent, SystemFullRefreshEvent, WebSocketEvent, WebSocketEventType, WebSocketEventPayload } from './websocket-events.js';
 export { isConversationChanged, isConversationCreated, isSystemFullRefresh } from './websocket-events.js';

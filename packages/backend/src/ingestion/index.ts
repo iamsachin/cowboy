@@ -1,7 +1,8 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { db } from '../db/index.js';
 import { conversations, messages, toolCalls, tokenUsage, compactionEvents, plans, planSteps } from '../db/schema.js';
-import { eq, and, lte } from 'drizzle-orm';
+import { eq, and, lte, sql } from 'drizzle-orm';
+import type { WebSocketEventPayload, ChangeType } from '@cowboy/shared';
 import { discoverJsonlFiles } from './file-discovery.js';
 import { parseJsonlFile } from './claude-code-parser.js';
 import { normalizeConversation, type NormalizedData } from './normalizer.js';
@@ -19,7 +20,106 @@ import type { IngestionStats, IngestionStatus } from './types.js';
 export interface IngestionPluginOptions {
   basePath?: string;
   autoIngest?: boolean;
-  onIngestionComplete?: () => void;
+  onIngestionComplete?: (events: WebSocketEventPayload[]) => void;
+}
+
+/**
+ * Snapshot existing DB state for a conversation before the transaction,
+ * then compare after to determine what changed.
+ */
+interface ConversationSnapshot {
+  exists: boolean;
+  messageCount: number;
+  toolCallCount: number;
+  tokenUsageCount: number;
+  planCount: number;
+  status: string | null;
+  title: string | null;
+  model: string | null;
+}
+
+function snapshotConversation(conversationId: string): ConversationSnapshot {
+  const existingConv = db.select({
+    id: conversations.id,
+    status: conversations.status,
+    title: conversations.title,
+    model: conversations.model,
+  }).from(conversations).where(eq(conversations.id, conversationId)).get();
+
+  if (!existingConv) {
+    return { exists: false, messageCount: 0, toolCallCount: 0, tokenUsageCount: 0, planCount: 0, status: null, title: null, model: null };
+  }
+
+  const [msgCount] = db.select({ count: sql<number>`count(*)` }).from(messages).where(eq(messages.conversationId, conversationId)).all();
+  const [tcCount] = db.select({ count: sql<number>`count(*)` }).from(toolCalls).where(eq(toolCalls.conversationId, conversationId)).all();
+  const [tuCount] = db.select({ count: sql<number>`count(*)` }).from(tokenUsage).where(eq(tokenUsage.conversationId, conversationId)).all();
+  const [plCount] = db.select({ count: sql<number>`count(*)` }).from(plans).where(eq(plans.conversationId, conversationId)).all();
+
+  return {
+    exists: true,
+    messageCount: msgCount.count,
+    toolCallCount: tcCount.count,
+    tokenUsageCount: tuCount.count,
+    planCount: plCount.count,
+    status: existingConv.status,
+    title: existingConv.title,
+    model: existingConv.model,
+  };
+}
+
+function trackChanges(
+  conversationId: string,
+  normalizedData: NormalizedData,
+  snapshot: ConversationSnapshot,
+  collectedEvents: WebSocketEventPayload[],
+): void {
+  const now = new Date().toISOString();
+
+  if (!snapshot.exists) {
+    // New conversation
+    collectedEvents.push({
+      type: 'conversation:created',
+      conversationId,
+      summary: {
+        title: normalizedData.conversation.title ?? null,
+        agent: normalizedData.conversation.agent,
+        project: normalizedData.conversation.project ?? null,
+        createdAt: normalizedData.conversation.createdAt,
+      },
+      timestamp: now,
+    });
+    return;
+  }
+
+  // Existing conversation: compare counts
+  const changes: ChangeType[] = [];
+
+  const [newMsgCount] = db.select({ count: sql<number>`count(*)` }).from(messages).where(eq(messages.conversationId, conversationId)).all();
+  if (newMsgCount.count > snapshot.messageCount) changes.push('messages-added');
+
+  const [newTcCount] = db.select({ count: sql<number>`count(*)` }).from(toolCalls).where(eq(toolCalls.conversationId, conversationId)).all();
+  if (newTcCount.count > snapshot.toolCallCount) changes.push('tool-calls-added');
+
+  const [newTuCount] = db.select({ count: sql<number>`count(*)` }).from(tokenUsage).where(eq(tokenUsage.conversationId, conversationId)).all();
+  if (newTuCount.count > snapshot.tokenUsageCount) changes.push('tokens-updated');
+
+  const [newPlCount] = db.select({ count: sql<number>`count(*)` }).from(plans).where(eq(plans.conversationId, conversationId)).all();
+  if (newPlCount.count > snapshot.planCount) changes.push('plan-updated');
+
+  // Check status change
+  const updatedConv = db.select({ status: conversations.status, title: conversations.title, model: conversations.model })
+    .from(conversations).where(eq(conversations.id, conversationId)).get();
+  if (updatedConv && updatedConv.status !== snapshot.status) changes.push('status-changed');
+  if (updatedConv && (updatedConv.title !== snapshot.title || updatedConv.model !== snapshot.model)) changes.push('metadata-changed');
+
+  if (changes.length > 0) {
+    collectedEvents.push({
+      type: 'conversation:changed',
+      conversationId,
+      changes,
+      timestamp: now,
+    });
+  }
 }
 
 /**
@@ -170,6 +270,8 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
       app.log.error({ err }, 'Data quality migration failed (non-fatal)');
     }
 
+    const collectedEvents: WebSocketEventPayload[] = [];
+
     try {
       const files = await discoverJsonlFiles(basePath);
       stats.filesScanned = files.length;
@@ -189,6 +291,9 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
             status.progress.filesProcessed++;
             continue;
           }
+
+          // Snapshot state before transaction for diff tracking
+          const snapshot = snapshotConversation(normalizedData.conversation.id);
 
           // Wrap database inserts in a synchronous transaction
           db.transaction((tx) => {
@@ -234,6 +339,9 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
             // Extract plans from assistant messages
             insertExtractedPlans(tx, normalizedData);
           });
+
+          // Track what changed after transaction committed
+          trackChanges(normalizedData.conversation.id, normalizedData, snapshot, collectedEvents);
 
           stats.conversationsFound++;
           stats.messagesParsed += normalizedData.messages.length;
@@ -373,6 +481,9 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
               const normalizedData = normalizeCursorConversation(conv, bubbles, cursorProject);
               if (!normalizedData) continue;
 
+              // Snapshot state before transaction for diff tracking
+              const cursorSnapshot = snapshotConversation(normalizedData.conversation.id);
+
               db.transaction((tx) => {
                 tx.insert(conversations)
                   .values(normalizedData.conversation)
@@ -410,6 +521,9 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
                 insertExtractedPlans(tx, normalizedData);
               });
 
+              // Track what changed after transaction committed
+              trackChanges(normalizedData.conversation.id, normalizedData, cursorSnapshot, collectedEvents);
+
               stats.conversationsFound++;
               stats.messagesParsed += normalizedData.messages.length;
               stats.toolCallsExtracted += normalizedData.toolCalls.length;
@@ -444,8 +558,8 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
         completedAt: new Date().toISOString(),
         stats,
       };
-      app.log.info({ stats }, 'Ingestion complete');
-      opts.onIngestionComplete?.();
+      app.log.info({ stats, events: collectedEvents.length }, 'Ingestion complete');
+      opts.onIngestionComplete?.(collectedEvents);
     }
   }
 

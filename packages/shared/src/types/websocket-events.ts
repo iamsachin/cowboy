@@ -45,6 +45,12 @@ export type WebSocketEvent =
 
 export type WebSocketEventType = WebSocketEvent['type'];
 
+/** Distributive Omit that preserves discriminated union */
+export type WebSocketEventPayload =
+  | Omit<ConversationChangedEvent, 'seq'>
+  | Omit<ConversationCreatedEvent, 'seq'>
+  | Omit<SystemFullRefreshEvent, 'seq'>;
+
 // Type guards
 export function isConversationChanged(e: WebSocketEvent): e is ConversationChangedEvent {
   return e.type === 'conversation:changed';

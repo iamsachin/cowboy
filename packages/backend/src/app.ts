@@ -36,8 +36,10 @@ export async function buildApp(opts?: AppOptions): Promise<FastifyInstance> {
   await app.register(ingestionPlugin, {
     prefix: '/api',
     ...opts?.ingestion,
-    onIngestionComplete: () => {
-      app.broadcastEvent({ type: 'system:full-refresh', timestamp: new Date().toISOString() });
+    onIngestionComplete: (events) => {
+      for (const event of events) {
+        app.broadcastEvent(event);
+      }
     },
   });
 

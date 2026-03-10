@@ -1,177 +1,323 @@
 # Feature Research
 
-**Domain:** Electron desktop wrapper for existing Vue 3 + Vite + Fastify analytics dashboard
+**Domain:** Tauri v2 desktop app port -- Rust backend replacing Node.js/Fastify for a coding agent analytics dashboard
 **Researched:** 2026-03-11
-**Confidence:** HIGH (Electron APIs for these features are stable and well-documented; the app's architecture cleanly separates frontend/backend already)
+**Confidence:** HIGH
 
 ## Context
 
-This research covers v3.0 Electron Desktop App features only. The existing web app (~30,272 LOC) is fully functional and must load unchanged inside the Electron shell. The scope is strictly the Electron wrapper layer: window chrome, tray/dock presence, menu bar, child process management, and BrowserWindow loading.
+This research covers the v3.0 Tauri Desktop App milestone. The existing web app (~30,272 LOC) has a fully functional Vue 3 + DaisyUI frontend that must load unchanged in a Tauri webview. The backend (~6,155 lines of TypeScript across 34 files) must be rewritten in Rust. The scope covers: (A) mapping every TypeScript backend module to its Rust equivalent, (B) Tauri v2 desktop features (tray, menu, close-to-tray, webview loading), and (C) expected behavior for each feature.
 
-**Already built (not in scope):**
-- Full Vue 3 + DaisyUI frontend on Vite (port 5173 dev, built to dist/)
-- Fastify backend on port 3000 with SQLite + Drizzle + chokidar file watcher
-- WebSocket live updates, keyboard shortcuts, command palette, all UI components
-- Frontend proxies /api to backend in dev via Vite config
+**Already built (frontend stays unchanged):**
+- Vue 3 + DaisyUI frontend on Vite (port 5173 dev, built to dist/)
+- All UI components, keyboard shortcuts, command palette, tool viewers
+- WebSocket client, fetch-based API calls to /api/* endpoints
 
-**Key architectural fact:** The frontend and backend are separate processes communicating over HTTP/WebSocket on localhost. This maps naturally to Electron: main process spawns the backend as a child, loads the frontend in a BrowserWindow.
+**Key architectural decision:** The Rust backend runs an embedded axum HTTP server on localhost. The Vue frontend in the Tauri webview connects to it over HTTP/WebSocket -- identical to how it talks to Fastify today. Zero frontend changes needed.
 
-## Table Stakes
+## Feature Landscape
 
-Features users expect from a desktop-wrapped app. Missing any of these makes it feel like a broken web page in a frame.
+### Table Stakes (Users Expect These)
+
+Everything the existing app does is table stakes. This is a port, not a new product. Any missing feature is a regression.
+
+#### A. Rust Backend -- Module-by-Module Port Map
+
+| TS Module | TS Lines | Rust Crate/Module | Complexity | Dependencies | Notes |
+|-----------|----------|-------------------|------------|--------------|-------|
+| **db/schema.ts** | 107 | SQL CREATE TABLE in migrations/ | LOW | rusqlite | 8 tables: conversations, messages, tool_calls, token_usage, plans, plan_steps, compaction_events, ingested_files, settings. Drizzle schema is a 1:1 mapping to DDL. Write raw SQL. |
+| **db/index.ts** | 31 | `db::pool` module -- `r2d2_sqlite::SqliteConnectionManager` | LOW | r2d2, rusqlite | Wrap connection in pool. Single-connection pool is fine for localhost. Enables safe sharing across tokio tasks. |
+| **db/migrate.ts** | 8 | `db::migrate` -- run embedded SQL at startup | LOW | rusqlite | `CREATE TABLE IF NOT EXISTS` for all tables. Run once at app boot before server starts. |
+| **db/queries/analytics.ts** | 1,029 | `queries::analytics` module | HIGH | rusqlite, serde | **Largest module.** 10 functions: getOverviewStats, getTimeSeries, getModelDistribution, getToolStats, getHeatmapData, getProjectStats, getConversationList, getConversationDetail, getFilterOptions, getTokenRate. Each builds dynamic SQL with optional WHERE clauses for date range, agent, project filters. Port as parameterized SQL strings with conditional appends. The SQL itself transfers nearly verbatim from Drizzle's generated output. |
+| **db/queries/plans.ts** | 307 | `queries::plans` module | MEDIUM | rusqlite, serde | 5 functions: getPlanList, getPlanDetail, getPlanStats, getPlanTimeSeries, getPlansByConversation. Same dynamic SQL pattern as analytics. |
+| **db/queries/settings.ts** | 105 | `queries::settings` module | LOW | rusqlite, serde | getSettings (auto-seeds default row), updateAgentSettings, updateSyncSettings, updateSyncStatus. Single-row CRUD operations. |
+| **ingestion/claude-code-parser.ts** | 302 | `ingestion::claude_code_parser` | MEDIUM | serde_json, std::io::BufReader | Line-by-line JSONL parsing. Read file, split by newline, parse each line as JSON. Extract conversation structure (messages, tool calls, token usage). Rust serde_json + BufReader is a natural fit and will be significantly faster. |
+| **ingestion/normalizer.ts** | 377 | `ingestion::normalizer` | MEDIUM | serde, custom structs | Converts raw parsed Claude Code data into normalized schema structs (NormalizedData: conversation, messages, tool_calls, token_usage, compaction_events). Pure data transformation. Title extraction, model derivation, streaming deduplication, XML stripping. |
+| **ingestion/cursor-parser.ts** | 133 | `ingestion::cursor_parser` | MEDIUM | rusqlite | Opens Cursor's state.vscdb (a SQLite database in globalStorage), reads composer rows and bubble data. rusqlite handles this natively -- open a second read-only connection to Cursor's DB. |
+| **ingestion/cursor-normalizer.ts** | 381 | `ingestion::cursor_normalizer` | MEDIUM | serde | Normalizes Cursor bubbles into the same NormalizedData shape. Assistant content extraction, workspace path derivation. |
+| **ingestion/cursor-file-discovery.ts** | 31 | `ingestion::cursor_discovery` | LOW | dirs, std::fs | Finds Cursor's globalStorage path: `~/Library/Application Support/Cursor/User/globalStorage` on macOS. Use `dirs` crate for platform-safe home directory. |
+| **ingestion/file-discovery.ts** | 133 | `ingestion::file_discovery` | LOW | walkdir | Recursively discovers JSONL files under `~/.claude/projects`. Identifies subagent files by path structure. Use `walkdir` crate for recursive directory traversal. Detect `subagents/` path segment for subagent identification. |
+| **ingestion/index.ts** | 661 | `ingestion::engine` | HIGH | All ingestion modules, rusqlite, tokio | **Integration hub.** Orchestrates: discover files, check mtime cache (ingested_files table), parse, normalize, snapshot DB state, insert in transaction, diff snapshots for WS events, subagent linking (2 phases), Cursor ingestion, mark stale conversations. This is the most complex module -- port as a single `run_ingestion()` async fn. |
+| **ingestion/plan-extractor.ts** | 296 | `ingestion::plan_extractor` | MEDIUM | regex | Extracts numbered plan steps from assistant message content using regex patterns. Infers step completion by cross-referencing later messages and tool calls. Rust regex crate is well-suited. |
+| **ingestion/subagent-linker.ts** | 179 | `ingestion::subagent_linker` | MEDIUM | -- | Three-phase matching: (1) filesystem path for parent-child linking, (2) agentId matching, (3) description/position heuristics. Pure logic, no external dependencies. |
+| **ingestion/subagent-summarizer.ts** | 86 | `ingestion::subagent_summarizer` | LOW | serde_json | Extracts summary stats (tool counts, token totals, duration) from parsed subagent data. Simple aggregation. |
+| **ingestion/compaction-utils.ts** | 44 | `ingestion::compaction_utils` | LOW | serde_json | Detects compaction events in JSONL data by checking for summary-type entries. |
+| **ingestion/migration.ts** | 499 | `ingestion::data_migration` | MEDIUM | rusqlite | Idempotent data quality fixes run at each ingestion: title cleanup, model backfill, Cursor project fixes, content deduplication, stale link clearing. Port as raw SQL UPDATE statements. Runs in a transaction. |
+| **ingestion/title-utils.ts** | 88 | `ingestion::title_utils` | LOW | regex | Skip logic for system caveats, interruptions, slash commands during title extraction. String pattern matching. |
+| **ingestion/id-generator.ts** | 13 | `ingestion::id_gen` | LOW | sha2 | Deterministic ID generation: SHA-256 hash of concatenated input strings. Use `sha2` crate. |
+| **ingestion/types.ts** | 93 | `ingestion::types` | LOW | serde | Type definitions become Rust structs with `#[derive(Serialize, Deserialize)]`. DiscoveredFile, IngestionStats, IngestionStatus, NormalizedData. |
+| **routes/analytics.ts** | 130 | `routes::analytics` | LOW | axum | 10 thin handler functions. Parse query parameters, call query module, return JSON. axum extractors (`Query<>`, `Path<>`) make this concise. |
+| **routes/plans.ts** | 82 | `routes::plans` | LOW | axum | 5 handlers. Same thin-wrapper pattern. |
+| **routes/settings.ts** | 258 | `routes::settings` | LOW | axum, tokio | 10 handlers including validate-path (async fs check), test-sync (reqwest POST), clear-db, refresh-db, db-stats. Slightly more logic than other routes because of path validation and sync testing. |
+| **routes/health.ts** | 24 | `routes::health` | LOW | axum, rusqlite | Single endpoint: `SELECT 1` to verify DB connection. |
+| **plugins/websocket.ts** | 52 | `ws::broadcast` module | MEDIUM | axum (WebSocket), tokio | WebSocket upgrade handler at `/api/ws`. Maintain `Arc<RwLock<Vec<SplitSink>>>` for connected clients. `broadcast_event()` serializes payload and sends to all. Sequence counter for ordering. axum has built-in WebSocket support via `ws::WebSocketUpgrade`. |
+| **plugins/file-watcher.ts** | 227 | `watcher` module | MEDIUM | notify, tokio | Watch directories for file changes. Two watchers with different debounce timers: Claude Code (1s for JSONL changes), Cursor (3s for state.vscdb changes). `notify` crate is the standard Rust file watcher. Use tokio timers for debounce. Must support restart with new paths from settings. |
+| **plugins/sync-scheduler.ts** | 270 | `sync` module | MEDIUM | reqwest, tokio | Periodic sync to remote endpoint. Exponential backoff retry (3 retries, 5s-60s). tokio::time::interval for scheduling. reqwest for HTTP POST. Read settings from DB for URL/frequency/categories. Build incremental payload from sync cursor. |
+| **plugins/cors.ts** | ~15 | tower-http `CorsLayer` | LOW | tower-http | Dev-mode only. `CorsLayer::permissive()` or specific origin. |
+| **plugins/static.ts** | ~15 | Not needed | -- | -- | Tauri handles serving frontend assets directly. No static file serving needed in the Rust backend. |
+| **shared/types/pricing.ts** | 77 | `pricing` module | LOW | -- | Static `MODEL_PRICING` HashMap + `calculate_cost()` function. Direct port of the pricing table. No external dependencies. |
+| **shared/types/websocket-events.ts** | 66 | `events` module | LOW | serde | TypeScript discriminated union becomes Rust enum: `#[serde(tag = "type")] enum WebSocketEvent { ConversationChanged {...}, ConversationCreated {...}, SystemFullRefresh {...} }`. |
+| **app.ts** | 65 | `main.rs` / `lib.rs` + Tauri setup | MEDIUM | axum, tauri, tokio | Wire axum router with all routes, spawn server on tokio runtime from Tauri's `setup()` hook. This is the integration point. |
+
+**Total backend TypeScript to port: ~5,800 lines across 30+ files. Estimated Rust output: 4,000-5,000 lines.**
+
+#### B. Tauri Desktop Shell Features
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| **BrowserWindow loading Vite dev server or built files** | The entire app must appear inside the Electron window. In dev, load `http://localhost:5173`; in production, load `file://path/to/dist/index.html`. This is the fundamental feature. | LOW | Use `MAIN_WINDOW_VITE_DEV_SERVER_URL` env var or equivalent check. `win.loadURL(devUrl)` vs `win.loadFile(path.join(__dirname, '../renderer/index.html'))`. The frontend already works standalone; no code changes needed in Vue app. |
-| **Fastify backend as managed child process** | The analytics backend must start automatically when the app launches and stop cleanly on quit. Users should not need to run a separate terminal command. | MEDIUM | Use `child_process.fork()` with `ELECTRON_RUN_AS_NODE=1` to run the backend entry point. Must handle: startup wait (backend ready before loading frontend), graceful shutdown (SIGTERM on app quit), crash restart, and port conflict detection. The `better-sqlite3` native module needs `electron-rebuild` to compile against Electron's Node version. |
-| **Native macOS window chrome (traffic lights)** | macOS users expect the red/yellow/green window controls and native-feeling title bar. A completely frameless window feels wrong for a dashboard app. | LOW | `titleBarStyle: 'hiddenInset'` gives native traffic lights inset from the edge while hiding the title bar text. Add `titleBarOverlay: true` or CSS `padding-top` (~28px) for drag region. The existing DaisyUI navbar becomes the visual title area. No changes to Vue components needed. |
-| **Dock icon presence** | macOS apps live in the Dock. The app must show a proper icon when running, not a generic Electron logo. | LOW | Provide a 512x512 .icns icon file. Set via `icon` in BrowserWindow options and in the build config. Dock is automatic on macOS when the app has a window open. |
-| **System tray icon with context menu** | A tray icon in the macOS menu bar provides quick access when the window is hidden. Must show a context menu with at minimum: Show Window, Quit. | LOW | Create `Tray` instance after `app.ready`. Use a 20x20 (+ @2x 40x40) template image for macOS menu bar. Attach `Menu.buildFromTemplate([{ label: 'Show Cowboy', click: showWindow }, { type: 'separator' }, { label: 'Quit', click: app.quit }])`. Store tray reference globally to prevent GC. |
-| **Minimal application menu bar (About + Quit)** | macOS requires an application menu. Without one, Cmd+Q does not work and the app name shows as "Electron" in the menu bar. | LOW | Use `Menu.buildFromTemplate([{ role: 'appMenu', submenu: [{ role: 'about' }, { type: 'separator' }, { role: 'quit' }] }, { role: 'editMenu' }])`. The `editMenu` role is important -- without it, Cmd+C/V/X/A do not work in the BrowserWindow. Two menu items total: app name menu and Edit menu. |
-| **Close-to-tray behavior** | Clicking the red X should hide the window, not quit the app. The backend file watcher must keep running to collect data. Re-clicking the dock icon or tray icon brings the window back. | MEDIUM | Intercept `BrowserWindow.on('close')`, call `event.preventDefault()` and `win.hide()`. On tray click or `app.on('activate')` (dock click), call `win.show()`. Set a `isQuitting` flag on `app.on('before-quit')` to allow actual quit from Cmd+Q or tray Quit. `app.dock.hide()` when window is hidden is optional -- keeping dock icon visible is more standard for dashboard apps. |
+| **Native macOS window chrome** | Desktop app must have native traffic lights and window behavior, not look like a web page in a frame | LOW | Default Tauri v2 behavior. `decorations: true` in tauri.conf.json. Tauri uses WKWebView on macOS which provides native window controls automatically. |
+| **Dock icon** | macOS apps always appear in the Dock when running | LOW | Automatic with Tauri. Provide a 512x512 PNG icon set in `tauri.conf.json > bundle > icon`. Tauri generates all required sizes. |
+| **System tray icon with menu** | Always-running analytics app needs persistent presence in menu bar | MEDIUM | Enable `tray-icon` feature in Cargo.toml: `tauri = { features = ["tray-icon", "image-png"] }`. Create `TrayIconBuilder` in setup with menu: "Show Cowboy", separator, "Quit". Left-click shows/focuses window. |
+| **Minimal native menu bar** | macOS apps require an app menu for Cmd+Q to work and app name to display correctly | LOW | Tauri v2 `Menu` API. First submenu becomes app menu on macOS (automatic). Items: `.about()`, `.separator()`, `.hide()`, `.hide_others()`, `.show_all()`, `.separator()`, `.quit()`. Must add Edit submenu for Cmd+C/V/X clipboard. |
+| **Close-to-tray** | Window close should hide (not quit) so file watcher and ingestion keep running in background | MEDIUM | In Tauri's `on_window_event`, handle `WindowEvent::CloseRequested`: call `window.hide().unwrap()` and `event.prevent_close()`. Tray "Show" calls `window.show()` + `window.set_focus()`. Cmd+Q via menu should actually quit. |
+| **Vue frontend in webview (dev)** | Developer workflow: Vite HMR, fast iteration | LOW | Set `devUrl: "http://localhost:5173"` in tauri.conf.json. `beforeDevCommand: "cd packages/frontend && npm run dev"`. Tauri dev server proxies to Vite. |
+| **Vue frontend in webview (prod)** | Production build: frontend embedded in binary | LOW | Set `frontendDist: "../packages/frontend/dist"` in tauri.conf.json. `beforeBuildCommand: "cd packages/frontend && npm run build"`. Assets bundled into the Tauri binary. |
+| **Embedded axum server** | REST API and WebSocket must be reachable from the webview | MEDIUM | Spawn axum on `127.0.0.1:3000` from Tauri's `setup()` hook using `tauri::async_runtime::spawn()`. Frontend connects to `http://localhost:3000/api/*`. Server runs on tokio runtime alongside Tauri event loop. |
 
-## Differentiators
+### Differentiators (Competitive Advantage)
 
-Features that elevate the experience beyond a minimal wrapper. Not required for v3.0 to feel complete, but create polish.
+Features the desktop form factor enables that the browser version cannot provide.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| **Backend health monitoring** | Show a status indicator (tray icon color or tooltip) reflecting whether the Fastify backend is healthy. Detect crashes and auto-restart. | MEDIUM | Periodic HTTP health check to `http://localhost:3000/api/health` (add a simple health endpoint if not present). On failure, respawn child process. Update tray icon tooltip to "Cowboy -- Backend: running" or "restarting...". |
-| **Startup splash / loading state** | Show a brief loading screen while the backend starts up (SQLite migrations, file watcher initialization). Prevents a white flash or connection error in the BrowserWindow. | LOW | Load a minimal HTML file first (`loading.html` with a spinner), then swap to the real app URL once the backend health check passes. Or use `win.once('ready-to-show', () => win.show())` to delay showing until content is rendered. |
-| **Window state persistence** | Remember window size and position across app restarts. | LOW | Use `electron-window-state` package or manually save bounds to a JSON file in `app.getPath('userData')` on `resize`/`move` events. Restore on next launch. |
-| **Single instance lock** | Prevent launching multiple copies of the app, which would cause port conflicts on 3000/5173. | LOW | `app.requestSingleInstanceLock()`. On `second-instance` event, focus the existing window. Critical because the Fastify backend binds to a fixed port. |
-| **Tray tooltip with live stats** | Show "Cowboy -- 3 active conversations, 12.4k tokens/min" as the tray icon tooltip. Leverages the existing token rate endpoint from v2.1. | LOW | Periodic fetch to the token rate API from the main process. Update `tray.setToolTip()`. |
-| **Dock badge with active count** | Show the number of currently active conversations as a dock badge number. | LOW | `app.dock.setBadge(String(count))`. Fetch from existing `/api/analytics/overview` endpoint. Clear badge when no conversations are active. |
-| **Native notifications for long-running conversations** | "Conversation X finished after 45 minutes, 234k tokens" as a macOS notification. | MEDIUM | Use Electron `Notification` API. Requires tracking conversation start/end from the WebSocket events. Only useful for conversations that exceed a duration threshold. |
+| **Reduced memory footprint** | WKWebView uses ~60-80% less memory than a Chrome tab with equivalent content | LOW | Automatic benefit of Tauri over browser. No implementation work. |
+| **Single process architecture** | No separate terminal needed to start backend. One app, one process, everything wired together | LOW | Inherent to the Tauri + embedded axum design. Users just launch the app. |
+| **Window state persistence** | Remember window size/position across restarts | LOW | Save bounds to a JSON file in Tauri's `app_data_dir` on window move/resize. Restore on next launch. Defer to v3.1. |
+| **Auto-start on login** | Analytics always running, never miss data from overnight sessions | LOW | macOS LaunchAgent plist. Not part of Tauri. Defer to v3.1. |
+| **Native notifications** | Alert on cost thresholds or long-running conversations | MEDIUM | Tauri v2 notification plugin. Defer to future. |
+| **Tray tooltip with live stats** | "Cowboy -- 3 active, 12.4k tok/min" in menu bar tooltip | LOW | Periodic fetch from token-rate API. `tray.set_tooltip()`. Defer to v3.1. |
 
-## Anti-Features
-
-Features to explicitly NOT build for v3.0.
+### Anti-Features (Commonly Requested, Often Problematic)
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| **Distributable installer / .dmg** | Natural expectation for Electron apps. | PROJECT.md explicitly marks this out of scope. Personal use only, run from source. Adds electron-builder/electron-forge complexity, code signing, notarization. | `npm run electron:dev` for development, `npm run electron:start` for production-like local run. |
-| **Auto-update mechanism** | Standard for distributed Electron apps. | No distribution = no need for updates. The app runs from the git repo. `git pull` is the update mechanism. | Document "git pull && npm install && rebuild" in README. |
-| **Global keyboard shortcuts** | Register Cmd+Shift+C globally to show Cowboy from any app. | Global shortcuts conflict with other apps, require accessibility permissions on macOS, and are hard to debug. Out of scope per PROJECT.md. | Tray icon click and dock icon click are sufficient to surface the app. |
-| **Deep links (cowboy:// protocol)** | Open specific conversations from external links. | Protocol handlers require registration, add complexity, and are out of scope per PROJECT.md. Personal use does not need cross-app linking. | The app has its own URL routing; navigate within the BrowserWindow. |
-| **Multiple windows** | Open different conversations in separate windows. | Adds window management complexity (multiple BrowserWindow instances, shared state, IPC). The existing app is a single-page app with its own routing. | Use the existing in-app navigation. Browser tabs equivalent is not needed for a personal tool. |
-| **Custom native title bar** | Replace the entire title bar with a custom-drawn one for branding. | `titleBarStyle: 'hiddenInset'` already provides native traffic lights. A custom title bar means implementing drag regions, double-click-to-maximize, and platform-specific behavior manually. | Use `hiddenInset` and let the existing DaisyUI navbar serve as the visual header. |
-| **electron-vite or vite-plugin-electron** | Integrate Vite into the Electron build pipeline for HMR in the main process. | The existing app already has separate dev scripts for frontend (Vite) and backend (tsx watch). Adding electron-vite would restructure the monorepo and change the working dev workflow. Overkill when the frontend is loaded via URL in dev. | Keep the existing Vite dev server for frontend. The Electron main process is a thin wrapper (~100-150 lines) that does not need HMR -- restart is fast. |
-| **IPC bridge for renderer-to-main communication** | Expose Electron APIs (file dialogs, native menus) to the Vue app via preload script. | The Vue app works entirely over HTTP/WebSocket to the Fastify backend. There is no feature that requires native Electron APIs from the renderer. Adding IPC creates a coupling between the frontend and Electron that makes the web-only mode impossible. | Keep the frontend Electron-agnostic. All data flows through Fastify HTTP/WS. |
+| **Tauri IPC commands replacing REST API** | "Native IPC is faster than HTTP" | Requires rewriting every frontend `fetch()` call to use `invoke()`. ~50+ API calls in the Vue app would need migration. HTTP on localhost adds <1ms latency -- imperceptible. | Keep axum REST API. Frontend stays 100% unchanged. The Vue app does not know it is in Tauri. |
+| **SQLite via tauri-plugin-sql** | "Use the official plugin" | Designed for simple KV storage, not 1,029-line analytics query modules with dynamic WHERE clauses, GROUP BY, aggregations, and subqueries. | Use rusqlite directly. Full SQL control, easy port from Drizzle-generated queries. |
+| **Diesel or SeaORM** | "ORMs are safer" | The existing queries use dynamic filter composition (optional date range, agent, project, search). ORMs add compile-time overhead and fight dynamic query building. rusqlite with parameterized SQL is simpler to port from Drizzle. | Raw rusqlite with `params![]` and SQL string building. |
+| **Rewrite frontend for Tauri invoke()** | "Full native experience" | 30,000 LOC Vue frontend works perfectly. Rewriting API layer is weeks of work with zero user-visible benefit. | Frontend unchanged. It talks HTTP/WS to localhost axum. |
+| **Multiple windows** | "Open conversations in separate windows" | Adds Tauri multi-window state management complexity. Single window with Vue router is simpler and already works. | Single window, Vue router handles all navigation. |
+| **Distributable .dmg / auto-updater** | Standard for desktop apps | PROJECT.md explicitly out of scope. Personal use only. Adds code signing, notarization, Sparkle integration. | Run from source: `cargo tauri dev` or `cargo tauri build`. |
+| **Global shortcuts** | "Cmd+Shift+C to toggle from anywhere" | Conflicts with other apps, requires accessibility permissions on macOS. Out of scope per PROJECT.md. | Dock icon click and tray icon click are sufficient. |
 
 ## Feature Dependencies
 
 ```
-Electron main process setup
-    --> BrowserWindow creation (titleBarStyle, icon, dimensions)
-        --> Loading state (show loading.html while backend starts)
-            --> Load Vite dev server URL or built index.html
-    --> Tray icon with context menu
-        --> Close-to-tray behavior (intercept close, hide window, tray restores)
-    --> Application menu (About, Quit, Edit for clipboard)
-    --> Child process: fork Fastify backend
-        --> Wait for backend ready (health check loop)
-            --> BrowserWindow loads app URL
-        --> Graceful shutdown on app quit
-        --> Crash detection and restart (enhancement)
+[SQLite schema + migrations]
+    |
+    v
+[rusqlite connection pool]
+    |
+    +-------> [Query modules: analytics(10), plans(5), settings(3)]
+    |              |
+    |              v
+    |         [axum route handlers (~30 endpoints)]
+    |              |
+    |              v
+    |         [axum Router assembled]  <-----+
+    |              |                         |
+    |              v                         |
+    |         [WebSocket broadcast module]   |
+    |              ^                         |
+    |              |                         |
+    +-------> [Ingestion engine] ------------+
+    |              ^           |
+    |              |           v
+    |              |     [Parsers: claude-code, cursor]
+    |              |           |
+    |              |           v
+    |              |     [Normalizers: claude-code, cursor]
+    |              |           |
+    |              |           v
+    |              |     [Subagent linker + summarizer]
+    |              |           |
+    |              |           v
+    |              |     [Plan extractor]
+    |              |
+    +-------> [File watcher (notify crate)]
+    |
+    +-------> [Sync scheduler (reqwest + tokio)]
+    |
+    +-------> [Pricing/cost calculation]
 
-Single instance lock
-    --> Must be first thing in app startup (before any windows)
-
-Window state persistence (enhancement)
-    --> Reads saved bounds on BrowserWindow creation
-    --> Saves bounds on resize/move events
-
-electron-rebuild for better-sqlite3
-    --> Must run after npm install, before app can start
-    --> Required because Electron bundles its own Node.js version
+[Tauri app setup]
+    |
+    +-------> [Spawn axum server in setup() hook]
+    |              |
+    |              v
+    |         [Frontend webview loads after server ready]
+    |
+    +-------> [TrayIcon + menu]
+    |              |
+    |              v
+    |         [Close-to-tray behavior]
+    |
+    +-------> [App menu bar (About, Quit, Edit)]
+    |
+    +-------> [Window configuration (decorations, size, icon)]
 ```
 
 ### Dependency Notes
 
-- **Backend must start before frontend loads:** The BrowserWindow cannot load the app until Fastify is listening on port 3000. A loading screen or delayed `win.show()` bridges this gap.
-- **Tray must exist before close-to-tray works:** The close handler hides the window; the tray provides the way to get it back.
-- **Single instance lock prevents port conflicts:** Must be the very first check in the Electron entry point.
-- **electron-rebuild is a one-time setup concern:** Needed because `better-sqlite3` is a native Node addon compiled against system Node, but Electron uses a different Node version. The `electron-rebuild` package recompiles it. This is a build/install step, not a runtime feature.
-- **Edit menu is silently required:** Without `{ role: 'editMenu' }`, Cmd+C/V/X/A stop working in the BrowserWindow because macOS requires menu items to bind those shortcuts.
+- **Schema must exist before anything runs:** Migrations are the first thing executed at startup.
+- **Query modules depend on schema:** They issue SQL against the tables.
+- **Route handlers depend on query modules:** Thin wrappers that call query functions.
+- **WebSocket module is bidirectional:** Routes and ingestion both need it. Build it independently, inject via shared state.
+- **Ingestion depends on parsers, normalizers, and DB:** The integration hub that ties parsing to storage.
+- **File watcher triggers ingestion:** Debounced file change events call `run_ingestion()`.
+- **axum server must start before webview loads:** Tauri setup() spawns the server, frontend connects on load.
+- **Close-to-tray requires tray icon:** The tray provides the "Show" action to restore the hidden window.
+- **Pricing module is standalone:** No dependencies. Used by frontend (shared types) and could be used by backend queries.
 
 ## MVP Definition
 
 ### Launch With (v3.0)
 
-Minimum viable Electron wrapper -- the app works as a desktop app with native feel.
+This is a complete port. Every feature below is required for functional parity.
 
-- [ ] **Electron main process entry point** -- app lifecycle, single instance lock
-- [ ] **BrowserWindow with hiddenInset chrome** -- native traffic lights, proper sizing
-- [ ] **Fastify backend as child process** -- fork, wait for ready, graceful shutdown
-- [ ] **Dev/prod URL loading** -- loadURL for dev server, loadFile for built assets
-- [ ] **System tray with context menu** -- Show/Quit, template icon
-- [ ] **Close-to-tray behavior** -- hide on X, restore on tray/dock click
-- [ ] **Minimal application menu** -- app menu (About, Quit) + edit menu (clipboard shortcuts)
-- [ ] **electron-rebuild for better-sqlite3** -- native module compatibility
+**Rust Backend (all P1):**
+- [ ] SQLite schema creation + rusqlite connection pool
+- [ ] Analytics query module (10 functions, 1029 TS lines)
+- [ ] Plans query module (5 functions, 307 TS lines)
+- [ ] Settings query module (CRUD, 105 TS lines)
+- [ ] Claude Code JSONL parser (302 TS lines)
+- [ ] Claude Code normalizer (377 TS lines)
+- [ ] Cursor SQLite parser (133 TS lines)
+- [ ] Cursor normalizer (381 TS lines)
+- [ ] File discovery -- both agents (164 TS lines)
+- [ ] Ingestion engine orchestrator (661 TS lines)
+- [ ] Plan extractor + step inference (296 TS lines)
+- [ ] Subagent linker + summarizer (265 TS lines)
+- [ ] Data quality migration (499 TS lines)
+- [ ] ID generator, title utils, compaction utils (145 TS lines)
+- [ ] Type definitions as Rust structs (159 TS lines)
+- [ ] axum route handlers -- 30 endpoints across 4 route files (494 TS lines)
+- [ ] WebSocket broadcast server (52 TS lines)
+- [ ] File watcher with per-agent debounce (227 TS lines)
+- [ ] Sync scheduler with retry (270 TS lines)
+- [ ] Pricing table + cost calculation (77 TS lines)
+- [ ] CORS middleware (dev mode only)
+
+**Tauri Desktop Shell (all P1):**
+- [ ] Tauri v2 project scaffolding with src-tauri/
+- [ ] Native macOS window with decorations
+- [ ] Embedded axum server spawned from setup() hook
+- [ ] System tray icon with Show/Quit menu
+- [ ] Close-to-tray (hide on X, restore on tray/dock click)
+- [ ] Minimal menu bar (About, Quit, Edit for clipboard)
+- [ ] Dev mode: Vite dev server proxy
+- [ ] Production mode: bundled frontend assets
 
 ### Add After Validation (v3.x)
 
-- [ ] **Window state persistence** -- save/restore position and size
-- [ ] **Backend health monitoring** -- detect crashes, auto-restart, tray status
-- [ ] **Startup loading screen** -- show spinner while backend initializes
-- [ ] **Single instance enforcement** -- prevent duplicate launches
+- [ ] Window state persistence (save/restore bounds)
+- [ ] Tray tooltip with live stats
+- [ ] Auto-start on login (LaunchAgent plist)
+- [ ] Backend health self-check with tray status indicator
 
 ### Future Consideration (v4+)
 
-- [ ] **Dock badge with active conversation count**
-- [ ] **Tray tooltip with live stats**
-- [ ] **Native notifications for completed conversations**
-- [ ] **Distributable .dmg** (if ever shared beyond personal use)
+- [ ] Cross-platform builds (Linux, Windows)
+- [ ] Native notifications for cost/duration thresholds
+- [ ] Distributable .dmg (if ever shared)
+- [ ] Additional agent support (Windsurf, Copilot)
 
 ## Feature Prioritization Matrix
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| BrowserWindow with native chrome | HIGH | LOW | P1 |
-| Fastify child process lifecycle | HIGH | MEDIUM | P1 |
-| Dev/prod URL loading | HIGH | LOW | P1 |
-| System tray + context menu | HIGH | LOW | P1 |
-| Close-to-tray behavior | HIGH | LOW | P1 |
-| Application menu (About/Quit/Edit) | HIGH | LOW | P1 |
-| electron-rebuild for native modules | HIGH | LOW | P1 |
-| Single instance lock | MEDIUM | LOW | P1 |
-| Startup loading screen | MEDIUM | LOW | P2 |
-| Window state persistence | MEDIUM | LOW | P2 |
-| Backend health monitoring | MEDIUM | MEDIUM | P2 |
-| Dock badge with active count | LOW | LOW | P3 |
-| Tray tooltip with stats | LOW | LOW | P3 |
+| SQLite schema + connection | HIGH | LOW | P1 |
+| Analytics queries (10 fns) | HIGH | HIGH | P1 |
+| Ingestion engine | HIGH | HIGH | P1 |
+| Claude Code parser + normalizer | HIGH | MEDIUM | P1 |
+| Cursor parser + normalizer | HIGH | MEDIUM | P1 |
+| axum route handlers (30) | HIGH | LOW | P1 |
+| WebSocket broadcast | HIGH | MEDIUM | P1 |
+| File watcher (notify) | HIGH | MEDIUM | P1 |
+| Tauri window + webview | HIGH | LOW | P1 |
+| System tray + close-to-tray | HIGH | MEDIUM | P1 |
+| Menu bar | MEDIUM | LOW | P1 |
+| Plans queries (5 fns) | MEDIUM | MEDIUM | P1 |
+| Settings queries | MEDIUM | LOW | P1 |
+| Plan extractor | MEDIUM | MEDIUM | P1 |
+| Subagent linker | MEDIUM | MEDIUM | P1 |
+| Data quality migration | MEDIUM | MEDIUM | P1 |
+| Sync scheduler | LOW | MEDIUM | P1 |
+| Pricing calculation | MEDIUM | LOW | P1 |
+| Window state persistence | LOW | LOW | P2 |
+| Tray tooltip stats | LOW | LOW | P3 |
 | Native notifications | LOW | MEDIUM | P3 |
 
-**Priority key:**
-- P1: Must have for launch -- the app does not feel like a desktop app without these
-- P2: Should have, add in the same milestone if time permits
-- P3: Nice to have, defer to future milestone
+## Tauri Desktop Feature Expected Behaviors
 
-## Competitor Feature Analysis
+### System Tray Icon
+- **Icon**: 22x22 template image (+ @2x for Retina) from app icon, monochrome for macOS menu bar
+- **Left-click**: Show and focus the main window (use `set_focus()` not just `show()` -- `show()` raises but does not focus)
+- **Right-click**: Context menu appears with "Show Cowboy", separator, "Quit Cowboy"
+- **"Show Cowboy" click**: `window.show()` + `window.set_focus()`
+- **"Quit Cowboy" click**: `app_handle.exit(0)` -- triggers clean shutdown including file watcher and WS cleanup
+- **Implementation**: `TrayIconBuilder::new("main-tray").menu(&menu).on_menu_event(...)` in Tauri `setup()`
 
-| Feature | claude-devtools (Electron) | Typical Electron dashboard apps | Our Approach |
-|---------|---------------------------|--------------------------------|--------------|
-| Window chrome | Standard Electron frame | Mix of frameless and native | `hiddenInset` for native traffic lights without title text |
-| Backend process | Runs in main process | Varies (in-process or forked) | Fork as child process -- isolates backend crashes from UI |
-| Tray | Not present in most dev tools | Common in background/monitoring apps | Yes -- critical for close-to-tray since file watcher must persist |
-| Close-to-tray | N/A | Standard for monitoring/dashboard apps | Yes -- the file watcher and ingestion must keep running |
-| Menu bar | Default Electron menu | Minimal to full menus | Minimal: About + Quit + Edit clipboard shortcuts |
+### Close-to-Tray
+- **Window close button (red X)**: Window hides, app continues running. File watcher, ingestion, WS server all keep operating.
+- **Dock icon click (macOS `activate` event)**: Window shows and focuses
+- **Tray "Show Cowboy"**: Window shows and focuses
+- **Tray "Quit"**: App exits cleanly
+- **Cmd+Q**: App exits cleanly (via menu bar quit item, not intercepted)
+- **Implementation**: `app.on_window_event(|window, event| { if let WindowEvent::CloseRequested { api, .. } = event { api.prevent_close(); window.hide().unwrap(); } })`
+
+### Menu Bar
+- **First submenu** (becomes "Cowboy" menu on macOS automatically):
+  - About Cowboy (`.about(None)` -- shows default About dialog)
+  - Separator
+  - Hide Cowboy (Cmd+H) (`.hide()`)
+  - Hide Others (Cmd+Option+H) (`.hide_others()`)
+  - Show All (`.show_all()`)
+  - Separator
+  - Quit Cowboy (Cmd+Q) (`.quit()`)
+- **Edit submenu** (required for clipboard to work in webview):
+  - Undo (Cmd+Z), Redo (Cmd+Shift+Z), separator, Cut (Cmd+X), Copy (Cmd+C), Paste (Cmd+V), Select All (Cmd+A)
+- **No other menus**: This is a single-purpose analytics dashboard, not a document editor.
+
+### Dev Mode vs Production Webview Loading
+
+| Aspect | Dev Mode (`cargo tauri dev`) | Production (`cargo tauri build`) |
+|--------|------------------------------|----------------------------------|
+| Frontend source | Vite dev server at http://localhost:5173 | Bundled into binary from `packages/frontend/dist` |
+| tauri.conf.json `devUrl` | `"http://localhost:5173"` | Not used |
+| tauri.conf.json `frontendDist` | Not used during dev | `"../packages/frontend/dist"` |
+| axum server | Spawned on 127.0.0.1:3000 | Spawned on 127.0.0.1:3000 (same) |
+| Hot reload | Vite HMR for Vue components | N/A |
+| Rust changes | Tauri CLI watches src-tauri/, auto-rebuilds | N/A |
+| `beforeDevCommand` | `"cd packages/frontend && npm run dev"` | N/A |
+| `beforeBuildCommand` | N/A | `"cd packages/frontend && npm run build"` |
+| Frontend API calls | `fetch("http://localhost:3000/api/...")` | Same -- axum still on 3000 |
+| WebSocket | `ws://localhost:3000/api/ws` | Same |
+
+## Complexity Summary by Category
+
+| Category | Modules | TS Lines | Estimated Rust Effort | Rationale |
+|----------|---------|----------|-----------------------|-----------|
+| Database layer | 6 files | 1,480 | MEDIUM | analytics.ts is 1,029 lines of dynamic SQL. The SQL transfers almost verbatim but building dynamic WHERE clauses in Rust requires careful string/params management. |
+| Ingestion engine | 15 files | 3,316 | HIGH | Most complex subsystem. JSONL parsing is straightforward in Rust (serde_json), but the orchestrator (661 lines) coordinates transactions, snapshot diffs, subagent linking across both agents. Well-modularized, but high total volume. |
+| Route handlers | 4 files | 494 | LOW | Thin wrappers. axum extractors make these more concise than Fastify equivalents. |
+| Server plugins | 3 files | 549 | MEDIUM | WebSocket broadcast, file watcher, sync scheduler all need async Rust (tokio). File watcher with per-agent debounce timers is the trickiest. |
+| Shared types | 4 files | 236 | LOW | Rust structs with serde derive. Pricing table is a static HashMap. |
+| App bootstrap | 1 file | 65 | MEDIUM | Wiring axum router, spawning in Tauri setup, shared state injection. |
+| Tauri desktop | N/A | N/A | MEDIUM | Tray, close-to-tray, menu, webview config. Well-documented patterns. |
+| **Total** | **33 files** | **~6,140** | | **Estimated 4,000-5,000 lines of Rust** |
 
 ## Sources
 
-- [Electron BrowserWindow API](https://www.electronjs.org/docs/latest/api/browser-window) -- titleBarStyle, loadURL, loadFile options
-- [Electron Tray API](https://www.electronjs.org/docs/latest/tutorial/tray) -- system tray creation, context menu, icon requirements
-- [Electron Custom Title Bar](https://www.electronjs.org/docs/latest/tutorial/custom-title-bar) -- hiddenInset, traffic light positioning
-- [Electron Application Menu](https://www.electronjs.org/docs/latest/tutorial/application-menu) -- role-based menu templates
-- [Electron Dock API](https://www.electronjs.org/docs/latest/api/dock) -- dock.hide(), setBadge()
-- [Electron Process Model](https://www.electronjs.org/docs/latest/tutorial/process-model) -- main vs renderer vs utility processes
-- [Electron utilityProcess API](https://www.electronjs.org/docs/latest/api/utility-process) -- alternative to child_process.fork
-- [electron-vite Getting Started](https://electron-vite.org/guide/) -- integration approaches (evaluated, rejected for this project)
-- [Background Electron apps](https://moinism.medium.com/how-to-keep-an-electron-app-running-in-the-background-f6a7c0e1ee4f) -- close-to-tray patterns
-- [Electron child process with native modules](https://www.matthewslipper.com/2019/09/22/everything-you-wanted-electron-child-process.html) -- ELECTRON_RUN_AS_NODE, fork behavior
-- [better-sqlite3 with Electron](https://dev.to/arindam1997007/a-step-by-step-guide-to-integrating-better-sqlite3-with-electron-js-app-using-create-react-app-3k16) -- electron-rebuild requirement
+- [Tauri v2 System Tray docs](https://v2.tauri.app/learn/system-tray/) -- TrayIconBuilder API, menu events, icon requirements
+- [Tauri v2 Window Menu docs](https://v2.tauri.app/learn/window-menu/) -- Menu API, macOS app menu behavior, built-in items
+- [Tauri v2 Frontend Configuration](https://v2.tauri.app/start/frontend/) -- devUrl, frontendDist, beforeDevCommand/beforeBuildCommand
+- [Tauri v2 Vite integration](https://v2.tauri.app/start/frontend/vite/) -- Vite-specific configuration for Tauri
+- [Tauri v2 Window Customization](https://v2.tauri.app/learn/window-customization/) -- decorations, titleBarStyle
+- [Tauri v2 Configuration reference](https://v2.tauri.app/reference/config/) -- tauri.conf.json schema
+- [Tauri close-to-tray discussion](https://github.com/tauri-apps/tauri/discussions/2684) -- prevent_close + window.hide() pattern
+- [Tauri v2 tray-icon implementation guide](https://dev.to/rain9/tauri5-tray-icon-implementation-and-event-handling-5d1e) -- complete Rust examples
+- [Tauri v2 Multi-Window and System Tray Guide](https://www.oflight.co.jp/en/columns/tauri-v2-multi-window-system-tray) -- comprehensive setup walkthrough
 
 ---
-*Feature research for: Cowboy v3.0 Electron Desktop App*
+*Feature research for: Cowboy v3.0 Tauri Desktop App -- Rust backend port + desktop shell*
 *Researched: 2026-03-11*

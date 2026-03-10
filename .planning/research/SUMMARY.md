@@ -1,216 +1,188 @@
 # Project Research Summary
 
-**Project:** Cowboy v3.0 — Electron Desktop Wrapper
-**Domain:** Electron desktop wrapper for existing Vue 3 + Vite + Fastify analytics dashboard
+**Project:** Cowboy v3.0 — Tauri Desktop App
+**Domain:** Desktop analytics dashboard (Tauri v2 + Rust backend replacing Node.js/Fastify)
 **Researched:** 2026-03-11
 **Confidence:** HIGH
 
 ## Executive Summary
 
-Cowboy v3.0 wraps an existing, fully-functional web app (~30,272 LOC) in an Electron shell to deliver a native macOS desktop experience. The core architectural insight from all four research areas is consistent: the backend (Fastify + better-sqlite3 + chokidar) must run as a `child_process.fork()` child with `ELECTRON_RUN_AS_NODE=1`, and the BrowserWindow loads the frontend via `http://localhost` — never `file://`. This approach requires zero changes to the existing frontend code and only a 3-line addition to the backend entry point (add a `process.send({ type: 'ready' })` IPC signal after Fastify starts listening). The new `packages/electron` workspace package contains all Electron-specific code, keeping the monorepo clean and the existing browser-based dev workflow completely intact.
+Cowboy v3.0 is a port of an existing, fully functional coding-agent analytics dashboard (~30k LOC Vue 3 frontend + ~6k LOC Node.js/Fastify backend) into a native macOS desktop app using Tauri v2. The frontend stays completely unchanged — it loads inside a Tauri webview and continues making standard HTTP/WebSocket calls. The migration work is entirely in the backend: rewrite the Fastify+Node.js layer (25 REST endpoints, 1 WebSocket endpoint, 15 ingestion modules, SQLite via Drizzle/better-sqlite3) as a Rust crate with axum serving an embedded HTTP server on `127.0.0.1:3000`. A Tauri shell wraps the window, system tray, and native macOS chrome around both the Rust server and the unchanged Vue frontend.
 
-The recommended stack is Electron 40 + electron-vite 5 in a new `packages/electron` workspace package. electron-vite is preferred over vite-plugin-electron because it keeps the existing `vite.config.ts` untouched and provides sensible Electron defaults out of the box. There is no need for electron-builder, electron-forge, electron-store, auto-updater, or any additional Electron utilities — this is a personal tool run from source, and the existing SQLite + Drizzle stack handles all persistence. The preload script is intentionally minimal (platform detection only) because all data continues to flow through the existing HTTP/WebSocket infrastructure.
+The critical architectural decision — confirmed by codebase analysis of 17 frontend composables with `fetch()` calls and the sophisticated `useWebSocket.ts` typed event system — is to run axum as a real TCP HTTP server inside the Tauri process, NOT to convert frontend API calls to Tauri IPC `invoke()`. This preserves all 30,000 LOC of Vue frontend unchanged, allows the Node.js backend to coexist during migration for parallel response diffing, and avoids rebuilding the WebSocket event system (typed discriminated union payloads, sequence-number gap detection, `onScopeDispose` cleanup). Only 2-3 thin Tauri IPC commands are needed for native-only features (show/hide window, app version). Note: an earlier draft of SUMMARY.md (written before ARCHITECTURE.md and PITFALLS.md completed) recommended the opposite approach (pure IPC). That recommendation is superseded — the axum-inside-Tauri approach is correct.
 
-The single most dangerous pitfall — `better-sqlite3` native module ABI mismatch with Electron's bundled Node.js — is entirely sidestepped by running the backend as a forked child process with `ELECTRON_RUN_AS_NODE=1`. This causes the backend to use the system's Node.js rather than Electron's, eliminating the need for `electron-rebuild` entirely. The second most dangerous pitfall is child process orphaning: Fastify processes left running on port 3000 after Electron exits will cause `EADDRINUSE` on the next launch. Both must be addressed in Phase 1 before anything else. The development workflow must also be established in Phase 1 — a single `pnpm dev:electron` command with correct startup ordering — or friction will compound across every subsequent phase.
+The three highest risks are: (1) blocking the Tokio async runtime with synchronous rusqlite calls — use `tokio-rusqlite` from day one; (2) Tauri's custom protocol breaking relative `/api/*` URL resolution in production builds — configure the webview window to load `http://127.0.0.1:3000` directly so axum serves both the API and Vue dist from a single origin; and (3) subtle data fidelity bugs from porting 1,000+ lines of Drizzle ORM query logic to hand-written SQL — capture Drizzle's generated SQL with `logger: true` and diff JSON responses between old and new backends on every endpoint before any phase is declared complete.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The existing stack (Vue 3 + Vite 6 + Fastify 5 + better-sqlite3 + Drizzle + pnpm workspaces) is kept entirely unchanged. Only two new devDependencies are added to a new `packages/electron` workspace package.
-
-See `.planning/research/STACK.md` for full detail including the "What NOT to Add" table.
+The stack adds a Rust/Tauri layer on top of the unchanged existing frontend. The only npm addition is `@tauri-apps/api@^2.10.0` in the frontend package — used exclusively for the 2-3 native IPC commands. All backend complexity moves into the `src-tauri/` Rust crate placed at the monorepo root (sibling of `packages/`).
 
 **Core technologies:**
-- **Electron 40**: Desktop shell (BrowserWindow, Tray, Menu, dock, native window chrome) — current stable (40.8.0), ships Chromium 144 + Node 24.11.1
-- **electron-vite 5**: Build tooling for main/preload/renderer processes — keeps existing `vite.config.ts` untouched, provides Electron-aware defaults, supports Vite 6 already in use
-- **child_process.fork() with ELECTRON_RUN_AS_NODE=1**: Backend process management — avoids `electron-rebuild` entirely by running the backend under system Node rather than Electron's bundled Node
+- **Tauri 2.10.3**: Desktop shell (window, tray, menu, webview) — ~3MB binary vs Electron's ~150MB; explicitly chosen per PROJECT.md
+- **axum 0.8 + tokio 1.49**: Embedded HTTP/WebSocket server spawned from Tauri's `setup()` hook — preserves frontend unchanged, enables parallel migration testing against Node.js
+- **rusqlite 0.38 (bundled) + tokio-rusqlite**: SQLite access — `bundled` compiles SQLite into binary (zero system dependency); `tokio-rusqlite` prevents Tokio runtime blocking via a dedicated background thread
+- **r2d2 + r2d2_sqlite**: Connection pool — handles concurrent axum handler access safely with WAL mode
+- **notify 8.x + notify-debouncer-mini**: File system watching — replaces chokidar; pin to 8.x stable (NOT 9.0.0-rc.1)
+- **serde 1.0 + serde_json 1.0**: Serialization — all structs use `#[serde(rename_all = "camelCase")]` to match existing frontend expectations
+- **tower-http 0.6**: Static file serving (ServeDir + SPA fallback), CORS middleware for dev mode
+- **thiserror 2.0**: `AppError` type implementing `IntoResponse` — defined in Phase 1 before any route handler is written
 
-**Explicitly excluded:** electron-builder, electron-forge, electron-store, electron-updater, electron-log, @electron/remote, @electron/rebuild, electron-devtools-installer. Each is justified in STACK.md.
+**Do NOT add:** sqlx (linking conflict with rusqlite's bundled libsqlite3-sys), diesel/sea-orm (ORM overhead for 8 simple tables), tokio-tungstenite (axum has built-in WebSocket), tauri-plugin-sql/store/fs/websocket (all handled in Rust directly), tauri-plugin-axum (v0.7.2, breaks WebSocket URL construction).
 
 ### Expected Features
 
-See `.planning/research/FEATURES.md` for full detail including the prioritization matrix and competitor analysis.
+This is a complete port — every feature below is required for parity. Missing anything is a regression.
 
-**Must have — P1 (table stakes for v3.0):**
-- BrowserWindow with `titleBarStyle: 'hiddenInset'` — native macOS traffic lights integrated into window chrome
-- Fastify backend as managed child process (fork, IPC ready signal, graceful shutdown)
-- Dev/prod URL loading (Vite dev server at :5173 in dev, Fastify at :3000 in prod)
-- System tray icon with context menu (Show Cowboy / Quit)
-- Close-to-tray behavior (red X hides window, tray click and dock click restore it)
-- Minimal application menu (app menu with About/Quit + edit menu for clipboard shortcuts)
-- Single instance lock (prevents port :3000/:5173 conflicts from duplicate launches)
+**Must have (table stakes — v3.0 P1):**
+- Complete Rust port of all backend modules: SQLite schema/migrations, analytics queries (10 functions, 1,029 TS lines), plans queries (5 functions), settings queries, Claude Code JSONL parser + normalizer, Cursor SQLite parser + normalizer, file discovery for both agents, ingestion orchestrator (661 TS lines), plan extractor, subagent linker (three-phase matching: filesystem path, agentId, description/position heuristics), data quality migration, ID generator (SHA-256), pricing table + cost calculation, WebSocket broadcast with sequence numbers, file watcher with per-agent debounce (1s Claude Code, 3s Cursor), sync scheduler with exponential backoff
+- All 25 REST endpoints + 1 WebSocket endpoint on axum, identical URL paths and JSON response shapes to the existing Fastify backend
+- Tauri desktop shell: native macOS window chrome, system tray icon + Show/Quit menu, close-to-tray behavior, minimal menu bar (Cowboy menu + Edit submenu for clipboard), dev mode (Vite HMR proxy at `:5173`) and production mode (axum serves Vue dist from `http://127.0.0.1:3000`)
 
-**Should have — P2 (add in v3.x after validation):**
-- Startup loading screen while backend initializes (prevents blank white window)
-- Window state persistence (save/restore size and position)
-- Backend health monitoring with auto-restart on crash
+**Should have (desktop differentiators — v3.x):**
+- Window state persistence (save/restore bounds across restarts)
+- Tray tooltip with live token rate stats
+- Auto-start on login via LaunchAgent plist
+- Backend health self-check with tray status indicator
 
-**Defer — v4+ or never for personal use:**
-- Dock badge with active conversation count
-- Tray tooltip with live token stats
-- Native notifications for completed conversations
-- Distributable .dmg (explicitly out of scope per PROJECT.md)
+**Defer (v4+):**
+- Cross-platform builds (Linux, Windows)
+- Native notifications for cost/duration thresholds
+- Distributable .dmg (PROJECT.md explicitly out of scope)
+- Additional agent support (Windsurf, Copilot)
+
+**Anti-features (explicitly rejected):**
+- Converting frontend `fetch()` to Tauri `invoke()` — 30k LOC for zero user-visible benefit; destroys the ability to run as a web app
+- Multiple windows — unnecessary complexity with Vue router handling all navigation
+- Global keyboard shortcuts — requires accessibility permissions, out of scope per PROJECT.md
+- tauri-plugin-sql — inadequate for 1,029-line analytics query module with dynamic WHERE clauses and subqueries
 
 ### Architecture Approach
 
-The integration follows a clean separation: a new `packages/electron` workspace contains all Electron-specific code in six focused source files. The Electron main process acts purely as a lifecycle supervisor — it forks the backend, waits for the IPC ready signal, loads the URL in a BrowserWindow, and manages the tray. All application data continues to flow through the existing HTTP/WebSocket layer; the Node IPC channel between main and backend carries only two message types (`ready` and `shutdown`). The frontend is completely Electron-unaware.
+The architecture maintains a clean separation: the Tauri shell owns window/tray/lifecycle, the axum server owns all HTTP/WebSocket communication as a real TCP listener on `127.0.0.1:3000`, and the Vue frontend remains completely unaware it is inside Tauri. Shared state flows through `Arc<AppState>` containing an r2d2 connection pool and a `tokio::sync::broadcast` channel — the pool handles concurrent reads across axum handlers, and the broadcast channel decouples ingestion events from WebSocket delivery without any shared mutable client registries. The `src-tauri/` directory lives at the monorepo root (not inside `packages/`) following Tauri CLI convention.
 
-See `.planning/research/ARCHITECTURE.md` for full component details, code patterns, and the build order graph.
+**Major components:**
+1. **Tauri shell** (`lib.rs`) — app lifecycle, window management, tray, native menu, close-to-tray intercept via `WindowEvent::CloseRequested`
+2. **Axum HTTP server** (`server/`) — TCP listener on `127.0.0.1:3000`, REST routes (25 endpoints across 4 files), WebSocket upgrade + `AtomicU64` seq-numbered broadcast, static file serving (ServeDir + SPA fallback for Vue router)
+3. **Database layer** (`db/`) — r2d2 pool, rusqlite migrations (8 tables with WAL + foreign keys), typed query modules (analytics, plans, settings)
+4. **Ingestion engine** (`ingestion/`) — JSONL/vscdb parsing, normalization, plan extraction, three-phase subagent linking, data quality migration, writes to DB and emits broadcast events
+5. **File watcher** (`watcher/`) — notify crate with notify-debouncer-mini, separate watchers for Claude Code (1s debounce) and Cursor (3s debounce), triggers ingestion directly (no HTTP round-trip)
+6. **IPC commands** (`commands/`) — exactly 3: `show_window`, `hide_window`, `get_app_version`
 
-**Major components (all new in `packages/electron`):**
-1. `main.ts` — App lifecycle: ready, activate, before-quit, window-all-closed
-2. `backend-manager.ts` — Fork Fastify, await IPC ready signal, handle crash/restart, kill on quit
-3. `window-manager.ts` — BrowserWindow creation, close-to-tray vs actual-quit state machine
-4. `tray.ts` — macOS menu bar tray icon, context menu, click-to-show
-5. `menu.ts` — Native app menu (About, Quit) + edit menu (clipboard shortcuts)
-6. `preload.ts` — Minimal: expose `platform` string only via contextBridge
-
-**Required backend change:** 3 lines — add `process.send({ type: 'ready', port: 3000 })` after Fastify calls `app.listen()`. No-op when backend runs standalone (IPC channel only exists when forked).
+**Build order driven by dependencies:** scaffold → DB layer → axum health → analytics routes → plans/settings routes → ingestion engine → WebSocket broadcast → file watcher → tray/menu (parallelizable with steps 4-8) → port 3000 cutover and Node.js backend removal.
 
 ### Critical Pitfalls
 
-See `.planning/research/PITFALLS.md` for all 11 pitfalls with warning signs, recovery strategies, and codebase-specific file references.
+1. **Blocking the Tokio runtime with synchronous rusqlite** — use `tokio-rusqlite` (not bare `Arc<Mutex<Connection>>`) from Phase 1. Four blocked workers freeze the entire app: no WebSocket messages, no HTTP responses, no file watcher events. Establish the DB access pattern before writing any query code.
 
-1. **better-sqlite3 ABI mismatch** — Mitigated entirely by running the backend with `ELECTRON_RUN_AS_NODE=1` so it uses system Node, not Electron's bundled Node. This eliminates `electron-rebuild`. Must be verified in Phase 1 before proceeding.
+2. **Relative `/api/*` URLs breaking under Tauri's custom protocol** — configure the production window `url` to `http://127.0.0.1:3000` (where axum serves both the API and Vue dist); add `const BASE_URL = window.__TAURI__ ? 'http://127.0.0.1:3000' : ''` to a centralized API client. Do NOT use Tauri's `frontendDist` custom protocol serving — it changes `location.origin` to `tauri://localhost` and breaks WebSocket URL construction.
 
-2. **Child process not killed on quit** — Store `backendProcess` at module scope, send SIGTERM in `app.on('before-quit')`, add SIGTERM handler in backend entry point (`fastify.close()` then `process.exit(0)`), add SIGKILL fallback after 5s. Orphan processes cause `EADDRINUSE: address already in use :::3000` on next launch.
+3. **Drizzle ORM query port introducing silent data bugs** — run the existing Node.js backend with Drizzle `logger: true` to capture exact generated SQL strings; diff JSON responses between old (`:3000`) and new (`:3001`) backends for every endpoint on the same database; use rusqlite named parameters (`:param`) not positional `?` to avoid off-by-one binding errors; explicitly call `serde_json::from_str()` on Drizzle's `json`-mode columns (`tool_calls.input`, `tool_calls.output`, `subagent_summary`, `settings.sync_categories`).
 
-3. **Relative database path causes data loss** — The current `./data/cowboy.db` default in `packages/backend/src/db/index.ts` resolves to `/data/cowboy.db` in a packaged app (`process.cwd()` returns `/` on macOS). Electron main must set `DATABASE_URL` env var to `path.join(app.getPath('userData'), 'cowboy.db')` when forking.
+4. **CSP blocking DaisyUI inline styles and API/WebSocket connections in production builds** — configure immediately in `tauri.conf.json`: `"style-src 'self' 'unsafe-inline'; connect-src 'self' http://127.0.0.1:3000 ws://127.0.0.1:3000"`. Only manifests in `tauri build`, not `tauri dev` — easy to miss.
 
-4. **Vue Router `createWebHistory()` breaks in Electron** — The existing `packages/frontend/src/router/index.ts` uses `createWebHistory()`. Switch to `createWebHashHistory()`. One-line change, backward-compatible, prevents blank page on deep-route refresh.
+5. **JSONL parser fidelity gap** — the existing parser has 18+ months of accumulated edge cases: streaming deduplication (replace-not-append), three-phase subagent resolution, compaction detection with token delta computation, title extraction with XML stripping and slash command filtering, double-encoded JSON in tool inputs. Use per-line error handling (skip malformed lines with `tracing::warn!`, never `unwrap()`), diff SQLite output row-by-row against Node.js, use `chars().take(100)` not byte slicing for string truncation.
 
-5. **Close-to-tray vs quit state machine** — Implement the `isQuitting` flag pattern: `app.on('before-quit')` sets flag; window `close` handler hides unless flag is set; `app.on('activate')` and tray click call `win.show()` + `app.dock.show()`. Must test all four paths: red X button, Cmd+W, Cmd+Q, dock right-click Quit.
+6. **axum startup race with Tauri webview** — bind the TCP listener and start axum before Tauri's `run()` call; the webview must not load until axum is accepting connections. Use a `CancellationToken` for graceful shutdown to avoid DB lock errors on second launch.
+
+7. **serde field naming** — add `#[serde(rename_all = "camelCase")]` to every struct returned to the frontend. Rust uses `snake_case`; the frontend expects `camelCase`. Missing this on one struct produces silent rendering failures.
 
 ## Implications for Roadmap
 
-The dependency graph from architecture research drives the phase structure: backend process management is the foundation, window chrome and tray come next (they share the `isQuitting` state machine so must be built together), and polish features come last.
+Based on research, the dependency graph drives a clear 5-phase structure:
 
-### Phase 1: Electron Scaffold + Backend Integration
+### Phase 1: Foundation — Tauri Scaffold + Infrastructure
+**Rationale:** Six critical architectural decisions must be locked in before any feature work or all subsequent code will need rework. These are: tokio-rusqlite pattern, axum startup ordering, CSP configuration, AppError type, workspace crate structure (separate library crate for fast incremental builds), and database path resolution. Small in LOC, high in correctness leverage.
+**Delivers:** Tauri window opens showing existing Vue frontend via Vite dev server; axum health endpoint on `:3001` responds; CSP verified with `tauri build`; DB path resolves to Tauri app data dir; incremental Rust builds under 15 seconds.
+**Addresses:** Tauri project scaffolding, empty window, dev/prod Vite proxy, Tauri capabilities config
+**Avoids:** Pitfall 1 (Tokio blocking), Pitfall 2 (URL breakage), Pitfall 4 (CSP), Pitfall 6 (startup race), Pitfall 9 (AppError), Pitfall 8 (slow rebuilds), Pitfall 13 (DB path)
 
-**Rationale:** The backend child process lifecycle is the critical dependency for every other phase. The dev workflow, database path resolution, native module strategy, SIGTERM handling, and Vue Router fix must all be established in Phase 1 or every subsequent phase risks data loss and operational failures. Architecture research explicitly identifies the build order: scaffold → backend-manager → window-manager → main.ts lifecycle. Five of the eleven pitfalls are Phase 1 concerns.
+### Phase 2: Database Layer + Read-Only API
+**Rationale:** All feature work depends on a correct DB layer. Analytics queries are the largest single module (1,029 TS lines) and establish the query-porting pattern for all that follows. Porting read-only endpoints first means the full frontend dashboard renders real data with no write-path risk. Response diffing against the Node.js backend validates correctness before any writes are introduced.
+**Delivers:** All 16 read-only endpoints working (analytics × 11, plans × 5, health × 1); frontend dashboard renders with real data from existing `cowboy.db`; JSON response diff confirms parity with Node.js on every endpoint.
+**Uses:** rusqlite (bundled), tokio-rusqlite, r2d2, serde with camelCase renaming, tower-http ServeDir
+**Implements:** Database layer (8 tables, WAL mode, foreign keys) + axum routes (analytics, plans, health)
+**Avoids:** Pitfall 3 (Drizzle query bugs), Pitfall 11 (serde naming)
 
-**Delivers:** A working Electron app that launches the Fastify backend, waits for the IPC ready signal, loads the Vue frontend in a BrowserWindow (via Vite dev server in dev, Fastify in prod), and cleans up all child processes on quit. No tray, no native chrome yet — but the core integration is solid.
+### Phase 3: Settings + Writes + WebSocket
+**Rationale:** Settings routes include mutations and path validation — higher risk than read-only. WebSocket must be built before ingestion so events have somewhere to go. The broadcast architecture (`tokio::sync::broadcast`, `AtomicU64` seq counter) must match the existing typed event protocol exactly — the frontend's `useWebSocket.ts` uses seq-gap detection and `system:full-refresh` reconnect semantics.
+**Delivers:** All 25 REST endpoints working; WebSocket connected with correct event format (type, seq, payload matching `WebSocketEventPayload` discriminated union); settings save/load round-trips; frontend receives live updates.
+**Uses:** axum WebSocket upgrade (built-in), `tokio::sync::broadcast`, `AtomicU64`
+**Implements:** WebSocket hub, settings routes, ingest trigger route
+**Avoids:** Pitfall 7 (WebSocket broadcast architecture)
 
-**Addresses (from FEATURES.md):**
-- Fastify backend as managed child process (fork, health-check, graceful shutdown)
-- Dev/prod URL loading
-- Single instance lock (must be first thing in app entry point, before any windows)
+### Phase 4: Ingestion Engine
+**Rationale:** The most complex module (~1,500 LOC across 15 TypeScript files). Isolated in its own phase because it has no UI-blocking dependencies once Phase 3 is complete — it writes to DB and fires broadcast events, both of which exist. The high data-fidelity risk demands dedicated focus and thorough SQLite diffing. Git history shows 4 recent commits to `ingestion/` subagent linking, suggesting active instability that the port must faithfully reproduce.
+**Delivers:** JSONL parsing for Claude Code and Cursor produces identical SQLite output to Node.js; subagent linking correct (three phases); plan extraction working; data quality migration idempotent; all existing conversations fully ingested by Rust backend.
+**Uses:** serde_json BufReader for JSONL, rusqlite for Cursor vscdb, regex crate for plan extraction, sha2 for deterministic ID generation, walkdir for file discovery
+**Implements:** Full ingestion engine (all 15 submodules: parser, normalizer, cursor parser/normalizer, subagent linker/summarizer, plan extractor, compaction utils, title utils, id generator, file discovery, orchestrator, data migration)
+**Avoids:** Pitfall 5 (JSONL parser fidelity gap)
 
-**Avoids (from PITFALLS.md):**
-- better-sqlite3 ABI mismatch (via ELECTRON_RUN_AS_NODE=1, no electron-rebuild needed)
-- Child process orphan on quit (SIGTERM handler + module-scope process reference)
-- Relative database path → data loss (set DATABASE_URL to app.getPath('userData'))
-- Vue Router history mode breaks deep routes (switch to createWebHashHistory)
-- Dev workflow race condition (wait-on backend health check before launching Electron)
-- File watcher leak on unclean shutdown (explicit SIGTERM handler in backend entry point)
-
-**Research flag:** Standard patterns — well-documented child_process.fork() + Electron lifecycle. No additional research needed.
-
-### Phase 2: Native Window Chrome + Tray + Menu
-
-**Rationale:** Once the integration core is working, add the macOS-native UX layer. Tray and menu are independent of each other but both depend on Phase 1's working BrowserWindow. Critically, the `isQuitting` state machine is shared state between window-manager.ts and tray.ts — implementing one without the other leaves the quit experience broken. Building them together in Phase 2 ensures all four close/quit paths are correct before moving on.
-
-**Delivers:** Full native macOS desktop feel: traffic light window controls with `titleBarStyle: 'hiddenInset'`, system tray with Show/Quit context menu, close-to-tray behavior (X hides window, tray click restores), native app menu (so the menu bar shows "Cowboy" not "Electron", and Cmd+C/V/X/A work).
-
-**Addresses (from FEATURES.md):**
-- BrowserWindow with native macOS `titleBarStyle: 'hiddenInset'`
-- System tray with context menu
-- Close-to-tray behavior (all four quit paths)
-- Minimal application menu (app menu + edit menu)
-
-**Avoids (from PITFALLS.md):**
-- Tray icon garbage collected (store tray reference at module scope)
-- Close-to-tray semantics wrong (isQuitting flag pattern — test all 4 paths)
-- CSP blocks inline styles / WebSocket connections (add meta CSP with `'unsafe-inline'` for styles, `ws://localhost:*`)
-- No app menu → "Electron" in menu bar + Cmd+C/V/X/A broken
-
-**Uses (from STACK.md):** Electron Tray API with Template image (16px + @2x 32px), Menu.buildFromTemplate with role-based items, BrowserWindow `titleBarStyle: 'hiddenInset'` with `trafficLightPosition`.
-
-**Research flag:** Standard patterns — Electron Tray, Menu, and BrowserWindow APIs are stable and well-documented. No additional research needed.
-
-### Phase 3: Polish + Startup Experience
-
-**Rationale:** The app is fully functional after Phase 2. Phase 3 adds quality-of-life features that prevent the "rough edges" experience: the blank white window during backend startup, window position amnesia on relaunch, and the missing visual cue that close-to-tray is keeping the app alive. These are P2 features from FEATURES.md — important for daily usability but not blockers for the core experience.
-
-**Delivers:** Startup loading screen while backend initializes (prevents blank window during 1-2s Fastify startup), window state persistence (remembers position and size), backend health monitoring with auto-restart on crash, first-close notification ("Cowboy is still running in the menu bar").
-
-**Addresses (from FEATURES.md):**
-- Startup loading screen (P2)
-- Window state persistence (P2)
-- Backend health monitoring with auto-restart (P2)
-
-**Avoids (from PITFALLS.md):**
-- Blank window while backend starts (show loading indicator, only call win.show() after health check passes)
-- Window position not remembered across restarts
-- Backend crash silently breaks app with no recovery path
-
-**Research flag:** `electron-window-state` package API should be verified against Electron 40 before use. Alternatively, window bounds can be persisted manually to `app.getPath('userData')` with no extra dependency. Backend health monitoring patterns are standard.
+### Phase 5: File Watcher + Tray + Cutover
+**Rationale:** File watcher depends on the ingestion engine being complete (Phase 4). Tray/menu work is independent of the entire backend and can be parallelized with Phases 2-4, but completing the backend first reduces moving targets. Cutover (moving Rust to port 3000, removing Node.js backend) is the final gate-check requiring the full "looks done but isn't" checklist.
+**Delivers:** File changes in `~/.claude/projects` trigger automatic re-ingestion; system tray icon visible with Show/Quit menu; close-to-tray works (window hides, file watching continues in background); Cmd+Q quits cleanly; Node.js `packages/backend/` removed from repo.
+**Uses:** notify 8.x, notify-debouncer-mini (two watchers: 1s Claude Code, 3s Cursor), Tauri TrayIconBuilder, Tauri Menu API
+**Implements:** File watcher module, Tauri tray + native menu + close-to-tray
+**Avoids:** Pitfall 6 (notify event model vs chokidar)
 
 ### Phase Ordering Rationale
 
-- Backend process management precedes window chrome because BrowserWindow has nothing to load until Fastify is ready and the dev workflow is established
-- Single instance lock is the very first check in the app entry point (before any windows) — it belongs in Phase 1 because a second instance will cause immediate port conflicts
-- Tray and menu are bundled in Phase 2 because `isQuitting` is shared state between window-manager.ts and tray.ts — implementing one without the other leaves quit semantics broken
-- Polish features deferred to Phase 3 because they don't block the core value proposition but create noticeable daily friction if missing
-- Packaging (.dmg, code signing, auto-update) is explicitly out of scope per PROJECT.md — no phase needed
+- **Foundation first** because six pitfalls have Phase 1 prevention windows that close permanently once code is written around them: tokio-rusqlite pattern, AppError type, workspace structure, DB path, CSP, startup ordering.
+- **Read-only API before writes** because analytics queries (1,029 TS lines) are the complexity benchmark — if the Drizzle query port produces correct results, the pattern is proven for all remaining query modules.
+- **WebSocket before ingestion** because the broadcast channel is a shared infrastructure dependency that ingestion needs to emit events through; building it first means ingestion events work end-to-end from day one.
+- **Ingestion isolated** because it is the highest data-correctness risk. Running Node.js at `:3000` and Rust at `:3001` in parallel with the same `cowboy.db` enables row-level SQLite diffing as a verification mechanism.
+- **File watcher last** because it continuously fires ingestion; debugging is cleaner when ingestion itself is already verified correct.
+- **Tray/menu can parallel Phase 2-4** because it has zero dependency on the backend — a developer can work on native chrome while another ports query modules.
 
 ### Research Flags
 
-Phases likely needing deeper research during planning:
-- **Phase 3 (Window state persistence):** Verify `electron-window-state` package compatibility with Electron 40 before adopting it. Low-risk fallback: implement manually with `app.getPath('userData')` JSON file — roughly 20 lines and zero dependencies.
+Phases needing deeper research during planning:
+- **Phase 4 (Ingestion Engine):** The 15-module ingestion system has the most undocumented edge cases. Before implementation, run the existing Node.js backend with `logger: true` on a production database to capture all generated SQL. Review git history of `ingestion/` for comments about edge cases — especially the 4 recent subagent-linking commits. Catalog every Drizzle `onConflictDoNothing()` usage that was replaced with delete-then-insert patterns.
+- **Phase 3 (WebSocket):** Verify the exact `WebSocketEventPayload` TypeScript discriminated union shape against the Rust serde enum before writing any broadcast code. The seq-gap-detection logic and `system:full-refresh` reconnect behavior in `useWebSocket.ts` must be preserved exactly.
 
-Phases with standard patterns (skip research-phase):
-- **Phase 1:** child_process.fork() with ELECTRON_RUN_AS_NODE=1 is the canonical pattern for Electron + native modules; the exact backend-manager.ts implementation is fully specified in ARCHITECTURE.md
-- **Phase 2:** Electron Tray, Menu, and BrowserWindow APIs are stable; the isQuitting pattern is the standard macOS close-to-tray implementation; both are well-documented with direct codebase application
+Phases with well-documented patterns (standard, skip research-phase):
+- **Phase 1 (Scaffold):** Tauri v2 official docs include exact Rust code examples; axum startup-inside-Tauri pattern is established in community discussions.
+- **Phase 2 (DB + Read API):** Drizzle's `logger: true` provides ground-truth SQL; axum `Query<>` extractor patterns are standard.
+- **Phase 5 (Tray/Menu):** Tauri v2 tray docs include complete `TrayIconBuilder` examples; close-to-tray is a 3-line `WindowEvent::CloseRequested` intercept.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Electron 40 and electron-vite 5 verified against official release notes and npm. Decision to use child_process.fork() over utilityProcess is verified against better-sqlite3 native module constraints. All "what not to add" decisions have clear rationale. |
-| Features | HIGH | Electron APIs for all P1 features are stable. Feature list derived from direct codebase analysis of the existing 30K LOC app, not speculation. P2/P3 features are clearly separated. |
-| Architecture | HIGH | Architecture is informed by codebase analysis of all existing packages. The localhost HTTP data flow is a direct consequence of how frontend/backend already communicate — not an assumption. Component boundaries and code patterns are fully specified in ARCHITECTURE.md. |
-| Pitfalls | HIGH | All 11 pitfalls are verified against actual Electron GitHub issues and confirmed against specific files in the existing codebase (e.g., `createWebHistory()` in `packages/frontend/src/router/index.ts`, relative DB path in `packages/backend/src/db/index.ts`, missing SIGTERM handler in `packages/backend/src/index.ts`). |
+| Stack | HIGH | All crate versions verified against docs.rs/crates.io; Tauri v2.10.3 is current stable (Oct 2024, 17 months production use); architecture decision (axum over pure IPC) validated by codebase analysis of 17 frontend composables with fetch calls |
+| Features | HIGH | Based on direct TS-line-count analysis of the existing codebase; feature list is exhaustive (port not new product) |
+| Architecture | HIGH | Based on codebase analysis of actual frontend API call patterns + official Tauri docs; anti-patterns are verified failures from codebase constraints |
+| Pitfalls | HIGH | Pitfalls derived from concrete code analysis (1,029-line analytics.ts, WebSocket protocol in useWebSocket.ts, chokidar config) + official docs + Tauri/axum community discussions |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Icon assets:** A proper macOS dock icon (.icns, 512x512) and tray template image (trayTemplate.png + trayTemplate@2x.png at 16/32px) do not yet exist. These are design assets, not code. Phase 2 cannot be completed without them — flag for early action.
-
-- **Backend health endpoint:** The dev workflow and health monitoring features reference `http://localhost:3000/api/health`. Verify whether this endpoint exists in the current Fastify backend or needs to be added. If missing, it is a ~5-line Fastify route addition that belongs in Phase 1 alongside the IPC ready signal.
-
-- **SIGTERM handler in backend entry point:** Confirmed missing in `packages/backend/src/index.ts`. Must be added in Phase 1: `process.on('SIGTERM', async () => { await app.close(); process.exit(0); })`. Without it, chokidar file watchers leak on shutdown.
+- **tokio-rusqlite vs spawn_blocking conflict:** STACK.md (written before PITFALLS.md) recommends `Arc<Mutex<Connection>>` + `spawn_blocking`; PITFALLS.md strongly recommends `tokio-rusqlite`. **Resolution:** Use `tokio-rusqlite` — it eliminates the `MutexGuard across .await` deadlock footgun entirely. Treat spawn_blocking as the fallback only if tokio-rusqlite introduces unexpected issues.
+- **axum omission in STACK.md:** STACK.md omits axum from its dependency list because it advocates Tauri IPC-only. ARCHITECTURE.md's Cargo.toml correctly includes axum 0.8. The axum-inside-Tauri approach is correct per codebase analysis — ARCHITECTURE.md takes precedence.
+- **notify version discrepancy:** STACK.md recommends notify 8.x; ARCHITECTURE.md Cargo.toml shows notify "7". Use notify 8.x (more recent research, current stable).
+- **Sync scheduler scope:** FEATURES.md lists it as P1 but requires reqwest (outbound HTTP). Validate whether sync-to-remote is actively used in the existing app before committing to it in v3.0 — it may be a safe P2 deferral.
+- **WebKit rendering:** The frontend was developed in Chrome; Tauri macOS uses WebKit (Safari engine). Test the existing frontend in Safari before Phase 1 completes to catch rendering differences early (scrollbar styling, `backdrop-filter`, date inputs).
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- [Electron 40.0.0 Release](https://www.electronjs.org/blog/electron-40-0) — Chromium 144, Node 24.11.1, current stable
-- [Electron Releases](https://releases.electronjs.org/) — v40.8.0 current stable confirmed
-- [Electron BrowserWindow API](https://www.electronjs.org/docs/latest/api/browser-window) — titleBarStyle, trafficLightPosition, webPreferences
-- [Electron Tray API](https://www.electronjs.org/docs/latest/api/tray) — tray creation, Template images, context menu
-- [Electron Custom Title Bar](https://www.electronjs.org/docs/latest/tutorial/custom-title-bar) — hiddenInset, traffic light positioning
-- [Electron Application Menu](https://www.electronjs.org/docs/latest/tutorial/application-menu) — role-based menu templates
-- [Electron Process Model](https://www.electronjs.org/docs/latest/tutorial/process-model) — main/renderer/utility process architecture
-- [Electron app.getPath() API](https://www.electronjs.org/docs/latest/api/app) — userData path for database location
-- [Electron Timelines](https://www.electronjs.org/docs/latest/tutorial/electron-timelines) — release schedule, EOL June 2026
-- [electron-vite Getting Started](https://electron-vite.org/guide/) — v5.0.0 config structure, renderer root pointing to existing frontend
-- Codebase analysis: `packages/backend/src/index.ts`, `packages/backend/src/db/index.ts`, `packages/frontend/src/router/index.ts`, `packages/frontend/src/composables/useWebSocket.ts`, `packages/frontend/vite.config.ts`, `package.json` (root), `pnpm-workspace.yaml`
+- [Tauri v2 Official Docs](https://v2.tauri.app) — IPC, system tray, window management, configuration, Vite integration, CSP
+- [rusqlite 0.38.0 docs.rs](https://docs.rs/crate/rusqlite/latest) — bundled feature, connection API
+- [notify 8.2.0 docs.rs](https://docs.rs/crate/notify/latest) — file watcher API, RecursiveMode
+- [axum docs.rs](https://docs.rs/axum/latest) — WebSocket upgrade, error handling, Query extractor
+- [tokio-rusqlite lib.rs](https://lib.rs/crates/tokio-rusqlite) — async SQLite wrapper pattern
+- Codebase analysis: 25 Fastify routes (4 files), 17 frontend composables with `fetch()`, `useWebSocket.ts` event protocol, `analytics.ts` (1,029 LOC Drizzle queries), `file-watcher.ts` (chokidar dual-debounce config), `ingestion/` (15 modules, 4 recent subagent-linking commits)
 
 ### Secondary (MEDIUM confidence)
-- [Electron child process patterns](https://www.matthewslipper.com/2019/09/22/everything-you-wanted-electron-child-process.html) — ELECTRON_RUN_AS_NODE fork pattern
-- [Blocking Electron's main process](https://medium.com/actualbudget/the-horror-of-blocking-electrons-main-process-351bf11a763c) — why backend must not run in-process
-- [Fastify in child process discussion](https://github.com/fastify/fastify/discussions/3353) — fork pattern for Fastify in Electron confirmed
-- [Electron tray icon disappearance issue #822](https://github.com/electron/electron/issues/822) — module-scope reference required
-- [Electron tray destruction crash issue #12862](https://github.com/electron/electron/issues/12862) — don't destroy tray inside its own callback
-- [Electron process.cwd() returns '/' issue #2108](https://github.com/electron/electron/issues/2108) — database relative path breaks in packaged apps
-- [Electron child process termination issue #7084](https://github.com/electron/electron/issues/7084) — SIGTERM propagation not guaranteed
-- [vite-plugin-electron GitHub](https://github.com/electron-vite/vite-plugin-electron) — v0.29.0 pre-1.0 status, last published ~1 year ago
+- [Tauri + Axum community discussion](https://github.com/tokio-rs/axum/discussions/2501) — spawn pattern inside Tauri setup
+- [Tauri close-to-tray discussion](https://github.com/tauri-apps/tauri/discussions/2684) — prevent_close + window.hide() pattern
+- [Tauri async runtime issue #13330](https://github.com/tauri-apps/tauri/issues/13330) — Tokio runtime ownership in Tauri
+- [Rust ORMs comparison 2026](https://aarambhdevhub.medium.com/rust-orms-in-2026-diesel-vs-sqlx-vs-seaorm-vs-rusqlite-which-one-should-you-actually-use-706d0fe912f3) — rusqlite choice validation
 
 ### Tertiary (LOW confidence)
-- [npm trends: electron-builder vs electron-forge](https://npmtrends.com/electron-vs-electron-builder-vs-electron-forge) — download stats supporting electron-builder if packaging ever needed (out of scope)
-- [Electron child_process patterns gist](https://gist.github.com/maximilian-lindsey/a446a7ee87838a62099d) — Express in forked child process pattern
+- notify-debouncer-mini behavior vs chokidar — untested against real JSONL workloads; verify debounce collapse of Create+Modify events during Phase 5 testing
 
 ---
 *Research completed: 2026-03-11*

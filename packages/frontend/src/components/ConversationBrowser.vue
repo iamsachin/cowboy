@@ -101,6 +101,7 @@
           <template v-else v-for="row in data.rows" :key="row.id">
             <tr
               class="cursor-pointer hover"
+              :class="{ 'row-highlight': newIds.has(row.id) }"
               @click="navigateToDetail(row.id)"
             >
               <td class="whitespace-nowrap">{{ formatDate(row.date) }}</td>
@@ -200,6 +201,7 @@ const router = useRouter();
 const {
   data,
   loading,
+  refreshing,
   page,
   sortField,
   sortOrder,
@@ -213,6 +215,7 @@ const {
   submitSearch,
   clearSearch,
   filterOptions,
+  newIds,
 } = useConversationBrowser();
 
 const columns = [
@@ -311,5 +314,13 @@ const visiblePages = computed(() => {
 @keyframes pulse-fade {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
+}
+
+.row-highlight {
+  animation: row-enter 2s ease-out;
+}
+@keyframes row-enter {
+  0% { background-color: oklch(0.85 0.1 142 / 0.3); }
+  100% { background-color: transparent; }
 }
 </style>

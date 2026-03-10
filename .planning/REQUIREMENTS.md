@@ -9,9 +9,9 @@ Requirements for v2.1 Realtime & Live Insights. Each maps to roadmap phases.
 
 ### Realtime Push
 
-- [ ] **PUSH-01**: User sees new messages appear on an open conversation page without manual refresh (JSON-based CLI agents only)
+- [x] **PUSH-01**: User sees new messages appear on an open conversation page without manual refresh (JSON-based CLI agents only)
 - [x] **PUSH-02**: Backend broadcasts conversation IDs in WebSocket payload so detail page only refetches when its conversation is updated
-- [ ] **PUSH-03**: Scroll position is preserved when new messages arrive — auto-scroll if at bottom, hold position if scrolled up
+- [x] **PUSH-03**: Scroll position is preserved when new messages arrive — auto-scroll if at bottom, hold position if scrolled up
 - [ ] **PUSH-04**: New conversations automatically appear in the conversation list without page refresh
 - [ ] **PUSH-05**: New conversations automatically appear in the overview dashboard without page refresh
 
@@ -64,9 +64,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PUSH-01 | Phase 32 | Pending |
+| PUSH-01 | Phase 32 | Complete |
 | PUSH-02 | Phase 31 | Complete |
-| PUSH-03 | Phase 32 | Pending |
+| PUSH-03 | Phase 32 | Complete |
 | PUSH-04 | Phase 33 | Pending |
 | PUSH-05 | Phase 33 | Pending |
 | WIDG-01 | Phase 34 | Pending |

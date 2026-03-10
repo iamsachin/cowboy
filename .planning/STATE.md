@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Realtime & Live Insights
 status: executing
-stopped_at: Completed 31-02-PLAN.md
-last_updated: "2026-03-10T11:42:33.143Z"
+stopped_at: Phase 32 context gathered
+last_updated: "2026-03-10T11:58:43.893Z"
 last_activity: 2026-03-10 — Completed 31-01 backend WebSocket event infrastructure
 progress:
   total_phases: 5
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 31 — WebSocket Event Infrastructure
+**Current focus:** Phase 32 — Realtime Conversation Detail
 
 ## Current Position
 
-Phase: 31 of 35 (WebSocket Event Infrastructure)
+Phase: 32 of 35 (Realtime Conversation Detail)
 Plan: 1 of 2 in current phase
 Status: Executing
-Last activity: 2026-03-10 — Completed 31-01 backend WebSocket event infrastructure
+Last activity: 2026-03-10 — Completed 32-01 composable logic core
 
 ## Performance Metrics
 
@@ -49,6 +49,9 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - 31-01: Pre/post snapshot comparison for ingestion change detection
 - [Phase 31]: on() auto-cleans via onScopeDispose; consumers don't need explicit cleanup
 - [Phase 31]: Tab visibility and gap detection both emit synthetic system:full-refresh for normalized catch-up
+- 32-01: Separate loading (initial) and refreshing (live) refs to avoid full-page spinner
+- 32-01: Group key tracking uses groupTurns + turnKey for accurate new group detection
+- 32-01: captureScrollPosition returns restore closure for caller-controlled timing
 
 ### Pending Todos
 
@@ -78,6 +81,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-10T11:42:33.141Z
-Stopped at: Completed 31-02-PLAN.md
-Resume file: None
+Last session: 2026-03-10T12:18:44Z
+Stopped at: Completed 32-01-PLAN.md
+Resume file: .planning/phases/32-realtime-conversation-detail/32-02-PLAN.md

@@ -197,7 +197,7 @@ Phases execute in numeric order: 31 → 32 → 33 → 34 → 35
 | 29. Compaction Detection | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 30. Subagent Resolution | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 31. WebSocket Event Infrastructure | 2/2 | Complete    | 2026-03-10 | - |
-| 32. Realtime Conversation Detail | v2.1 | 0/0 | Not started | - |
+| 32. Realtime Conversation Detail | 1/2 | In Progress|  | - |
 | 33. Realtime Conversation Discovery | v2.1 | 0/0 | Not started | - |
 | 34. Live Token Usage Widget | v2.1 | 0/0 | Not started | - |
 | 35. Conversation Timeline | v2.1 | 0/0 | Not started | - |

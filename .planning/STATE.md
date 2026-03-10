@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Realtime & Live Insights
 status: completed
-stopped_at: Completed 33-02-PLAN.md
-last_updated: "2026-03-10T13:10:00.000Z"
-last_activity: 2026-03-10 — Completed 33-02 realtime conversation discovery UI
+stopped_at: Completed 34-01-PLAN.md
+last_updated: "2026-03-10T13:48:12.159Z"
+last_activity: 2026-03-10 — Completed 34-01 token rate backend endpoint
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 8
+  completed_plans: 7
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 33 — Realtime Conversation Discovery
+**Current focus:** Phase 34 — Live Token Usage Widget
 
 ## Current Position
 
-Phase: 33 of 35 (Realtime Conversation Discovery)
-Plan: 2 of 2 in current phase (PHASE COMPLETE)
-Status: Phase 33 complete, Phase 34 next
-Last activity: 2026-03-10 — Completed 33-02 realtime conversation discovery UI
+Phase: 34 of 35 (Live Token Usage Widget)
+Plan: 1 of 3 in current phase
+Status: 34-01 complete, 34-02 next
+Last activity: 2026-03-10 — Completed 34-01 token rate backend endpoint
 
 ## Performance Metrics
 
@@ -60,6 +60,7 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - 33-01: newIds auto-clears after 2000ms for transient highlight animation
 - 33-02: row-highlight uses oklch green with 2s ease-out fade for subtle new-row indication
 - 33-02: Loading overlay condition unchanged -- WS refetches bypass spinners via separate refreshing ref
+- 34-01: Used strftime ISO format comparison instead of SQLite datetime() to match stored ISO timestamps with T separator
 
 ### Pending Todos
 
@@ -86,9 +87,10 @@ None.
 | 16 | Preserve pagination state when navigating back | 2026-03-10 | aede542 | [16-preserve-pagination-state-when-navigatin](./quick/16-preserve-pagination-state-when-navigatin/) |
 | 17 | Fix active conversation marking for all conversations | 2026-03-10 | 51d09b1 | [17-fix-active-conversation-marking-all-conv](./quick/17-fix-active-conversation-marking-all-conv/) |
 | Phase 31 P02 | 4min | 2 tasks | 9 files |
+| Phase 34 P01 | 3min | 2 tasks | 5 files |
 
 ## Session Continuity
 
-Last session: 2026-03-10T13:10:00Z
-Stopped at: Completed 33-02-PLAN.md
-Resume file: Phase 34 next
+Last session: 2026-03-10T13:48:12.156Z
+Stopped at: Completed 34-01-PLAN.md
+Resume file: None

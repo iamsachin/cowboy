@@ -57,11 +57,28 @@ export async function discoverJsonlFiles(
         ? filename.replace(/^agent-/, '')
         : filename;
 
+      // For subagent files, extract parent session ID from filesystem path
+      // Path structure: {parentSessionId}/subagents/agent-{id}.jsonl
+      let parentSessionId: string | undefined;
+      if (isSubagent) {
+        const subagentIdx = entry.indexOf('subagents/');
+        const subagentIdxWin = entry.indexOf('subagents\\');
+        const idx = subagentIdx !== -1 ? subagentIdx : subagentIdxWin;
+        if (idx > 0) {
+          // Everything before /subagents/ is the parent path (may include nested dirs)
+          const parentPath = entry.slice(0, idx - 1); // -1 to strip trailing /
+          // The parent session ID is the first path segment
+          const firstSlash = parentPath.indexOf('/');
+          parentSessionId = firstSlash === -1 ? parentPath : parentPath.slice(0, firstSlash);
+        }
+      }
+
       files.push({
         filePath: fullPath,
         projectDir,
         isSubagent,
         sessionId,
+        parentSessionId,
       });
     }
   }

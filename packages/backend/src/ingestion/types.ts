@@ -71,6 +71,8 @@ export interface DiscoveredFile {
   projectDir: string;
   isSubagent: boolean;
   sessionId: string;
+  /** For subagent files, the session ID of the parent conversation (from filesystem path) */
+  parentSessionId?: string;
 }
 
 export interface IngestionStats {

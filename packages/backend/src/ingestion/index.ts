@@ -392,12 +392,11 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
       }
 
       // ── Subagent linking (post-processing) ─────────────────────────────
-      // After all JSONL files are ingested, link subagent conversations
-      // to their parent Task/Agent tool calls.
-      // Group files by projectDir to prevent cross-project subagent linking.
+      // Two-phase approach:
+      // Phase A: Set parentConversationId from filesystem structure (100% reliable)
+      // Phase B: Match subagents to specific tool calls for summaries (best-effort)
       try {
-        // Clear all existing links first so stale/incorrect cross-project
-        // links from previous runs are removed before re-linking.
+        // Clear all existing links first so stale/incorrect links are removed.
         db.update(conversations)
           .set({ parentConversationId: null })
           .where(sql`${conversations.parentConversationId} IS NOT NULL`)
@@ -407,6 +406,41 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
           .where(sql`${toolCalls.subagentConversationId} IS NOT NULL`)
           .run();
 
+        const subagentFiles = files.filter(f => f.isSubagent);
+
+        // ── Phase A: Filesystem-based parent linking ─────────────────────
+        // Each subagent file sits under {parentSessionId}/subagents/,
+        // so we know exactly which parent it belongs to.
+        let parentLinksCreated = 0;
+        db.transaction((tx) => {
+          for (const sf of subagentFiles) {
+            if (!sf.parentSessionId) continue;
+
+            const subagentConvId = generateId('claude-code', sf.sessionId);
+            const parentConvId = generateId('claude-code', sf.parentSessionId);
+
+            // Verify both exist in DB
+            const parentExists = db.select({ id: conversations.id })
+              .from(conversations)
+              .where(eq(conversations.id, parentConvId))
+              .get();
+            const subExists = db.select({ id: conversations.id })
+              .from(conversations)
+              .where(eq(conversations.id, subagentConvId))
+              .get();
+
+            if (parentExists && subExists) {
+              tx.update(conversations)
+                .set({ parentConversationId: parentConvId })
+                .where(eq(conversations.id, subagentConvId))
+                .run();
+              parentLinksCreated++;
+            }
+          }
+        });
+
+        // ── Phase B: Tool-call matching for summaries ────────────────────
+        // Group by project to prevent cross-project tool-call matching.
         const filesByProject = new Map<string, DiscoveredFile[]>();
         for (const f of files) {
           const existing = filesByProject.get(f.projectDir);
@@ -414,7 +448,6 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
           else filesByProject.set(f.projectDir, [f]);
         }
 
-        // Build helper functions that query the DB (project-independent)
         const getConversationId = (sessionId: string): string | null => {
           const convId = generateId('claude-code', sessionId);
           const row = db.select({ id: conversations.id })
@@ -447,44 +480,34 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
           return msg?.content ?? null;
         };
 
+        let toolCallLinksCreated = 0;
         for (const [, projectFiles] of filesByProject) {
           const parentFiles = projectFiles.filter(f => !f.isSubagent);
-          const subagentFiles = projectFiles.filter(f => f.isSubagent);
+          const projSubagentFiles = projectFiles.filter(f => f.isSubagent);
 
-          if (subagentFiles.length > 0 && parentFiles.length > 0) {
+          if (projSubagentFiles.length > 0 && parentFiles.length > 0) {
             const links = await linkSubagents({
               parentFiles,
-              subagentFiles,
+              subagentFiles: projSubagentFiles,
               getToolCalls: getToolCallsForConv,
               getConversationId,
               getFirstUserMessage,
             });
 
             if (links.length > 0) {
-              // For each link, parse the subagent JSONL and compute summary
+              // Update tool_calls with subagent references
               db.transaction((tx) => {
                 for (const link of links) {
-                  // Update tool_calls row
                   tx.update(toolCalls)
-                    .set({
-                      subagentConversationId: link.subagentConversationId,
-                    })
+                    .set({ subagentConversationId: link.subagentConversationId })
                     .where(eq(toolCalls.id, link.toolCallId))
-                    .run();
-
-                  // Update subagent conversation: set parentConversationId
-                  tx.update(conversations)
-                    .set({
-                      parentConversationId: link.parentConversationId,
-                    })
-                    .where(eq(conversations.id, link.subagentConversationId))
                     .run();
                 }
               });
 
-              // Compute summaries asynchronously and update
+              // Compute summaries
               for (const link of links) {
-                const subagentFile = subagentFiles.find(f => {
+                const subagentFile = projSubagentFiles.find(f => {
                   const convId = generateId('claude-code', f.sessionId);
                   return convId === link.subagentConversationId;
                 });
@@ -505,10 +528,12 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
                 }
               }
 
-              app.log.info({ linksCreated: links.length }, 'Subagent linking complete');
+              toolCallLinksCreated += links.length;
             }
           }
         }
+
+        app.log.info({ parentLinksCreated, toolCallLinksCreated }, 'Subagent linking complete');
       } catch (err) {
         app.log.error({ err }, 'Error during subagent linking (non-fatal)');
       }

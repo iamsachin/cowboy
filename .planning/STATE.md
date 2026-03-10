@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1
-milestone_name: Realtime & Live Insights
-status: completed
-stopped_at: Completed 35-02-PLAN.md
-last_updated: "2026-03-10T16:28:04.763Z"
-last_activity: 2026-03-10 — Completed 35-02 timeline integration into conversation detail page
+milestone: null
+milestone_name: null
+status: milestone_complete
+stopped_at: v2.1 milestone archived
+last_updated: "2026-03-10T17:00:00.000Z"
+last_activity: 2026-03-10 — Completed v2.1 Realtime & Live Insights milestone
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 10
-  completed_plans: 10
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
@@ -20,14 +20,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 35 — Conversation Timeline
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 35 of 35 (Conversation Timeline)
-Plan: 2 of 2 in current phase
-Status: Phase 35 complete (all plans done)
-Last activity: 2026-03-10 — Completed 35-02 timeline integration into conversation detail page
+Status: Between milestones — v2.1 shipped, next milestone not started
+Last activity: 2026-03-10 — Completed v2.1 Realtime & Live Insights milestone
 
 ## Performance Metrics
 
@@ -37,7 +35,8 @@ Last activity: 2026-03-10 — Completed 35-02 timeline integration into conversa
 - v1.2: 6 plans, 3 phases
 - v1.3: 21 plans, 8 phases
 - v2.0: 13 plans, 6 phases
-- Total plans completed: 76
+- v2.1: 10 plans, 5 phases
+- Total plans completed: 82
 
 ## Accumulated Context
 
@@ -45,37 +44,13 @@ Last activity: 2026-03-10 — Completed 35-02 timeline integration into conversa
 
 Decisions are logged in PROJECT.md Key Decisions table.
 
-- 31-01: Used WebSocketEventPayload distributive type to preserve union narrowing
-- 31-01: Pre/post snapshot comparison for ingestion change detection
-- [Phase 31]: on() auto-cleans via onScopeDispose; consumers don't need explicit cleanup
-- [Phase 31]: Tab visibility and gap detection both emit synthetic system:full-refresh for normalized catch-up
-- 32-01: Separate loading (initial) and refreshing (live) refs to avoid full-page spinner
-- 32-01: Group key tracking uses groupTurns + turnKey for accurate new group detection
-- 32-01: captureScrollPosition returns restore closure for caller-controlled timing
-- 32-02: NewMessagesPill uses fixed positioning with z-50 for viewport-anchored floating pill
-- 32-02: Pagination auto-expands when user is at bottom so new messages are never hidden
-- 32-02: Fade-in uses pure CSS animation keyed on newGroupKeys set (no JS cleanup)
-- 33-01: 500ms debounce coalesces burst WS events into single API call
-- 33-01: previousIds starts empty; initial load populates without marking new (prevents flash)
-- 33-01: newIds auto-clears after 2000ms for transient highlight animation
-- 33-02: row-highlight uses oklch green with 2s ease-out fade for subtle new-row indication
-- 33-02: Loading overlay condition unchanged -- WS refetches bypass spinners via separate refreshing ref
-- 34-01: Used strftime ISO format comparison instead of SQLite datetime() to match stored ISO timestamps with T separator
-- [Phase 34]: Singleton composable with module-level dismissed ref shared between pill and sidebar
-- [Phase 34]: filledTokenRate uses UTC timestamps to match backend ISO format
-- [Phase 35]: Lazy-hydrated singleton: localStorage read deferred to first useTimeline() call for happy-dom v20 compatibility
-- [Phase 35]: Vitest setup.ts with localStorage polyfill for happy-dom v20 missing Storage methods
-- [Phase 35]: Dual useScrollTracker instances for main container and timeline panel with independent behaviors
-- [Phase 35]: IntersectionObserver with threshold 0.1 on scroll container for active timeline event detection
-
 ### Pending Todos
 
 None.
 
 ### Blockers/Concerns
 
-- Research flag: Phase 31/32 incremental merge strategy needs careful design against groupTurns reactive pipeline
-- Research flag: Phase 34 Chart.js lifecycle with dismiss/restore toggling needs v-show + destroy guard pattern
+None.
 
 ### Quick Tasks Completed
 
@@ -92,14 +67,9 @@ None.
 | 15 | Fix pill badge responsiveness on smaller screens | 2026-03-10 | 5964738 | [15-fix-pill-badge-responsiveness-on-smaller](./quick/15-fix-pill-badge-responsiveness-on-smaller/) |
 | 16 | Preserve pagination state when navigating back | 2026-03-10 | aede542 | [16-preserve-pagination-state-when-navigatin](./quick/16-preserve-pagination-state-when-navigatin/) |
 | 17 | Fix active conversation marking for all conversations | 2026-03-10 | 51d09b1 | [17-fix-active-conversation-marking-all-conv](./quick/17-fix-active-conversation-marking-all-conv/) |
-| Phase 31 P02 | 4min | 2 tasks | 9 files |
-| Phase 34 P01 | 3min | 2 tasks | 5 files |
-| Phase 34 P02 | 12min | 3 tasks | 5 files |
-| Phase 35 P01 | 8min | 2 tasks | 5 files |
-| Phase 35 P02 | 3min | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-03-10T16:27:21Z
-Stopped at: Completed 35-02-PLAN.md
+Last session: 2026-03-10T17:00:00Z
+Stopped at: v2.1 milestone archived
 Resume file: None

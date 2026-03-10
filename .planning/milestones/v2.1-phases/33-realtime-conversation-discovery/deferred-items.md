@@ -1,0 +1,1 @@
+- Pre-existing: tests/app.test.ts expects 6 named routes but has 9 (route count not updated after prior phases added routes)

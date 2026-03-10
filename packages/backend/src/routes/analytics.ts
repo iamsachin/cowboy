@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { getOverviewStats, getTimeSeries, getModelDistribution, getToolStats, getHeatmapData, getProjectStats, getConversationList, getConversationDetail, getFilterOptions } from '../db/queries/analytics.js';
+import { getOverviewStats, getTimeSeries, getModelDistribution, getToolStats, getHeatmapData, getProjectStats, getConversationList, getConversationDetail, getFilterOptions, getTokenRate } from '../db/queries/analytics.js';
 import { autoGranularity } from '@cowboy/shared';
 import type { Granularity } from '@cowboy/shared';
 
@@ -68,6 +68,11 @@ export default async function analyticsRoutes(app: FastifyInstance) {
     const fromDate = from || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
     return getProjectStats(fromDate, toDate, agent || undefined);
+  });
+
+  // GET /analytics/token-rate — per-minute token aggregation for last 60 minutes
+  app.get('/analytics/token-rate', async () => {
+    return getTokenRate();
   });
 
   // GET /analytics/filters?from=&to= — distinct projects and agents for filter dropdowns

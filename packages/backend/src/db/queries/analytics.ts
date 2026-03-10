@@ -2,7 +2,7 @@ import { db } from '../index.js';
 import { conversations, messages, toolCalls, tokenUsage, compactionEvents } from '../schema.js';
 import { sql, and, gte, lte, eq, like, or } from 'drizzle-orm';
 import { calculateCost } from '@cowboy/shared';
-import type { OverviewStats, TimeSeriesPoint, ConversationRow, ConversationListResponse, ConversationDetailResponse, MessageTokenUsage, ToolStatsRow, HeatmapDay, ProjectStatsRow, ProjectModelEntry, SubagentSummary, ToolCallRow } from '@cowboy/shared';
+import type { OverviewStats, TimeSeriesPoint, ConversationRow, ConversationListResponse, ConversationDetailResponse, MessageTokenUsage, ToolStatsRow, HeatmapDay, ProjectStatsRow, ProjectModelEntry, SubagentSummary, ToolCallRow, TokenRatePoint } from '@cowboy/shared';
 import type { Granularity } from '@cowboy/shared';
 
 /**
@@ -902,4 +902,29 @@ export function getFilterOptions(from: string, to: string): { projects: string[]
     projects: projectRows.map(r => r.project!),
     agents: agentRows.map(r => r.agent),
   };
+}
+
+/**
+ * Get per-minute token aggregation for the last 60 minutes.
+ * Returns TokenRatePoint[] sorted by minute ascending.
+ * All agents combined -- no agent filter.
+ */
+export function getTokenRate(): TokenRatePoint[] {
+  const rows = db
+    .select({
+      minute: sql<string>`strftime('%Y-%m-%dT%H:%M', ${tokenUsage.createdAt})`.as('minute'),
+      inputTokens: sql<number>`coalesce(sum(${tokenUsage.inputTokens}), 0)`,
+      outputTokens: sql<number>`coalesce(sum(${tokenUsage.outputTokens}), 0)`,
+    })
+    .from(tokenUsage)
+    .where(sql`${tokenUsage.createdAt} >= strftime('%Y-%m-%dT%H:%M:%S', 'now', '-60 minutes')`)
+    .groupBy(sql`minute`)
+    .orderBy(sql`minute`)
+    .all();
+
+  return rows.map(r => ({
+    minute: r.minute,
+    inputTokens: Number(r.inputTokens),
+    outputTokens: Number(r.outputTokens),
+  }));
 }

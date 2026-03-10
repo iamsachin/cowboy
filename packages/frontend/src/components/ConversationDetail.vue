@@ -288,6 +288,13 @@ register({
   group: 'Navigation',
 });
 
+// Auto-expand when there's only one assistant group
+watch(groupIds, (ids) => {
+  if (ids.length === 1 && !isExpanded(ids[0])) {
+    toggle(ids[0]);
+  }
+}, { immediate: true });
+
 // Reset focus when conversation changes
 watch(() => props.conversationId, () => {
   focusedGroupIndex.value = -1;

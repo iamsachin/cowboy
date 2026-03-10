@@ -49,8 +49,8 @@
 
         <!-- Metadata header bar -->
         <div class="bg-base-200 rounded-lg p-4 mb-6">
-          <h1 class="text-xl font-bold mb-3 flex items-center gap-2">
-            {{ displayTitle }}
+          <h1 class="text-xl font-bold mb-3 flex items-start gap-2">
+            <span class="break-words min-w-0">{{ displayTitle }}</span>
             <span v-if="data.conversation.isActive" class="pulse-dot inline-block"></span>
             <button
               class="btn btn-ghost btn-xs tooltip tooltip-bottom"

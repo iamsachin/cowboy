@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 max-w-5xl mx-auto">
+  <div ref="pageRef" class="p-4 max-w-5xl mx-auto">
     <!-- Loading state -->
     <div v-if="loading" class="flex justify-center items-center min-h-[60vh]">
       <span class="loading loading-spinner loading-lg"></span>
@@ -48,8 +48,9 @@
 
       <!-- Metadata header bar -->
       <div class="bg-base-200 rounded-lg p-4 mb-6">
-        <h1 class="text-xl font-bold mb-3">
+        <h1 class="text-xl font-bold mb-3 flex items-center gap-2">
           {{ displayTitle }}
+          <span v-if="data.conversation.isActive" class="pulse-dot inline-block"></span>
         </h1>
         <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
           <!-- Agent badge -->
@@ -127,13 +128,16 @@
         :toolCalls="data.toolCalls"
         :tokenUsageByMessage="data.tokenUsageByMessage"
         :compactionEvents="data.compactionEvents ?? []"
+        :conversationId="id"
+        :newGroupKeys="newGroupKeys"
+        :scrollContainerRef="scrollContainer"
       />
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue';
+import { computed, ref, watchEffect, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, ArrowUpLeft, AlertTriangle, ClipboardList } from 'lucide-vue-next';
 import type { ConversationPlanEntry } from '@cowboy/shared';
@@ -155,7 +159,35 @@ function goBack() {
   }
 }
 
-const { data, loading, error, notFound } = useConversationDetail(id);
+const { data, loading, error, notFound, newGroupKeys, refreshing } = useConversationDetail(id);
+
+// Scroll container: the <main> element from DashboardLayout
+const pageRef = ref<HTMLElement | null>(null);
+const scrollContainer = ref<HTMLElement | null>(null);
+
+onMounted(() => {
+  if (pageRef.value) {
+    const main = pageRef.value.closest('main');
+    scrollContainer.value = main as HTMLElement | null;
+  }
+});
+
+// Dev-mode assertion: warn on duplicate message IDs
+if (import.meta.env.DEV) {
+  watchEffect(() => {
+    if (!data.value) return;
+    const ids = data.value.messages.map(m => m.id);
+    const seen = new Set<string>();
+    const duplicates: string[] = [];
+    for (const id of ids) {
+      if (seen.has(id)) duplicates.push(id);
+      seen.add(id);
+    }
+    if (duplicates.length > 0) {
+      console.warn('Duplicate message IDs detected:', duplicates);
+    }
+  });
+}
 
 // Fetch inline plans for this conversation
 const conversationPlans = ref<ConversationPlanEntry[]>([]);
@@ -231,3 +263,18 @@ function formatDuration(start: string, end: string): string {
   }
 }
 </script>
+
+<style scoped>
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: oklch(0.72 0.19 142);
+  animation: pulse-fade 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-fade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+</style>

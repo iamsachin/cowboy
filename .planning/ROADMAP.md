@@ -77,7 +77,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 </details>
 
-### 🚧 v2.1 Realtime & Live Insights (In Progress)
+### v2.1 Realtime & Live Insights (In Progress)
 
 **Milestone Goal:** Add realtime data pushing, live token usage monitoring, and conversation timeline navigation.
 
@@ -156,8 +156,8 @@ Plans:
   4. Timeline updates live when new messages are pushed to the conversation
 **Plans**: 2 plans
 Plans:
-- [ ] 35-01-PLAN.md — [To be planned]
-- [ ] 35-02-PLAN.md — [To be planned]
+- [ ] 35-01-PLAN.md — useTimeline composable, ConversationTimeline component, and unit tests
+- [ ] 35-02-PLAN.md — Two-column layout integration, scroll sync, click-to-navigate, live updates
 
 ## Progress
 
@@ -199,5 +199,5 @@ Phases execute in numeric order: 31 → 32 → 33 → 34 → 35
 | 31. WebSocket Event Infrastructure | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 32. Realtime Conversation Detail | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 33. Realtime Conversation Discovery | v2.1 | 2/2 | Complete | 2026-03-10 |
-| 34. Live Token Usage Widget | 2/2 | Complete   | 2026-03-10 | - |
-| 35. Conversation Timeline | v2.1 | 0/0 | Not started | - |
+| 34. Live Token Usage Widget | v2.1 | 2/2 | Complete | 2026-03-10 |
+| 35. Conversation Timeline | 1/2 | In Progress|  | - |

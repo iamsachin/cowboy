@@ -24,9 +24,9 @@ Requirements for v2.1 Realtime & Live Insights. Each maps to roadmap phases.
 
 ### Conversation Timeline
 
-- [ ] **TIME-01**: User sees a collapsible vertical timeline on the right side of the conversation detail page showing key events
+- [x] **TIME-01**: User sees a collapsible vertical timeline on the right side of the conversation detail page showing key events
 - [ ] **TIME-02**: User can click timeline events to scroll to the corresponding position in the conversation
-- [ ] **TIME-03**: User can collapse/expand the timeline panel
+- [x] **TIME-03**: User can collapse/expand the timeline panel
 
 ## Future Requirements
 
@@ -73,9 +73,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WIDG-02 | Phase 34 | Complete |
 | WIDG-03 | Phase 34 | Complete |
 | WIDG-04 | Phase 34 | Complete |
-| TIME-01 | Phase 35 | Pending |
+| TIME-01 | Phase 35 | Complete |
 | TIME-02 | Phase 35 | Pending |
-| TIME-03 | Phase 35 | Pending |
+| TIME-03 | Phase 35 | Complete |
 
 **Coverage:**
 - v2.1 requirements: 12 total

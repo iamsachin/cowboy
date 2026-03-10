@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Realtime & Live Insights
 status: completed
-stopped_at: Completed 34-02-PLAN.md
-last_updated: "2026-03-10T14:37:17.976Z"
-last_activity: 2026-03-10 — Completed 34-02 live token usage widget frontend
+stopped_at: Completed 35-01-PLAN.md
+last_updated: "2026-03-10T16:23:07.282Z"
+last_activity: 2026-03-10 — Completed 35-01 timeline composable and component
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 10
+  completed_plans: 9
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 34 — Live Token Usage Widget
+**Current focus:** Phase 35 — Conversation Timeline
 
 ## Current Position
 
-Phase: 34 of 35 (Live Token Usage Widget)
-Plan: 2 of 3 in current phase
-Status: 34-02 complete, 34-03 next
-Last activity: 2026-03-10 — Completed 34-02 live token usage widget frontend
+Phase: 35 of 35 (Conversation Timeline)
+Plan: 1 of 2 in current phase
+Status: 35-01 complete, 35-02 next
+Last activity: 2026-03-10 — Completed 35-01 timeline composable and component
 
 ## Performance Metrics
 
@@ -63,6 +63,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - 34-01: Used strftime ISO format comparison instead of SQLite datetime() to match stored ISO timestamps with T separator
 - [Phase 34]: Singleton composable with module-level dismissed ref shared between pill and sidebar
 - [Phase 34]: filledTokenRate uses UTC timestamps to match backend ISO format
+- [Phase 35]: Lazy-hydrated singleton: localStorage read deferred to first useTimeline() call for happy-dom v20 compatibility
+- [Phase 35]: Vitest setup.ts with localStorage polyfill for happy-dom v20 missing Storage methods
 
 ### Pending Todos
 
@@ -91,9 +93,10 @@ None.
 | Phase 31 P02 | 4min | 2 tasks | 9 files |
 | Phase 34 P01 | 3min | 2 tasks | 5 files |
 | Phase 34 P02 | 12min | 3 tasks | 5 files |
+| Phase 35 P01 | 8min | 2 tasks | 5 files |
 
 ## Session Continuity
 
-Last session: 2026-03-10T14:37:17.973Z
-Stopped at: Completed 34-02-PLAN.md
+Last session: 2026-03-10T16:22:44.773Z
+Stopped at: Completed 35-01-PLAN.md
 Resume file: None

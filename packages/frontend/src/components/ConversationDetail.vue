@@ -30,42 +30,44 @@
 
     <!-- Turn list -->
     <template v-for="turn in visibleTurns" :key="turnKey(turn)">
-      <ChatMessage
-        v-if="turn.type === 'user'"
-        :message="turn.message"
-      />
-      <div
-        v-else-if="turn.type === 'assistant-group'"
-        :data-group-id="turnKey(turn)"
-        :class="{ 'ring-2 ring-primary rounded-lg': turnKey(turn) === focusedGroupId }"
-      >
-        <AssistantGroupCard
+      <div :class="{ 'group-fade-in': newGroupKeys.has(turnKey(turn)) }">
+        <ChatMessage
+          v-if="turn.type === 'user'"
+          :message="turn.message"
+        />
+        <div
+          v-else-if="turn.type === 'assistant-group'"
+          :data-group-id="turnKey(turn)"
+          :class="{ 'ring-2 ring-primary rounded-lg': turnKey(turn) === focusedGroupId }"
+        >
+          <AssistantGroupCard
+            :group="turn"
+            :expanded="isExpanded(turnKey(turn))"
+            :tokenUsageByMessage="tokenUsageByMessage"
+            @toggle="toggle(turnKey(turn))"
+          />
+        </div>
+        <SystemMessageIndicator
+          v-else-if="turn.type === 'system-group'"
           :group="turn"
-          :expanded="isExpanded(turnKey(turn))"
-          :tokenUsageByMessage="tokenUsageByMessage"
-          @toggle="toggle(turnKey(turn))"
+        />
+        <SlashCommandChip
+          v-else-if="turn.type === 'slash-command'"
+          :turn="turn"
+        />
+        <AgentPromptChip
+          v-else-if="turn.type === 'agent-prompt'"
+          :turn="turn"
+        />
+        <ClearDivider
+          v-else-if="turn.type === 'clear-divider'"
+          :turn="turn"
+        />
+        <CompactionDivider
+          v-else-if="turn.type === 'compaction'"
+          :turn="turn"
         />
       </div>
-      <SystemMessageIndicator
-        v-else-if="turn.type === 'system-group'"
-        :group="turn"
-      />
-      <SlashCommandChip
-        v-else-if="turn.type === 'slash-command'"
-        :turn="turn"
-      />
-      <AgentPromptChip
-        v-else-if="turn.type === 'agent-prompt'"
-        :turn="turn"
-      />
-      <ClearDivider
-        v-else-if="turn.type === 'clear-divider'"
-        :turn="turn"
-      />
-      <CompactionDivider
-        v-else-if="turn.type === 'compaction'"
-        :turn="turn"
-      />
     </template>
 
     <!-- Load more button for large conversations -->
@@ -76,17 +78,24 @@
     >
       Load more ({{ remainingCount }} remaining)
     </button>
+
+    <!-- New messages pill -->
+    <NewMessagesPill
+      :count="newMessageCount"
+      @scrollToBottom="handleScrollToBottom"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, nextTick, onUnmounted } from 'vue';
+import { computed, ref, watch, nextTick, onUnmounted, toRef } from 'vue';
 import { ChevronsDown, ChevronsUp } from 'lucide-vue-next';
 import type { MessageRow, ToolCallRow, MessageTokenUsage, CompactionEvent } from '@cowboy/shared';
 import { groupTurns, type GroupedTurn } from '../composables/useGroupedTurns';
 import { useCollapseState } from '../composables/useCollapseState';
 import { useConversationSearch } from '../composables/useConversationSearch';
 import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts';
+import { useScrollTracker } from '../composables/useScrollTracker';
 import ChatMessage from './ChatMessage.vue';
 import AssistantGroupCard from './AssistantGroupCard.vue';
 import SystemMessageIndicator from './SystemMessageIndicator.vue';
@@ -95,12 +104,16 @@ import ClearDivider from './ClearDivider.vue';
 import CompactionDivider from './CompactionDivider.vue';
 import AgentPromptChip from './AgentPromptChip.vue';
 import ConversationSearchBar from './ConversationSearchBar.vue';
+import NewMessagesPill from './NewMessagesPill.vue';
 
 const props = defineProps<{
   messages: MessageRow[];
   toolCalls: ToolCallRow[];
   tokenUsageByMessage?: Record<string, MessageTokenUsage>;
   compactionEvents?: CompactionEvent[];
+  conversationId: string;
+  newGroupKeys: Set<string>;
+  scrollContainerRef: HTMLElement | null;
 }>();
 
 // Sort all messages — groupTurns handles all classification internally
@@ -118,6 +131,10 @@ const activeToolCalls = computed(() => {
 
 const turns = computed(() => groupTurns(sortedMessages.value, activeToolCalls.value, props.compactionEvents));
 
+// Scroll tracking
+const scrollContainerRefLocal = toRef(props, 'scrollContainerRef');
+const { isAtBottom, scrollToBottom, captureScrollPosition } = useScrollTracker(scrollContainerRefLocal);
+
 // Pagination: show first PAGE_SIZE groups, then load more on demand
 const PAGE_SIZE = 50;
 const visibleCount = ref(PAGE_SIZE);
@@ -130,10 +147,35 @@ function loadMore() {
   visibleCount.value = Math.min(visibleCount.value + PAGE_SIZE, turns.value.length);
 }
 
-// Reset pagination when a new conversation is loaded
-watch(() => props.messages.length, () => {
+// Reset pagination only on conversation change, NOT on live updates
+watch(() => props.conversationId, () => {
   visibleCount.value = PAGE_SIZE;
 });
+
+// Auto-expand visible count when at bottom and new messages arrive
+watch(() => props.messages.length, () => {
+  if (isAtBottom.value) {
+    visibleCount.value = turns.value.length;
+  }
+});
+
+// Scroll position management: auto-scroll if at bottom after DOM update
+watch(() => props.messages.length, async (newLen, oldLen) => {
+  if (newLen === oldLen) return;
+  const restore = captureScrollPosition();
+  await nextTick();
+  if (restore) restore();
+});
+
+// New messages pill: only show when NOT at bottom
+const newMessageCount = computed(() => {
+  if (isAtBottom.value) return 0;
+  return props.newGroupKeys.size;
+});
+
+function handleScrollToBottom() {
+  scrollToBottom(true);
+}
 
 function turnKey(turn: GroupedTurn): string {
   if (turn.type === 'user') return turn.message.id;
@@ -245,7 +287,7 @@ register({
 });
 
 // Reset focus when conversation changes
-watch(() => props.messages.length, () => {
+watch(() => props.conversationId, () => {
   focusedGroupIndex.value = -1;
 });
 
@@ -257,3 +299,20 @@ onUnmounted(() => {
   searchState.close();
 });
 </script>
+
+<style scoped>
+@keyframes group-fade-in-anim {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.group-fade-in {
+  animation: group-fade-in-anim 0.2s ease-out;
+}
+</style>

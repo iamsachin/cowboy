@@ -273,7 +273,7 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
     // One-time data quality migration for existing conversations
     try {
       const migrationResult = runDataQualityMigration(db);
-      if (migrationResult.titlesFixed > 0 || migrationResult.modelsFixed > 0 || migrationResult.cursorProjectsFixed > 0 || migrationResult.cursorMessagesFixed > 0 || migrationResult.contentFixed > 0) {
+      if (migrationResult.titlesFixed > 0 || migrationResult.modelsFixed > 0 || migrationResult.cursorProjectsFixed > 0 || migrationResult.cursorMessagesFixed > 0 || migrationResult.contentFixed > 0 || migrationResult.staleLinksCleared > 0) {
         app.log.info({ migrationResult }, 'Data quality migration applied');
       }
     } catch (err) {
@@ -396,16 +396,6 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
       // Phase A: Set parentConversationId from filesystem structure (100% reliable)
       // Phase B: Match subagents to specific tool calls for summaries (best-effort)
       try {
-        // Clear all existing links first so stale/incorrect links are removed.
-        db.update(conversations)
-          .set({ parentConversationId: null })
-          .where(sql`${conversations.parentConversationId} IS NOT NULL`)
-          .run();
-        db.update(toolCalls)
-          .set({ subagentConversationId: null, subagentSummary: null })
-          .where(sql`${toolCalls.subagentConversationId} IS NOT NULL`)
-          .run();
-
         const subagentFiles = files.filter(f => f.isSubagent);
 
         // ── Phase A: Filesystem-based parent linking ─────────────────────

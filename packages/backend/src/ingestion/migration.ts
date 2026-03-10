@@ -437,6 +437,41 @@ export function fixDuplicateContentBlocks(database: Database): number {
   return fixedCount;
 }
 
+// ── Clear stale subagent links ──────────────────────────────────────────
+
+/**
+ * One-time migration: clear all parentConversationId and subagentConversationId
+ * to fix incorrect cross-project/cross-session links from the old heuristic matcher.
+ * The filesystem-based linker in ingestion will re-set them correctly.
+ *
+ * Uses a flag in a migrations_applied table so it only runs once.
+ */
+export function clearStaleSubagentLinks(database: Database): number {
+  // Create tracking table if needed
+  database.run(sql`CREATE TABLE IF NOT EXISTS migrations_applied (
+    name TEXT PRIMARY KEY,
+    applied_at TEXT NOT NULL
+  )`);
+
+  const already = database.all(sql`SELECT 1 FROM migrations_applied WHERE name = 'clear_stale_subagent_links_v1'`);
+  if (already.length > 0) return 0;
+
+  let cleared = 0;
+
+  const parentResult = database
+    .update(conversations)
+    .set({ parentConversationId: null })
+    .where(sql`${conversations.parentConversationId} IS NOT NULL`)
+    .run();
+  cleared += parentResult.changes;
+
+  database.run(sql`UPDATE tool_calls SET subagent_conversation_id = NULL, subagent_summary = NULL WHERE subagent_conversation_id IS NOT NULL`);
+
+  database.run(sql`INSERT INTO migrations_applied (name, applied_at) VALUES ('clear_stale_subagent_links_v1', ${new Date().toISOString()})`);
+
+  return cleared;
+}
+
 // ── Main migration runner ──────────────────────────────────────────────
 
 /**
@@ -445,7 +480,7 @@ export function fixDuplicateContentBlocks(database: Database): number {
  */
 export function runDataQualityMigration(
   database: Database,
-): { titlesFixed: number; modelsFixed: number; cursorProjectsFixed: number; cursorMessagesFixed: number; contentFixed: number } {
+): { titlesFixed: number; modelsFixed: number; cursorProjectsFixed: number; cursorMessagesFixed: number; contentFixed: number; staleLinksCleared: number } {
   const titlesFixed = fixConversationTitles(database);
   const modelsFixed = fixConversationModels(database);
 
@@ -457,5 +492,8 @@ export function runDataQualityMigration(
   // Content cleanup: strip system XML tags from existing assistant messages
   const contentFixed = fixDuplicateContentBlocks(database);
 
-  return { titlesFixed, modelsFixed, cursorProjectsFixed, cursorMessagesFixed, contentFixed };
+  // One-time: clear wrong subagent links so filesystem-based linker can fix them
+  const staleLinksCleared = clearStaleSubagentLinks(database);
+
+  return { titlesFixed, modelsFixed, cursorProjectsFixed, cursorMessagesFixed, contentFixed, staleLinksCleared };
 }

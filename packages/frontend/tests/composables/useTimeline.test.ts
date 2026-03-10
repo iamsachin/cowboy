@@ -1,23 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { GroupedTurn, UserTurn, AssistantGroup, CompactionTurn, SystemGroup, SlashCommandTurn, ClearDividerTurn, AgentPromptTurn } from '../../src/composables/useGroupedTurns';
-
-// Mock localStorage before importing the composable (module-level state reads it on import)
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: vi.fn((key: string) => store[key] ?? null),
-    setItem: vi.fn((key: string, value: string) => { store[key] = value; }),
-    removeItem: vi.fn((key: string) => { delete store[key]; }),
-    clear: vi.fn(() => { store = {}; }),
-    _store: store,
-    _reset: () => { store = {}; },
-  };
-})();
-
-vi.stubGlobal('localStorage', localStorageMock);
-
-// Import after mocking localStorage
-import { extractTimelineEvents, useTimeline } from '../../src/composables/useTimeline';
+import { extractTimelineEvents, useTimeline, _resetTimelineState } from '../../src/composables/useTimeline';
 
 // Factory helpers
 function makeUserTurn(id: string, content: string): UserTurn {
@@ -216,38 +199,31 @@ describe('extractTimelineEvents', () => {
 
 describe('useTimeline panel state', () => {
   beforeEach(() => {
-    localStorageMock.getItem.mockClear();
-    localStorageMock.setItem.mockClear();
-    localStorageMock._reset();
+    localStorage.removeItem('timeline-panel-open');
+    _resetTimelineState();
   });
 
   it('isOpen defaults to true when no localStorage key exists', () => {
-    // Need to re-evaluate -- but since it's module-level, we test the initial behavior
-    // The module reads localStorage on import. With empty store, it defaults to true.
     const { isOpen } = useTimeline();
-    // Reset to simulate fresh state
-    isOpen.value = localStorage.getItem('timeline-panel-open') !== 'false';
     expect(isOpen.value).toBe(true);
   });
 
   it('isOpen is false when localStorage has "false"', () => {
-    localStorageMock._reset();
-    (localStorageMock as any)._store['timeline-panel-open'] = 'false';
+    localStorage.setItem('timeline-panel-open', 'false');
     const { isOpen } = useTimeline();
-    // Re-read from storage to simulate fresh module
-    isOpen.value = localStorage.getItem('timeline-panel-open') !== 'false';
     expect(isOpen.value).toBe(false);
   });
 
   it('toggle() flips isOpen and writes to localStorage', () => {
     const { isOpen, toggle } = useTimeline();
-    isOpen.value = true; // Start from known state
+    expect(isOpen.value).toBe(true);
+
     toggle();
     expect(isOpen.value).toBe(false);
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('timeline-panel-open', 'false');
+    expect(localStorage.getItem('timeline-panel-open')).toBe('false');
 
     toggle();
     expect(isOpen.value).toBe(true);
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('timeline-panel-open', 'true');
+    expect(localStorage.getItem('timeline-panel-open')).toBe('true');
   });
 });

@@ -114,8 +114,8 @@ Plans:
   4. Duplicate messages never appear (deduplication handles push/re-ingestion race)
 **Plans**: 2 plans
 Plans:
-- [ ] 31-01-PLAN.md — Shared event types and backend typed event emission
-- [ ] 31-02-PLAN.md — Frontend typed event router and composable migration
+- [ ] 32-01-PLAN.md — Debounced refetch composable, scroll tracker, isActive API field, unit tests
+- [ ] 32-02-PLAN.md — UI integration: scroll management, new messages pill, fade-in, green dot
 
 ### Phase 33: Realtime Conversation Discovery
 **Goal**: Users see new conversations appear in the list and overview without manual refresh
@@ -196,7 +196,7 @@ Phases execute in numeric order: 31 → 32 → 33 → 34 → 35
 | 28. Navigation & Search | v2.0 | 3/3 | Complete | 2026-03-09 |
 | 29. Compaction Detection | v2.0 | 2/2 | Complete | 2026-03-09 |
 | 30. Subagent Resolution | v2.0 | 2/2 | Complete | 2026-03-09 |
-| 31. WebSocket Event Infrastructure | 2/2 | Complete   | 2026-03-10 | - |
+| 31. WebSocket Event Infrastructure | 2/2 | Complete    | 2026-03-10 | - |
 | 32. Realtime Conversation Detail | v2.1 | 0/0 | Not started | - |
 | 33. Realtime Conversation Discovery | v2.1 | 0/0 | Not started | - |
 | 34. Live Token Usage Widget | v2.1 | 0/0 | Not started | - |

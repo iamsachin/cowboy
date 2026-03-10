@@ -684,6 +684,7 @@ export function getConversationDetail(conversationId: string): ConversationDetai
       lastMessageAt,
       parentConversationId: conv.parentConversationId ?? null,
       parentTitle,
+      isActive: conv.status === 'active',
     },
     messages: msgs,
     toolCalls: tools.map(t => ({

@@ -123,6 +123,7 @@ export interface ConversationDetailResponse {
     lastMessageAt?: string;
     parentConversationId?: string | null;
     parentTitle?: string | null;
+    isActive?: boolean;
   };
   messages: MessageRow[];
   toolCalls: ToolCallRow[];

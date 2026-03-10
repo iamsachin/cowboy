@@ -1,19 +1,21 @@
-import { ref, readonly } from 'vue';
+import { ref, readonly, getCurrentScope, onScopeDispose } from 'vue';
+import type { WebSocketEvent, WebSocketEventType, SystemFullRefreshEvent } from '@cowboy/shared';
 
 // Types
 export type ConnectionState = 'connected' | 'reconnecting' | 'disconnected';
 
-export interface WsMessage {
-  type: 'connected' | 'data-changed';
-  timestamp?: string;
-}
+// Typed callback helper
+type EventCallback<T extends WebSocketEventType> = (
+  event: Extract<WebSocketEvent, { type: T }>
+) => void;
 
 // Module-level singleton state (outside the exported function)
 const state = ref<ConnectionState>('disconnected');
 const reconnectAttempt = ref(0);
 let ws: WebSocket | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-const listeners = new Set<() => void>();
+const listeners = new Map<string, Set<(event: any) => void>>();
+let lastSeq = 0;
 let started = false;
 
 // Exported for testability
@@ -30,6 +32,15 @@ function getWsUrl(): string {
   return `${protocol}//${location.host}/api/ws`;
 }
 
+function fireFullRefresh(): void {
+  const refreshEvent: SystemFullRefreshEvent = {
+    type: 'system:full-refresh',
+    seq: 0,
+    timestamp: new Date().toISOString(),
+  };
+  listeners.get('system:full-refresh')?.forEach((cb) => cb(refreshEvent));
+}
+
 function connect(): void {
   if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
     return;
@@ -40,14 +51,24 @@ function connect(): void {
   ws.onopen = () => {
     state.value = 'connected';
     reconnectAttempt.value = 0;
+    lastSeq = 0; // Reset on reconnect so first event sets new baseline
   };
 
   ws.onmessage = (event: MessageEvent) => {
     try {
-      const msg: WsMessage = JSON.parse(event.data);
-      if (msg.type === 'data-changed') {
-        listeners.forEach((cb) => cb());
+      const msg = JSON.parse(event.data) as WebSocketEvent;
+      // Skip messages without seq field (e.g. the 'connected' handshake)
+      if (typeof msg.seq !== 'number') return;
+
+      // Gap detection: if seq jumps, fire system:full-refresh
+      if (msg.seq > lastSeq + 1 && lastSeq > 0) {
+        fireFullRefresh();
       }
+
+      lastSeq = msg.seq;
+
+      // Route to type-specific listeners
+      listeners.get(msg.type)?.forEach((cb) => cb(msg));
     } catch {
       // Ignore non-JSON messages
     }
@@ -84,8 +105,8 @@ function handleVisibilityChange(): void {
       reconnectAttempt.value = 0;
       connect();
     }
-    // Always fire all listeners to catch up on missed changes
-    listeners.forEach((cb) => cb());
+    // Fire system:full-refresh to catch up on missed changes
+    fireFullRefresh();
   } else {
     // Cancel pending reconnect timer when tab is hidden
     if (reconnectTimer !== null) {
@@ -93,6 +114,18 @@ function handleVisibilityChange(): void {
       reconnectTimer = null;
     }
   }
+}
+
+function on<T extends WebSocketEventType>(type: T, callback: EventCallback<T>): () => void {
+  if (!listeners.has(type)) listeners.set(type, new Set());
+  listeners.get(type)!.add(callback as any);
+  const unsubscribe = () => {
+    listeners.get(type)?.delete(callback as any);
+  };
+  if (getCurrentScope()) {
+    onScopeDispose(unsubscribe);
+  }
+  return unsubscribe;
 }
 
 export function useWebSocket() {
@@ -105,12 +138,7 @@ export function useWebSocket() {
   return {
     state: readonly(state),
     reconnectAttempt: readonly(reconnectAttempt),
-    onDataChanged(callback: () => void): () => void {
-      listeners.add(callback);
-      return () => {
-        listeners.delete(callback);
-      };
-    },
+    on,
   };
 }
 
@@ -125,6 +153,7 @@ export function _resetForTesting(): void {
     reconnectTimer = null;
   }
   listeners.clear();
+  lastSeq = 0;
   state.value = 'disconnected';
   reconnectAttempt.value = 0;
   started = false;

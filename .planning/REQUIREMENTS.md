@@ -17,9 +17,9 @@ Requirements for v2.1 Realtime & Live Insights. Each maps to roadmap phases.
 
 ### Live Token Usage Widget
 
-- [ ] **WIDG-01**: User sees a floating dismissable pill showing current input and output tokens per minute
-- [ ] **WIDG-02**: User can click the pill to expand a larger Chart.js line chart showing token rate over time (input/output as separate series)
-- [ ] **WIDG-03**: User can dismiss the widget and restore it via a "Show live usage" button in the sidebar
+- [x] **WIDG-01**: User sees a floating dismissable pill showing current input and output tokens per minute
+- [x] **WIDG-02**: User can click the pill to expand a larger Chart.js line chart showing token rate over time (input/output as separate series)
+- [x] **WIDG-03**: User can dismiss the widget and restore it via a "Show live usage" button in the sidebar
 - [x] **WIDG-04**: Backend provides a token rate endpoint aggregating recent token usage by minute
 
 ### Conversation Timeline
@@ -69,9 +69,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PUSH-03 | Phase 32 | Complete |
 | PUSH-04 | Phase 33 | Complete |
 | PUSH-05 | Phase 33 | Complete |
-| WIDG-01 | Phase 34 | Pending |
-| WIDG-02 | Phase 34 | Pending |
-| WIDG-03 | Phase 34 | Pending |
+| WIDG-01 | Phase 34 | Complete |
+| WIDG-02 | Phase 34 | Complete |
+| WIDG-03 | Phase 34 | Complete |
 | WIDG-04 | Phase 34 | Complete |
 | TIME-01 | Phase 35 | Pending |
 | TIME-02 | Phase 35 | Pending |

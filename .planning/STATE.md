@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Realtime & Live Insights
 status: completed
-stopped_at: Completed 34-01-PLAN.md
-last_updated: "2026-03-10T13:48:12.159Z"
-last_activity: 2026-03-10 — Completed 34-01 token rate backend endpoint
+stopped_at: Completed 34-02-PLAN.md
+last_updated: "2026-03-10T14:37:17.976Z"
+last_activity: 2026-03-10 — Completed 34-02 live token usage widget frontend
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 34 of 35 (Live Token Usage Widget)
-Plan: 1 of 3 in current phase
-Status: 34-01 complete, 34-02 next
-Last activity: 2026-03-10 — Completed 34-01 token rate backend endpoint
+Plan: 2 of 3 in current phase
+Status: 34-02 complete, 34-03 next
+Last activity: 2026-03-10 — Completed 34-02 live token usage widget frontend
 
 ## Performance Metrics
 
@@ -61,6 +61,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - 33-02: row-highlight uses oklch green with 2s ease-out fade for subtle new-row indication
 - 33-02: Loading overlay condition unchanged -- WS refetches bypass spinners via separate refreshing ref
 - 34-01: Used strftime ISO format comparison instead of SQLite datetime() to match stored ISO timestamps with T separator
+- [Phase 34]: Singleton composable with module-level dismissed ref shared between pill and sidebar
+- [Phase 34]: filledTokenRate uses UTC timestamps to match backend ISO format
 
 ### Pending Todos
 
@@ -88,9 +90,10 @@ None.
 | 17 | Fix active conversation marking for all conversations | 2026-03-10 | 51d09b1 | [17-fix-active-conversation-marking-all-conv](./quick/17-fix-active-conversation-marking-all-conv/) |
 | Phase 31 P02 | 4min | 2 tasks | 9 files |
 | Phase 34 P01 | 3min | 2 tasks | 5 files |
+| Phase 34 P02 | 12min | 3 tasks | 5 files |
 
 ## Session Continuity
 
-Last session: 2026-03-10T13:48:12.156Z
-Stopped at: Completed 34-01-PLAN.md
+Last session: 2026-03-10T14:37:17.973Z
+Stopped at: Completed 34-02-PLAN.md
 Resume file: None

@@ -16,7 +16,7 @@ import { runDataQualityMigration } from './migration.js';
 import { linkSubagents } from './subagent-linker.js';
 import { summarizeSubagent } from './subagent-summarizer.js';
 import { basename } from 'node:path';
-import type { IngestionStats, IngestionStatus } from './types.js';
+import type { DiscoveredFile, IngestionStats, IngestionStatus } from './types.js';
 
 export interface IngestionPluginOptions {
   basePath?: string;
@@ -394,110 +394,108 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
       // ── Subagent linking (post-processing) ─────────────────────────────
       // After all JSONL files are ingested, link subagent conversations
       // to their parent Task/Agent tool calls.
+      // Group files by projectDir to prevent cross-project subagent linking.
       try {
-        const parentFiles = files.filter(f => !f.isSubagent);
-        const subagentFiles = files.filter(f => f.isSubagent);
+        const filesByProject = new Map<string, DiscoveredFile[]>();
+        for (const f of files) {
+          const existing = filesByProject.get(f.projectDir);
+          if (existing) existing.push(f);
+          else filesByProject.set(f.projectDir, [f]);
+        }
 
-        if (subagentFiles.length > 0 && parentFiles.length > 0) {
-          // Build helper functions that query the DB
-          const getConversationId = (sessionId: string): string | null => {
-            const convId = generateId('claude-code', sessionId);
-            const row = db.select({ id: conversations.id })
-              .from(conversations)
-              .where(eq(conversations.id, convId))
-              .get();
-            return row ? row.id : null;
-          };
+        // Build helper functions that query the DB (project-independent)
+        const getConversationId = (sessionId: string): string | null => {
+          const convId = generateId('claude-code', sessionId);
+          const row = db.select({ id: conversations.id })
+            .from(conversations)
+            .where(eq(conversations.id, convId))
+            .get();
+          return row ? row.id : null;
+        };
 
-          const getToolCallsForConv = (conversationId: string) => {
-            return db.select({
-              id: toolCalls.id,
-              name: toolCalls.name,
-              input: toolCalls.input,
-              output: toolCalls.output,
-              createdAt: toolCalls.createdAt,
-            })
-              .from(toolCalls)
-              .where(eq(toolCalls.conversationId, conversationId))
-              .all() as Array<{ id: string; name: string; input: unknown; output: unknown; createdAt: string }>;
-          };
+        const getToolCallsForConv = (conversationId: string) => {
+          return db.select({
+            id: toolCalls.id,
+            name: toolCalls.name,
+            input: toolCalls.input,
+            output: toolCalls.output,
+            createdAt: toolCalls.createdAt,
+          })
+            .from(toolCalls)
+            .where(eq(toolCalls.conversationId, conversationId))
+            .all() as Array<{ id: string; name: string; input: unknown; output: unknown; createdAt: string }>;
+        };
 
-          const getFirstUserMessage = (conversationId: string): string | null => {
-            const msg = db.select({ content: messages.content })
-              .from(messages)
-              .where(and(eq(messages.conversationId, conversationId), eq(messages.role, 'user')))
-              .orderBy(messages.createdAt)
-              .limit(1)
-              .get();
-            return msg?.content ?? null;
-          };
+        const getFirstUserMessage = (conversationId: string): string | null => {
+          const msg = db.select({ content: messages.content })
+            .from(messages)
+            .where(and(eq(messages.conversationId, conversationId), eq(messages.role, 'user')))
+            .orderBy(messages.createdAt)
+            .limit(1)
+            .get();
+          return msg?.content ?? null;
+        };
 
-          const links = await linkSubagents({
-            parentFiles,
-            subagentFiles,
-            getToolCalls: getToolCallsForConv,
-            getConversationId,
-            getFirstUserMessage,
-          });
+        for (const [, projectFiles] of filesByProject) {
+          const parentFiles = projectFiles.filter(f => !f.isSubagent);
+          const subagentFiles = projectFiles.filter(f => f.isSubagent);
 
-          if (links.length > 0) {
-            // For each link, parse the subagent JSONL and compute summary
-            db.transaction((tx) => {
+          if (subagentFiles.length > 0 && parentFiles.length > 0) {
+            const links = await linkSubagents({
+              parentFiles,
+              subagentFiles,
+              getToolCalls: getToolCallsForConv,
+              getConversationId,
+              getFirstUserMessage,
+            });
+
+            if (links.length > 0) {
+              // For each link, parse the subagent JSONL and compute summary
+              db.transaction((tx) => {
+                for (const link of links) {
+                  // Update tool_calls row
+                  tx.update(toolCalls)
+                    .set({
+                      subagentConversationId: link.subagentConversationId,
+                    })
+                    .where(eq(toolCalls.id, link.toolCallId))
+                    .run();
+
+                  // Update subagent conversation: set parentConversationId
+                  tx.update(conversations)
+                    .set({
+                      parentConversationId: link.parentConversationId,
+                    })
+                    .where(eq(conversations.id, link.subagentConversationId))
+                    .run();
+                }
+              });
+
+              // Compute summaries asynchronously and update
               for (const link of links) {
-                // Find the subagent file to parse for summary
                 const subagentFile = subagentFiles.find(f => {
                   const convId = generateId('claude-code', f.sessionId);
                   return convId === link.subagentConversationId;
                 });
 
-                let summary = null;
                 if (subagentFile) {
-                  // We need to parse synchronously here, but parseJsonlFile is async.
-                  // Store the link now, compute summaries after the transaction.
-                }
+                  try {
+                    const subagentParseResult = await parseJsonlFile(subagentFile.filePath);
+                    const summaryData = summarizeSubagent(subagentParseResult);
+                    const fullSummary = { ...summaryData, matchConfidence: link.matchConfidence };
 
-                // Update tool_calls row
-                tx.update(toolCalls)
-                  .set({
-                    subagentConversationId: link.subagentConversationId,
-                  })
-                  .where(eq(toolCalls.id, link.toolCallId))
-                  .run();
-
-                // Update subagent conversation: set parentConversationId
-                tx.update(conversations)
-                  .set({
-                    parentConversationId: link.parentConversationId,
-                  })
-                  .where(eq(conversations.id, link.subagentConversationId))
-                  .run();
-              }
-            });
-
-            // Compute summaries asynchronously and update
-            for (const link of links) {
-              const subagentFile = subagentFiles.find(f => {
-                const convId = generateId('claude-code', f.sessionId);
-                return convId === link.subagentConversationId;
-              });
-
-              if (subagentFile) {
-                try {
-                  const subagentParseResult = await parseJsonlFile(subagentFile.filePath);
-                  const summaryData = summarizeSubagent(subagentParseResult);
-                  const fullSummary = { ...summaryData, matchConfidence: link.matchConfidence };
-
-                  db.update(toolCalls)
-                    .set({ subagentSummary: fullSummary as unknown as null })
-                    .where(eq(toolCalls.id, link.toolCallId))
-                    .run();
-                } catch (err) {
-                  app.log.error({ err, file: subagentFile.filePath }, 'Error computing subagent summary');
+                    db.update(toolCalls)
+                      .set({ subagentSummary: fullSummary as unknown as null })
+                      .where(eq(toolCalls.id, link.toolCallId))
+                      .run();
+                  } catch (err) {
+                    app.log.error({ err, file: subagentFile.filePath }, 'Error computing subagent summary');
+                  }
                 }
               }
+
+              app.log.info({ linksCreated: links.length }, 'Subagent linking complete');
             }
-
-            app.log.info({ linksCreated: links.length }, 'Subagent linking complete');
           }
         }
       } catch (err) {

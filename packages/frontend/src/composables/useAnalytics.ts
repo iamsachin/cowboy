@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue';
+import { ref, watch, onScopeDispose } from 'vue';
 import { autoGranularity } from '@cowboy/shared';
 import type { OverviewStats, TimeSeriesPoint, ModelDistributionEntry } from '@cowboy/shared';
 import { useDateRange } from './useDateRange';
@@ -11,6 +11,7 @@ export function useAnalytics() {
   const timeseries = ref<TimeSeriesPoint[]>([]);
   const modelDistribution = ref<ModelDistributionEntry[]>([]);
   const loading = ref(false);
+  const refreshing = ref(false);
   const error = ref<string | null>(null);
 
   async function fetchOverview(): Promise<void> {
@@ -37,8 +38,12 @@ export function useAnalytics() {
     modelDistribution.value = await res.json();
   }
 
-  async function fetchAll(): Promise<void> {
-    loading.value = true;
+  async function fetchAll(isLive = false): Promise<void> {
+    if (isLive) {
+      refreshing.value = true;
+    } else {
+      loading.value = true;
+    }
     error.value = null;
     try {
       await Promise.all([fetchOverview(), fetchTimeSeries(), fetchModelDistribution()]);
@@ -46,6 +51,7 @@ export function useAnalytics() {
       error.value = e instanceof Error ? e.message : String(e);
     } finally {
       loading.value = false;
+      refreshing.value = false;
     }
   }
 
@@ -58,17 +64,34 @@ export function useAnalytics() {
     { deep: true, immediate: true }
   );
 
-  // Live refetch on typed WebSocket events
+  // Debounced WS refetch — coalesces rapid events into one fetch
+  let wsDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  function debouncedWsRefetch(): void {
+    if (wsDebounceTimer) clearTimeout(wsDebounceTimer);
+    wsDebounceTimer = setTimeout(() => {
+      wsDebounceTimer = null;
+      fetchAll(true);
+    }, 500);
+  }
+
   const { on } = useWebSocket();
-  on('conversation:changed', () => fetchAll());
-  on('conversation:created', () => fetchAll());
-  on('system:full-refresh', () => fetchAll());
+  on('conversation:changed', debouncedWsRefetch);
+  on('conversation:created', debouncedWsRefetch);
+  on('system:full-refresh', debouncedWsRefetch);
+
+  onScopeDispose(() => {
+    if (wsDebounceTimer) {
+      clearTimeout(wsDebounceTimer);
+      wsDebounceTimer = null;
+    }
+  });
 
   return {
     overview,
     timeseries,
     modelDistribution,
     loading,
+    refreshing,
     error,
     fetchAll,
   };

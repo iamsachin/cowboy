@@ -1,4 +1,5 @@
 import { ref, watch, onScopeDispose } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import type { ConversationListResponse, SearchConversationListResponse } from '@cowboy/shared';
 import { useDateRange } from './useDateRange';
 import { useWebSocket } from './useWebSocket';
@@ -6,15 +7,26 @@ import { useWebSocket } from './useWebSocket';
 export type BrowserResponse = ConversationListResponse | SearchConversationListResponse;
 
 export function useConversationBrowser() {
+  const route = useRoute();
+  const router = useRouter();
   const { dateRange } = useDateRange();
 
   const data = ref<BrowserResponse | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
-  // Pagination state
-  const page = ref(1);
+  // Pagination state — initialize from URL query param
+  const initialPage = parseInt(route.query.page as string, 10);
+  const page = ref(Number.isFinite(initialPage) && initialPage > 0 ? initialPage : 1);
   const limit = ref(20);
+
+  // Prevent dateRange immediate watcher from resetting page on initial mount
+  let isInitialLoad = true;
+
+  // Sync page changes back to URL (replace, not push, to avoid history pollution)
+  watch(page, (newPage) => {
+    router.replace({ query: { ...route.query, page: newPage > 1 ? String(newPage) : undefined } });
+  });
 
   // Sort state
   const sortField = ref('date');
@@ -149,7 +161,12 @@ export function useConversationBrowser() {
   watch(
     () => dateRange.value,
     () => {
-      page.value = 1;
+      if (isInitialLoad) {
+        isInitialLoad = false;
+        // On initial load, preserve page from URL — don't reset to 1
+      } else {
+        page.value = 1;
+      }
       fetchConversations();
       fetchFilterOptions();
     },

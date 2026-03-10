@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Status: Between milestones — v2.1 shipped, next milestone not started
-Last activity: 2026-03-10 - Completed quick task 23: show conversations with parent ID as sub-rows
+Last activity: 2026-03-10 - Completed quick task 24: fix sub-conversations connected to wrong parent
 
 ## Performance Metrics
 
@@ -73,9 +73,10 @@ None.
 | 21 | Fix title overflow and auto-expand single assistant group | 2026-03-10 | 76f2928 | [21-fix-title-overflow-and-auto-expand-singl](./quick/21-fix-title-overflow-and-auto-expand-singl/) |
 | 22 | Fix slow app boot and hard refresh performance | 2026-03-10 | 7563cc3 | [22-fix-slow-app-boot-and-hard-refresh-perfo](./quick/22-fix-slow-app-boot-and-hard-refresh-perfo/) |
 | 23 | Show conversations with parent ID as sub-rows | 2026-03-10 | 708fe92 | [23-show-conversations-with-parent-id-as-sub](./quick/23-show-conversations-with-parent-id-as-sub/) |
+| 24 | Fix sub-conversations connected to wrong parent | 2026-03-10 | f9ac27d | [24-fix-sub-conversations-connected-to-wrong](./quick/24-fix-sub-conversations-connected-to-wrong/) |
 
 ## Session Continuity
 
-Last session: 2026-03-10T17:57:41Z
-Stopped at: Completed quick task 23
+Last session: 2026-03-10T18:21:53Z
+Stopped at: Completed quick task 24
 Resume file: None

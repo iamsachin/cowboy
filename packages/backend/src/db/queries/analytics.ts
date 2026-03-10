@@ -327,6 +327,10 @@ export function getConversationList(
     ? sql`CASE WHEN ${sortColumn} IS NULL THEN 1 ELSE 0 END ASC, ${sortColumn} ${orderDir}`
     : sql`${sortColumn} ${orderDir}`;
 
+  // Exclude children (conversations with parentConversationId) from main query — they'll be fetched separately
+  const hasAssistant = sql`EXISTS (SELECT 1 FROM ${messages} WHERE ${messages.conversationId} = ${conversations.id} AND ${messages.role} = 'assistant')`;
+  const isParentOrStandalone = sql`${conversations.parentConversationId} IS NULL`;
+
   const query = db
     .select({
       id: conversations.id,
@@ -347,7 +351,8 @@ export function getConversationList(
     .leftJoin(tokenUsage, sql`${tokenUsage.conversationId} = ${conversations.id}`)
     .where(and(
       dateFilter,
-      sql`EXISTS (SELECT 1 FROM ${messages} WHERE ${messages.conversationId} = ${conversations.id} AND ${messages.role} = 'assistant')`
+      hasAssistant,
+      isParentOrStandalone,
     ))
     .groupBy(conversations.id)
     .orderBy(orderClause);
@@ -357,13 +362,14 @@ export function getConversationList(
     ? query.all()
     : query.limit(limit).offset(offset).all();
 
-  // Total count for pagination (with same filters)
+  // Total count for pagination (with same filters, excluding children)
   const totalResult = db
     .select({ count: sql<number>`count(*)` })
     .from(conversations)
     .where(and(
       dateFilter,
-      sql`EXISTS (SELECT 1 FROM ${messages} WHERE ${messages.conversationId} = ${conversations.id} AND ${messages.role} = 'assistant')`
+      hasAssistant,
+      isParentOrStandalone,
     ))
     .get();
 
@@ -406,17 +412,83 @@ export function getConversationList(
     }
   }
 
-  // Look up parent titles for subagent conversations
-  const parentConvIds = [...new Set(rows.filter(r => r.parentConversationId).map(r => r.parentConversationId!))];
-  const parentTitleMap = new Map<string, string | null>();
-  if (parentConvIds.length > 0) {
-    const parentRows = db
-      .select({ id: conversations.id, title: conversations.title })
-      .from(conversations)
-      .where(sql`${conversations.id} IN (${sql.join(parentConvIds.map(id => sql`${id}`), sql`, `)})`)
+  // Fetch children for parents on this page
+  const parentIds = rows.map(r => r.id);
+  const childRowsRaw = parentIds.length > 0
+    ? db
+        .select({
+          id: conversations.id,
+          date: conversations.createdAt,
+          agent: conversations.agent,
+          title: conversations.title,
+          project: conversations.project,
+          model: conversations.model,
+          inputTokens: sql<number>`coalesce(sum(${tokenUsage.inputTokens}), 0)`,
+          outputTokens: sql<number>`coalesce(sum(${tokenUsage.outputTokens}), 0)`,
+          cacheReadTokens: sql<number>`coalesce(sum(${tokenUsage.cacheReadTokens}), 0)`,
+          cacheCreationTokens: sql<number>`coalesce(sum(${tokenUsage.cacheCreationTokens}), 0)`,
+          isActive: sql<boolean>`CASE WHEN ${conversations.status} = 'active' THEN 1 ELSE 0 END`,
+          hasCompaction: sql<boolean>`EXISTS (SELECT 1 FROM ${compactionEvents} WHERE ${compactionEvents.conversationId} = ${conversations.id})`,
+          parentConversationId: conversations.parentConversationId,
+        })
+        .from(conversations)
+        .leftJoin(tokenUsage, sql`${tokenUsage.conversationId} = ${conversations.id}`)
+        .where(and(
+          dateFilter,
+          sql`EXISTS (SELECT 1 FROM ${messages} WHERE ${messages.conversationId} = ${conversations.id} AND ${messages.role} = 'assistant')`,
+          sql`${conversations.parentConversationId} IN (${sql.join(parentIds.map(id => sql`${id}`), sql`, `)})`,
+        ))
+        .groupBy(conversations.id)
+        .orderBy(sql`${conversations.createdAt} ASC`)
+        .all()
+    : [];
+
+  // Compute costs for children too
+  const childConvIds = childRowsRaw.map(r => r.id);
+  if (childConvIds.length > 0) {
+    const childPerModelTokenRows = db
+      .select({
+        conversationId: tokenUsage.conversationId,
+        model: tokenUsage.model,
+        inputTokens: sql<number>`sum(${tokenUsage.inputTokens})`,
+        outputTokens: sql<number>`sum(${tokenUsage.outputTokens})`,
+        cacheReadTokens: sql<number>`sum(${tokenUsage.cacheReadTokens})`,
+        cacheCreationTokens: sql<number>`sum(${tokenUsage.cacheCreationTokens})`,
+      })
+      .from(tokenUsage)
+      .where(sql`${tokenUsage.conversationId} IN (${sql.join(childConvIds.map(id => sql`${id}`), sql`, `)})`)
+      .groupBy(tokenUsage.conversationId, tokenUsage.model)
       .all();
-    for (const pr of parentRows) {
-      parentTitleMap.set(pr.id, pr.title);
+
+    for (const pmRow of childPerModelTokenRows) {
+      const costResult = calculateCost(
+        pmRow.model,
+        Number(pmRow.inputTokens),
+        Number(pmRow.outputTokens),
+        Number(pmRow.cacheReadTokens),
+        Number(pmRow.cacheCreationTokens),
+      );
+      if (costResult) {
+        const existing = costByConv.get(pmRow.conversationId);
+        if (existing) {
+          existing.cost += costResult.cost;
+          existing.savings += costResult.savings;
+        } else {
+          costByConv.set(pmRow.conversationId, { cost: costResult.cost, savings: costResult.savings });
+        }
+      }
+    }
+  }
+
+  // Group children by parentConversationId
+  const childrenMap = new Map<string, typeof childRowsRaw>();
+  for (const child of childRowsRaw) {
+    if (!child.parentConversationId) continue;
+    const existing = childrenMap.get(child.parentConversationId);
+    if (existing) {
+      existing.push(child);
+    } else {
+      childrenMap.set(child.parentConversationId, [child]);
     }
   }
 
@@ -427,6 +499,33 @@ export function getConversationList(
     const cacheCreation = Number(row.cacheCreationTokens);
 
     const convCost = costByConv.get(row.id);
+
+    // Build child ConversationRow objects for this parent
+    const childRows = childrenMap.get(row.id);
+    const childConversationRows: ConversationRow[] | undefined = childRows?.map(child => {
+      const childInput = Number(child.inputTokens);
+      const childOutput = Number(child.outputTokens);
+      const childCacheRead = Number(child.cacheReadTokens);
+      const childCacheCreation = Number(child.cacheCreationTokens);
+      const childCost = costByConv.get(child.id);
+      return {
+        id: child.id,
+        date: child.date,
+        agent: child.agent,
+        title: child.title,
+        project: child.project,
+        model: child.model,
+        inputTokens: childInput,
+        outputTokens: childOutput,
+        cacheReadTokens: childCacheRead,
+        cacheCreationTokens: childCacheCreation,
+        cost: childCost?.cost ?? null,
+        savings: childCost?.savings ?? null,
+        isActive: Number(child.isActive) === 1,
+        hasCompaction: Number(child.hasCompaction) === 1,
+        parentConversationId: child.parentConversationId ?? null,
+      };
+    });
 
     const baseRow: ConversationRow = {
       id: row.id,
@@ -444,7 +543,7 @@ export function getConversationList(
       isActive: Number(row.isActive) === 1,
       hasCompaction: Number(row.hasCompaction) === 1,
       parentConversationId: row.parentConversationId ?? null,
-      parentTitle: row.parentConversationId ? (parentTitleMap.get(row.parentConversationId) ?? null) : null,
+      ...(childConversationRows && childConversationRows.length > 0 ? { children: childConversationRows } : {}),
     };
 
     // If search was provided, extract a snippet from matching message content

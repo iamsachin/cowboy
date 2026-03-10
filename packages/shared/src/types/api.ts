@@ -63,6 +63,7 @@ export interface ConversationRow {
   hasCompaction?: boolean;
   parentConversationId?: string | null;
   parentTitle?: string | null;
+  children?: ConversationRow[];
 }
 
 export interface ConversationListResponse {

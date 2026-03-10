@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Realtime & Live Insights
 status: completed
-stopped_at: Completed 35-01-PLAN.md
-last_updated: "2026-03-10T16:23:07.282Z"
-last_activity: 2026-03-10 — Completed 35-01 timeline composable and component
+stopped_at: Completed 35-02-PLAN.md
+last_updated: "2026-03-10T16:28:04.763Z"
+last_activity: 2026-03-10 — Completed 35-02 timeline integration into conversation detail page
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 10
-  completed_plans: 9
+  completed_plans: 10
 ---
 
 # Project State
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 35 of 35 (Conversation Timeline)
-Plan: 1 of 2 in current phase
-Status: 35-01 complete, 35-02 next
-Last activity: 2026-03-10 — Completed 35-01 timeline composable and component
+Plan: 2 of 2 in current phase
+Status: Phase 35 complete (all plans done)
+Last activity: 2026-03-10 — Completed 35-02 timeline integration into conversation detail page
 
 ## Performance Metrics
 
@@ -37,7 +37,7 @@ Last activity: 2026-03-10 — Completed 35-01 timeline composable and component
 - v1.2: 6 plans, 3 phases
 - v1.3: 21 plans, 8 phases
 - v2.0: 13 plans, 6 phases
-- Total plans completed: 75
+- Total plans completed: 76
 
 ## Accumulated Context
 
@@ -65,6 +65,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase 34]: filledTokenRate uses UTC timestamps to match backend ISO format
 - [Phase 35]: Lazy-hydrated singleton: localStorage read deferred to first useTimeline() call for happy-dom v20 compatibility
 - [Phase 35]: Vitest setup.ts with localStorage polyfill for happy-dom v20 missing Storage methods
+- [Phase 35]: Dual useScrollTracker instances for main container and timeline panel with independent behaviors
+- [Phase 35]: IntersectionObserver with threshold 0.1 on scroll container for active timeline event detection
 
 ### Pending Todos
 
@@ -94,9 +96,10 @@ None.
 | Phase 34 P01 | 3min | 2 tasks | 5 files |
 | Phase 34 P02 | 12min | 3 tasks | 5 files |
 | Phase 35 P01 | 8min | 2 tasks | 5 files |
+| Phase 35 P02 | 3min | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-03-10T16:22:44.773Z
-Stopped at: Completed 35-01-PLAN.md
+Last session: 2026-03-10T16:27:21Z
+Stopped at: Completed 35-02-PLAN.md
 Resume file: None

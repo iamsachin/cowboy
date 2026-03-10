@@ -85,7 +85,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 32: Realtime Conversation Detail** — Push new messages to open conversation pages with scroll preservation (completed 2026-03-10)
 - [x] **Phase 33: Realtime Conversation Discovery** — New conversations auto-appear in list and overview without refresh (completed 2026-03-10)
 - [x] **Phase 34: Live Token Usage Widget** — Floating dismissable token rate widget with expandable chart and sidebar toggle (completed 2026-03-10)
-- [ ] **Phase 35: Conversation Timeline** — Collapsible vertical timeline with click-to-scroll event navigation
+- [x] **Phase 35: Conversation Timeline** — Collapsible vertical timeline with click-to-scroll event navigation (completed 2026-03-10)
 
 ## Phase Details
 
@@ -200,4 +200,4 @@ Phases execute in numeric order: 31 → 32 → 33 → 34 → 35
 | 32. Realtime Conversation Detail | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 33. Realtime Conversation Discovery | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 34. Live Token Usage Widget | v2.1 | 2/2 | Complete | 2026-03-10 |
-| 35. Conversation Timeline | 1/2 | In Progress|  | - |
+| 35. Conversation Timeline | 2/2 | Complete   | 2026-03-10 | - |

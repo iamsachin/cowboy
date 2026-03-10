@@ -396,6 +396,17 @@ const ingestionPlugin: FastifyPluginAsync<IngestionPluginOptions> = async (
       // to their parent Task/Agent tool calls.
       // Group files by projectDir to prevent cross-project subagent linking.
       try {
+        // Clear all existing links first so stale/incorrect cross-project
+        // links from previous runs are removed before re-linking.
+        db.update(conversations)
+          .set({ parentConversationId: null })
+          .where(sql`${conversations.parentConversationId} IS NOT NULL`)
+          .run();
+        db.update(toolCalls)
+          .set({ subagentConversationId: null, subagentSummary: null })
+          .where(sql`${toolCalls.subagentConversationId} IS NOT NULL`)
+          .run();
+
         const filesByProject = new Map<string, DiscoveredFile[]>();
         for (const f of files) {
           const existing = filesByProject.get(f.projectDir);

@@ -1,4 +1,4 @@
-import { ref, watch, onScopeDispose } from 'vue';
+import { ref, watch } from 'vue';
 import { autoGranularity } from '@cowboy/shared';
 import type { OverviewStats, TimeSeriesPoint } from '@cowboy/shared';
 import { useDateRange } from './useDateRange';
@@ -79,12 +79,11 @@ export function useAgentComparison() {
     { deep: true, immediate: true }
   );
 
-  // Live refetch on WebSocket data-changed signal
-  const { onDataChanged } = useWebSocket();
-  const unsubscribe = onDataChanged(() => {
-    fetchAll();
-  });
-  onScopeDispose(unsubscribe);
+  // Live refetch on typed WebSocket events
+  const { on } = useWebSocket();
+  on('conversation:changed', () => fetchAll());
+  on('conversation:created', () => fetchAll());
+  on('system:full-refresh', () => fetchAll());
 
   return {
     claudeCode,

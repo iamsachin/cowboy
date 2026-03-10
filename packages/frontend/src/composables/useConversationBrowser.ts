@@ -173,12 +173,11 @@ export function useConversationBrowser() {
     { deep: true, immediate: true }
   );
 
-  // Live refetch on WebSocket data-changed signal (preserves filter/sort/page state)
-  const { onDataChanged } = useWebSocket();
-  const unsubscribe = onDataChanged(() => {
-    fetchConversations();
-  });
-  onScopeDispose(unsubscribe);
+  // Live refetch on typed WebSocket events (preserves filter/sort/page state)
+  const { on } = useWebSocket();
+  on('conversation:changed', () => fetchConversations());
+  on('conversation:created', () => fetchConversations());
+  on('system:full-refresh', () => fetchConversations());
 
   return {
     data,

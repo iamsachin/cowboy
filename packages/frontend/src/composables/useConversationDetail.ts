@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import type { ConversationDetailResponse } from '@cowboy/shared';
+import { useWebSocket } from './useWebSocket';
 
 export function useConversationDetail(conversationId: string) {
   const data = ref<ConversationDetailResponse | null>(null);
@@ -28,6 +29,13 @@ export function useConversationDetail(conversationId: string) {
 
   // Fetch immediately on creation
   fetchDetail();
+
+  // Live refetch on typed WebSocket events (conversation-scoped)
+  const { on } = useWebSocket();
+  on('conversation:changed', (evt) => {
+    if (evt.conversationId === conversationId) fetchDetail();
+  });
+  on('system:full-refresh', () => fetchDetail());
 
   return {
     data,

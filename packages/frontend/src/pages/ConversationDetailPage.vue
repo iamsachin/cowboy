@@ -1,148 +1,175 @@
 <template>
-  <div ref="pageRef" class="p-4 max-w-5xl mx-auto">
-    <!-- Loading state -->
-    <div v-if="loading" class="flex justify-center items-center min-h-[60vh]">
-      <span class="loading loading-spinner loading-lg"></span>
-    </div>
-
-    <!-- Not found state -->
-    <div v-else-if="notFound" class="flex flex-col items-center justify-center min-h-[40vh] gap-4">
-      <div role="alert" class="alert alert-warning max-w-md">
-        <AlertTriangle class="w-5 h-5" />
-        <span>Conversation not found</span>
+  <div class="flex">
+    <div ref="pageRef" class="flex-1 min-w-0 p-4" :class="{ 'max-w-5xl mx-auto': !isOpen }">
+      <!-- Loading state -->
+      <div v-if="loading" class="flex justify-center items-center min-h-[60vh]">
+        <span class="loading loading-spinner loading-lg"></span>
       </div>
-      <button class="btn btn-ghost btn-sm gap-1" @click="goBack">
-        <ArrowLeft class="w-4 h-4" />
-        Back to conversations
-      </button>
-    </div>
 
-    <!-- Error state -->
-    <div v-else-if="error" class="flex flex-col items-center justify-center min-h-[40vh] gap-4">
-      <div role="alert" class="alert alert-error max-w-md">
-        <span>{{ error }}</span>
-      </div>
-      <button class="btn btn-ghost btn-sm gap-1" @click="goBack">
-        <ArrowLeft class="w-4 h-4" />
-        Back to conversations
-      </button>
-    </div>
-
-    <!-- Success state -->
-    <template v-else-if="data">
-      <!-- Back link -->
-      <div class="flex items-center gap-1 mb-4">
+      <!-- Not found state -->
+      <div v-else-if="notFound" class="flex flex-col items-center justify-center min-h-[40vh] gap-4">
+        <div role="alert" class="alert alert-warning max-w-md">
+          <AlertTriangle class="w-5 h-5" />
+          <span>Conversation not found</span>
+        </div>
         <button class="btn btn-ghost btn-sm gap-1" @click="goBack">
           <ArrowLeft class="w-4 h-4" />
           Back to conversations
         </button>
-        <router-link
-          v-if="data.conversation.parentConversationId"
-          :to="'/conversations/' + data.conversation.parentConversationId"
-          class="btn btn-ghost btn-sm gap-1"
-        >
-          <ArrowUpLeft class="w-4 h-4" />
-          Parent: {{ data.conversation.parentTitle || 'Unknown' }}
-        </router-link>
       </div>
 
-      <!-- Metadata header bar -->
-      <div class="bg-base-200 rounded-lg p-4 mb-6">
-        <h1 class="text-xl font-bold mb-3 flex items-center gap-2">
-          {{ displayTitle }}
-          <span v-if="data.conversation.isActive" class="pulse-dot inline-block"></span>
-        </h1>
-        <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-          <!-- Agent badge -->
-          <div class="flex items-center gap-1">
-            <span class="text-base-content/60">Agent:</span>
-            <span class="badge badge-outline badge-sm">{{ data.conversation.agent }}</span>
-          </div>
+      <!-- Error state -->
+      <div v-else-if="error" class="flex flex-col items-center justify-center min-h-[40vh] gap-4">
+        <div role="alert" class="alert alert-error max-w-md">
+          <span>{{ error }}</span>
+        </div>
+        <button class="btn btn-ghost btn-sm gap-1" @click="goBack">
+          <ArrowLeft class="w-4 h-4" />
+          Back to conversations
+        </button>
+      </div>
 
-          <!-- Model -->
-          <div class="flex items-center gap-1">
-            <span class="text-base-content/60">Model:</span>
-            <span>{{ data.conversation.model || '--' }}</span>
-          </div>
+      <!-- Success state -->
+      <template v-else-if="data">
+        <!-- Back link -->
+        <div class="flex items-center gap-1 mb-4">
+          <button class="btn btn-ghost btn-sm gap-1" @click="goBack">
+            <ArrowLeft class="w-4 h-4" />
+            Back to conversations
+          </button>
+          <router-link
+            v-if="data.conversation.parentConversationId"
+            :to="'/conversations/' + data.conversation.parentConversationId"
+            class="btn btn-ghost btn-sm gap-1"
+          >
+            <ArrowUpLeft class="w-4 h-4" />
+            Parent: {{ data.conversation.parentTitle || 'Unknown' }}
+          </router-link>
+        </div>
 
-          <!-- Project -->
-          <div class="flex items-center gap-1">
-            <span class="text-base-content/60">Project:</span>
-            <span>{{ data.conversation.project || '--' }}</span>
-          </div>
-
-          <!-- Date -->
-          <div class="flex items-center gap-1">
-            <span class="text-base-content/60">Date:</span>
-            <span>{{ formatDate(data.conversation.createdAt) }}</span>
-          </div>
-
-          <!-- Duration -->
-          <div class="flex items-center gap-1">
-            <span class="text-base-content/60">Duration:</span>
-            <span>{{ messageDuration }}</span>
-          </div>
-
-          <!-- Total tokens -->
-          <div class="flex items-center gap-1">
-            <span class="text-base-content/60">Tokens:</span>
-            <span>{{ formatNumber(totalTokens) }}</span>
-            <span
-              v-if="data.tokenSummary.cacheReadTokens > 0"
-              class="text-base-content/50 text-xs"
-            >({{ formatNumber(data.tokenSummary.cacheReadTokens) }} cached)</span>
-          </div>
-
-          <!-- Cost -->
-          <div class="flex items-center gap-1">
-            <span class="text-base-content/60">Cost:</span>
-            <span>{{ data.tokenSummary.cost != null ? formatCost(data.tokenSummary.cost) : 'N/A' }}</span>
-            <span
-              v-if="data.tokenSummary.savings != null && data.tokenSummary.savings > 0"
-              class="text-success text-xs"
+        <!-- Metadata header bar -->
+        <div class="bg-base-200 rounded-lg p-4 mb-6">
+          <h1 class="text-xl font-bold mb-3 flex items-center gap-2">
+            {{ displayTitle }}
+            <span v-if="data.conversation.isActive" class="pulse-dot inline-block"></span>
+            <button
+              class="btn btn-ghost btn-xs tooltip tooltip-bottom"
+              data-tip="Toggle timeline"
+              @click="handleToggle"
             >
-              (saved {{ formatCost(data.tokenSummary.savings) }})
-            </span>
+              <PanelRight class="w-4 h-4" :class="{ 'text-primary': isOpen }" />
+            </button>
+          </h1>
+          <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+            <!-- Agent badge -->
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60">Agent:</span>
+              <span class="badge badge-outline badge-sm">{{ data.conversation.agent }}</span>
+            </div>
+
+            <!-- Model -->
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60">Model:</span>
+              <span>{{ data.conversation.model || '--' }}</span>
+            </div>
+
+            <!-- Project -->
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60">Project:</span>
+              <span>{{ data.conversation.project || '--' }}</span>
+            </div>
+
+            <!-- Date -->
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60">Date:</span>
+              <span>{{ formatDate(data.conversation.createdAt) }}</span>
+            </div>
+
+            <!-- Duration -->
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60">Duration:</span>
+              <span>{{ messageDuration }}</span>
+            </div>
+
+            <!-- Total tokens -->
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60">Tokens:</span>
+              <span>{{ formatNumber(totalTokens) }}</span>
+              <span
+                v-if="data.tokenSummary.cacheReadTokens > 0"
+                class="text-base-content/50 text-xs"
+              >({{ formatNumber(data.tokenSummary.cacheReadTokens) }} cached)</span>
+            </div>
+
+            <!-- Cost -->
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60">Cost:</span>
+              <span>{{ data.tokenSummary.cost != null ? formatCost(data.tokenSummary.cost) : 'N/A' }}</span>
+              <span
+                v-if="data.tokenSummary.savings != null && data.tokenSummary.savings > 0"
+                class="text-success text-xs"
+              >
+                (saved {{ formatCost(data.tokenSummary.savings) }})
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Inline plans section (collapsible) -->
-      <div v-if="conversationPlans.length > 0" class="collapse collapse-arrow bg-base-200 rounded-lg mb-6">
-        <input type="checkbox" checked />
-        <div class="collapse-title text-sm font-semibold flex items-center gap-2">
-          <ClipboardList class="w-4 h-4" />
-          Extracted Plans ({{ conversationPlans.length }})
-        </div>
-        <div class="collapse-content">
-          <div v-for="plan in conversationPlans" :key="plan.plan.id" class="mb-4">
-            <h4 class="font-medium text-sm mb-2">{{ plan.plan.title }}</h4>
-            <PlanStepList :steps="plan.steps" compact />
+        <!-- Inline plans section (collapsible) -->
+        <div v-if="conversationPlans.length > 0" class="collapse collapse-arrow bg-base-200 rounded-lg mb-6">
+          <input type="checkbox" checked />
+          <div class="collapse-title text-sm font-semibold flex items-center gap-2">
+            <ClipboardList class="w-4 h-4" />
+            Extracted Plans ({{ conversationPlans.length }})
+          </div>
+          <div class="collapse-content">
+            <div v-for="plan in conversationPlans" :key="plan.plan.id" class="mb-4">
+              <h4 class="font-medium text-sm mb-2">{{ plan.plan.title }}</h4>
+              <PlanStepList :steps="plan.steps" compact />
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Conversation timeline -->
-      <ConversationDetail
-        :messages="data.messages"
-        :toolCalls="data.toolCalls"
-        :tokenUsageByMessage="data.tokenUsageByMessage"
-        :compactionEvents="data.compactionEvents ?? []"
-        :conversationId="id"
-        :newGroupKeys="newGroupKeys"
-        :scrollContainerRef="scrollContainer"
+        <!-- Conversation timeline -->
+        <ConversationDetail
+          ref="detailRef"
+          :messages="data.messages"
+          :toolCalls="data.toolCalls"
+          :tokenUsageByMessage="data.tokenUsageByMessage"
+          :compactionEvents="data.compactionEvents ?? []"
+          :conversationId="id"
+          :newGroupKeys="newGroupKeys"
+          :scrollContainerRef="scrollContainer"
+        />
+      </template>
+    </div>
+
+    <!-- Timeline panel -->
+    <div
+      v-if="isOpen && data"
+      ref="timelinePanelRef"
+      class="w-[220px] shrink-0 sticky top-0 h-[calc(100vh-64px)] overflow-y-auto"
+    >
+      <ConversationTimeline
+        :events="timelineEvents"
+        :active-key="activeKey"
+        :is-active="data.conversation.isActive"
+        @navigate="handleTimelineNavigate"
       />
-    </template>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watchEffect, onMounted } from 'vue';
+import { computed, ref, watch, watchEffect, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, ArrowUpLeft, AlertTriangle, ClipboardList } from 'lucide-vue-next';
+import { ArrowLeft, ArrowUpLeft, AlertTriangle, ClipboardList, PanelRight } from 'lucide-vue-next';
 import type { ConversationPlanEntry } from '@cowboy/shared';
 import { useConversationDetail } from '../composables/useConversationDetail';
+import { useTimeline, extractTimelineEvents } from '../composables/useTimeline';
+import { useScrollTracker } from '../composables/useScrollTracker';
 import ConversationDetail from '../components/ConversationDetail.vue';
+import ConversationTimeline from '../components/ConversationTimeline.vue';
 import PlanStepList from '../components/PlanStepList.vue';
 import { cleanTitle } from '../utils/content-sanitizer';
 import { formatCost } from '../utils/format-tokens';
@@ -161,9 +188,18 @@ function goBack() {
 
 const { data, loading, error, notFound, newGroupKeys, refreshing } = useConversationDetail(id);
 
+// Timeline state
+const { isOpen, toggle, activeKey, setActiveKey } = useTimeline();
+
 // Scroll container: the <main> element from DashboardLayout
 const pageRef = ref<HTMLElement | null>(null);
 const scrollContainer = ref<HTMLElement | null>(null);
+
+// ConversationDetail ref for accessing exposed methods
+const detailRef = ref<InstanceType<typeof ConversationDetail> | null>(null);
+
+// Timeline panel ref for auto-scroll tracking
+const timelinePanelRef = ref<HTMLElement | null>(null);
 
 onMounted(() => {
   if (pageRef.value) {
@@ -171,6 +207,106 @@ onMounted(() => {
     scrollContainer.value = main as HTMLElement | null;
   }
 });
+
+// Scroll tracker for the main scroll container (used for toggle position preservation)
+const { captureScrollPosition } = useScrollTracker(scrollContainer);
+
+// Scroll tracker for the timeline panel (used for auto-scroll to new events)
+const { isAtBottom: isTimelineAtBottom } = useScrollTracker(timelinePanelRef);
+
+// Timeline events derived from ConversationDetail exposed turns
+const timelineEvents = computed(() => {
+  const turns = detailRef.value?.turns;
+  if (!turns) return [];
+  return extractTimelineEvents(turns);
+});
+
+// --- Toggle handler with scroll position preservation ---
+async function handleToggle() {
+  const restore = captureScrollPosition();
+  toggle();
+  await nextTick();
+  if (restore) restore();
+  // Re-setup observer since layout changed
+  await nextTick();
+  setupObserver();
+}
+
+// --- Click-to-scroll navigation handler ---
+async function handleTimelineNavigate(key: string, turnIndex: number) {
+  // 1. Load more if beyond pagination boundary
+  detailRef.value?.loadUpTo(turnIndex);
+  await nextTick();
+
+  // 2. Auto-expand if collapsed assistant group
+  detailRef.value?.expandGroup(key);
+  await nextTick();
+
+  // 3. Smooth scroll to element
+  const el = scrollContainer.value?.querySelector(`[data-turn-key="${key}"]`);
+  el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// --- IntersectionObserver for active event tracking ---
+let observer: IntersectionObserver | null = null;
+const visibleTurnKeys = new Set<string>();
+
+function setupObserver() {
+  observer?.disconnect();
+  visibleTurnKeys.clear();
+  const root = scrollContainer.value;
+  if (!root) return;
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        const key = (entry.target as HTMLElement).dataset.turnKey;
+        if (!key) continue;
+        if (entry.isIntersecting) visibleTurnKeys.add(key);
+        else visibleTurnKeys.delete(key);
+      }
+      // Find topmost visible key in timeline event order
+      const eventKeys = timelineEvents.value.map(e => e.key);
+      for (const k of eventKeys) {
+        if (visibleTurnKeys.has(k)) { setActiveKey(k); return; }
+      }
+      // No timeline event visible -- keep previous activeKey
+    },
+    { root, threshold: 0.1 }
+  );
+
+  for (const el of root.querySelectorAll('[data-turn-key]')) {
+    observer.observe(el);
+  }
+}
+
+// Re-observe when turns change (live updates, pagination changes)
+watch(timelineEvents, () => nextTick(setupObserver), { immediate: false });
+// Initial setup after mount
+onMounted(() => nextTick(setupObserver));
+onUnmounted(() => observer?.disconnect());
+
+// --- Timeline panel auto-scroll to keep highlighted event in view ---
+watch(activeKey, (key) => {
+  if (!key || !timelinePanelRef.value) return;
+  const el = timelinePanelRef.value.querySelector(`[data-timeline-key="${key}"]`);
+  el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+});
+
+// --- Timeline auto-scroll to new events only when user is at bottom ---
+watch(
+  () => timelineEvents.value.length,
+  (newLen, oldLen) => {
+    if (newLen > (oldLen ?? 0) && isTimelineAtBottom.value && timelinePanelRef.value) {
+      nextTick(() => {
+        timelinePanelRef.value?.scrollTo({
+          top: timelinePanelRef.value.scrollHeight,
+          behavior: 'smooth',
+        });
+      });
+    }
+  }
+);
 
 // Dev-mode assertion: warn on duplicate message IDs
 if (import.meta.env.DEV) {

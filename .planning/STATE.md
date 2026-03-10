@@ -1,0 +1,80 @@
+---
+gsd_state_version: 1.0
+milestone: v2.1
+milestone_name: Realtime & Live Insights
+status: executing
+stopped_at: Completed 31-01-PLAN.md
+last_updated: "2026-03-10T11:35:00.000Z"
+last_activity: 2026-03-10 — Completed 31-01 backend WebSocket event infrastructure
+progress:
+  total_phases: 5
+  completed_phases: 0
+  total_plans: 2
+  completed_plans: 1
+---
+
+# Project State
+
+## Project Reference
+
+See: .planning/PROJECT.md (updated 2026-03-10)
+
+**Core value:** Give developers a single, unified view of how their coding agents are performing
+**Current focus:** Phase 31 — WebSocket Event Infrastructure
+
+## Current Position
+
+Phase: 31 of 35 (WebSocket Event Infrastructure)
+Plan: 1 of 2 in current phase
+Status: Executing
+Last activity: 2026-03-10 — Completed 31-01 backend WebSocket event infrastructure
+
+## Performance Metrics
+
+**Velocity:**
+- v1.0: 24 plans, ~124min total, ~5min avg
+- v1.1: 8 plans, 4 phases
+- v1.2: 6 plans, 3 phases
+- v1.3: 21 plans, 8 phases
+- v2.0: 13 plans, 6 phases
+- Total plans completed: 72
+
+## Accumulated Context
+
+### Decisions
+
+Decisions are logged in PROJECT.md Key Decisions table.
+
+- 31-01: Used WebSocketEventPayload distributive type to preserve union narrowing
+- 31-01: Pre/post snapshot comparison for ingestion change detection
+
+### Pending Todos
+
+None.
+
+### Blockers/Concerns
+
+- Research flag: Phase 31/32 incremental merge strategy needs careful design against groupTurns reactive pipeline
+- Research flag: Phase 34 Chart.js lifecycle with dismiss/restore toggling needs v-show + destroy guard pattern
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 7 | Disable chart animations when data updates | 2026-03-08 | 7b27913 | [7-disable-chart-animations-when-data-updat](./quick/7-disable-chart-animations-when-data-updat/) |
+| 8 | Liven up sidebar with stats strip, tagline, tips | 2026-03-08 | 1398e2f | [8-liven-up-sidebar-with-stats-strip-taglin](./quick/8-liven-up-sidebar-with-stats-strip-taglin/) |
+| 9 | Add cowboy hat SVG logo and humorous tagline | 2026-03-08 | 9b5ed27 | [9-add-cowboy-hat-svg-logo-and-humorous-cow](./quick/9-add-cowboy-hat-svg-logo-and-humorous-cow/) |
+| 10 | Show blinking green circle for active conversations | 2026-03-08 | 844637c | [10-show-blinking-green-circle-indicator-for](./quick/10-show-blinking-green-circle-indicator-for/) |
+| 11 | Fix chart re-rendering flash with v-show | 2026-03-08 | 7ae59b3 | [11-fix-chart-re-rendering-on-data-push-with](./quick/11-fix-chart-re-rendering-on-data-push-with/) |
+| 12 | Fix Cursor data extraction (thinking, capabilityType, turn merging) | 2026-03-09 | a62b878 | [12-fix-cursor-data-extraction-analyze-db-st](./quick/12-fix-cursor-data-extraction-analyze-db-st/) |
+| 13 | Extract Cursor tool call data from toolFormerData | 2026-03-09 | 94314c1 | [13-extract-cursor-tool-call-data-from-toolf](./quick/13-extract-cursor-tool-call-data-from-toolf/) |
+| 14 | Render thinking content as styled markdown | 2026-03-09 | a9b8d1e | [14-in-the-thinking-portion-we-must-display-](./quick/14-in-the-thinking-portion-we-must-display-/) |
+| 15 | Fix pill badge responsiveness on smaller screens | 2026-03-10 | 5964738 | [15-fix-pill-badge-responsiveness-on-smaller](./quick/15-fix-pill-badge-responsiveness-on-smaller/) |
+| 16 | Preserve pagination state when navigating back | 2026-03-10 | aede542 | [16-preserve-pagination-state-when-navigatin](./quick/16-preserve-pagination-state-when-navigatin/) |
+| 17 | Fix active conversation marking for all conversations | 2026-03-10 | 51d09b1 | [17-fix-active-conversation-marking-all-conv](./quick/17-fix-active-conversation-marking-all-conv/) |
+
+## Session Continuity
+
+Last session: 2026-03-10T11:35:00.000Z
+Stopped at: Completed 31-01-PLAN.md
+Resume file: .planning/phases/31-websocket-event-infrastructure/31-01-SUMMARY.md

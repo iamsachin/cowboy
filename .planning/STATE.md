@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Realtime & Live Insights
-status: in-progress
-stopped_at: Completed 33-01-PLAN.md
-last_updated: "2026-03-10T12:59:24.000Z"
-last_activity: 2026-03-10 — Completed 33-01 composable logic core
+status: completed
+stopped_at: Completed 33-02-PLAN.md
+last_updated: "2026-03-10T13:10:00.000Z"
+last_activity: 2026-03-10 — Completed 33-02 realtime conversation discovery UI
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
 ---
 
 # Project State
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 33 of 35 (Realtime Conversation Discovery)
-Plan: 1 of 2 in current phase
-Status: Plan 33-01 complete, 33-02 next
-Last activity: 2026-03-10 — Completed 33-01 composable logic core
+Plan: 2 of 2 in current phase (PHASE COMPLETE)
+Status: Phase 33 complete, Phase 34 next
+Last activity: 2026-03-10 — Completed 33-02 realtime conversation discovery UI
 
 ## Performance Metrics
 
@@ -37,7 +37,7 @@ Last activity: 2026-03-10 — Completed 33-01 composable logic core
 - v1.2: 6 plans, 3 phases
 - v1.3: 21 plans, 8 phases
 - v2.0: 13 plans, 6 phases
-- Total plans completed: 74
+- Total plans completed: 75
 
 ## Accumulated Context
 
@@ -58,6 +58,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - 33-01: 500ms debounce coalesces burst WS events into single API call
 - 33-01: previousIds starts empty; initial load populates without marking new (prevents flash)
 - 33-01: newIds auto-clears after 2000ms for transient highlight animation
+- 33-02: row-highlight uses oklch green with 2s ease-out fade for subtle new-row indication
+- 33-02: Loading overlay condition unchanged -- WS refetches bypass spinners via separate refreshing ref
 
 ### Pending Todos
 
@@ -87,6 +89,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-10T12:55:21Z
-Stopped at: Completed 33-01-PLAN.md
-Resume file: 33-02-PLAN.md
+Last session: 2026-03-10T13:10:00Z
+Stopped at: Completed 33-02-PLAN.md
+Resume file: Phase 34 next

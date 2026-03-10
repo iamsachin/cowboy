@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Status: Between milestones — v2.1 shipped, next milestone not started
-Last activity: 2026-03-10 - Completed quick task 19: Make search bar sticky/floating so it stays visible when scrolling
+Last activity: 2026-03-10 - Completed quick task 22: fix slow app boot and hard refresh performance
 
 ## Performance Metrics
 
@@ -69,9 +69,12 @@ None.
 | 17 | Fix active conversation marking for all conversations | 2026-03-10 | 51d09b1 | [17-fix-active-conversation-marking-all-conv](./quick/17-fix-active-conversation-marking-all-conv/) |
 | 18 | Use icons instead of dots for timeline events | 2026-03-10 | bb50c4f | [18-use-icons-instead-of-dots-for-different-](./quick/18-use-icons-instead-of-dots-for-different-/) |
 | 19 | Make search bar sticky below toolbar | 2026-03-10 | 0d69e68 | [19-make-search-bar-sticky-floating-so-it-st](./quick/19-make-search-bar-sticky-floating-so-it-st/) |
+| 20 | Move pagination buttons to left side | 2026-03-10 | 50d3b2f | [20-move-pagination-buttons-to-left-side-to-](./quick/20-move-pagination-buttons-to-left-side-to-/) |
+| 21 | Fix title overflow and auto-expand single assistant group | 2026-03-10 | 76f2928 | [21-fix-title-overflow-and-auto-expand-singl](./quick/21-fix-title-overflow-and-auto-expand-singl/) |
+| 22 | Fix slow app boot and hard refresh performance | 2026-03-10 | 7563cc3 | [22-fix-slow-app-boot-and-hard-refresh-perfo](./quick/22-fix-slow-app-boot-and-hard-refresh-perfo/) |
 
 ## Session Continuity
 
-Last session: 2026-03-10T17:16:38Z
-Stopped at: Completed quick task 19
+Last session: 2026-03-10T17:43:47Z
+Stopped at: Completed quick task 22
 Resume file: None

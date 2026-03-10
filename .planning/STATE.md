@@ -67,6 +67,7 @@ None.
 | 15 | Fix pill badge responsiveness on smaller screens | 2026-03-10 | 5964738 | [15-fix-pill-badge-responsiveness-on-smaller](./quick/15-fix-pill-badge-responsiveness-on-smaller/) |
 | 16 | Preserve pagination state when navigating back | 2026-03-10 | aede542 | [16-preserve-pagination-state-when-navigatin](./quick/16-preserve-pagination-state-when-navigatin/) |
 | 17 | Fix active conversation marking for all conversations | 2026-03-10 | 51d09b1 | [17-fix-active-conversation-marking-all-conv](./quick/17-fix-active-conversation-marking-all-conv/) |
+| 18 | Use icons instead of dots for timeline events | 2026-03-10 | bb50c4f | [18-use-icons-instead-of-dots-for-different-](./quick/18-use-icons-instead-of-dots-for-different-/) |
 
 ## Session Continuity
 

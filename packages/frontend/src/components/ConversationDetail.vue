@@ -16,17 +16,19 @@
       </div>
     </div>
 
-    <!-- Search bar (Cmd+F) -->
-    <ConversationSearchBar
-      :query="searchState.query.value"
-      :current-match="searchState.currentMatchDisplay.value"
-      :total-matches="searchState.totalMatches.value"
-      :visible="searchState.isOpen.value"
-      @update:query="searchState.query.value = $event"
-      @next="searchState.goNext()"
-      @prev="searchState.goPrev()"
-      @close="searchState.close()"
-    />
+    <!-- Search bar (Cmd+F) - sticky below toolbar -->
+    <div class="sticky top-[40px] z-10">
+      <ConversationSearchBar
+        :query="searchState.query.value"
+        :current-match="searchState.currentMatchDisplay.value"
+        :total-matches="searchState.totalMatches.value"
+        :visible="searchState.isOpen.value"
+        @update:query="searchState.query.value = $event"
+        @next="searchState.goNext()"
+        @prev="searchState.goPrev()"
+        @close="searchState.close()"
+      />
+    </div>
 
     <!-- Turn list -->
     <template v-for="turn in visibleTurns" :key="turnKey(turn)">

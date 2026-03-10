@@ -45,6 +45,24 @@
       </li>
     </ul>
 
+    <!-- Token Widget Restore -->
+    <button
+      v-if="widgetDismissed && !collapsed"
+      class="btn btn-ghost btn-sm gap-2 mx-2 mt-1"
+      @click="restoreWidget"
+    >
+      <Activity class="w-4 h-4" />
+      <span>Show live usage</span>
+    </button>
+    <button
+      v-if="widgetDismissed && collapsed"
+      class="btn btn-ghost btn-sm btn-square tooltip tooltip-right mx-auto mt-1"
+      data-tip="Show live usage"
+      @click="restoreWidget"
+    >
+      <Activity class="w-4 h-4" />
+    </button>
+
     <!-- Quick Stats Strip -->
     <div v-if="!collapsed && overview" class="px-4 py-3 border-t border-base-300">
       <div class="text-xs text-base-content/60 font-medium mb-2">Quick Stats</div>
@@ -85,6 +103,7 @@
 import { ref, watch, onUnmounted } from 'vue';
 import ConnectionStatus from './ConnectionStatus.vue';
 import { useAnalytics } from '../composables/useAnalytics';
+import { useTokenRate } from '../composables/useTokenRate';
 import {
   LayoutDashboard,
   MessageSquare,
@@ -94,6 +113,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Activity,
 } from 'lucide-vue-next';
 
 const collapsed = ref(localStorage.getItem('sidebar-collapsed') === 'true');
@@ -113,6 +133,9 @@ const navItems = [
 
 // Quick Stats
 const { overview } = useAnalytics();
+
+// Token widget restore
+const { dismissed: widgetDismissed, restore: restoreWidget } = useTokenRate();
 
 function formatTokens(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';

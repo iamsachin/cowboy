@@ -152,11 +152,8 @@
     <!-- Pagination footer -->
     <div
       v-if="data && data.total > 0"
-      class="flex items-center justify-between mt-3 text-sm flex-wrap gap-2"
+      class="flex items-center gap-4 mt-3 text-sm flex-wrap"
     >
-      <span class="text-base-content/60">
-        Showing {{ rangeStart }}-{{ rangeEnd }} of {{ data.total }} conversations
-      </span>
       <div class="join">
         <button
           class="join-item btn btn-sm"
@@ -182,6 +179,9 @@
           &raquo;
         </button>
       </div>
+      <span class="text-base-content/60">
+        Showing {{ rangeStart }}-{{ rangeEnd }} of {{ data.total }} conversations
+      </span>
     </div>
   </div>
 </template>

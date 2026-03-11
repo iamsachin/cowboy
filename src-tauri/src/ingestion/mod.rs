@@ -7,4 +7,7 @@ pub mod claude_code_parser;
 pub mod normalizer;
 pub mod cursor_file_discovery;
 pub mod cursor_parser;
+pub mod cursor_normalizer;
 pub mod plan_extractor;
+pub mod subagent_linker;
+pub mod subagent_summarizer;

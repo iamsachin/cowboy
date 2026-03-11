@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Tauri Desktop App
-status: completed
-stopped_at: Completed 37-03-PLAN.md
-last_updated: "2026-03-11T08:08:10.363Z"
-last_activity: 2026-03-11 — Completed 37-03 Plan Endpoints + Diff Script
+status: in-progress
+stopped_at: Completed 38-01 Settings Endpoints
+last_updated: "2026-03-11T08:53:55.488Z"
+last_activity: 2026-03-11 — Completed 38-01 Settings Endpoints
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
-  percent: 100
+  total_plans: 7
+  completed_plans: 6
+  percent: 86
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-11)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** v3.0 Tauri Desktop App — Phase 37 Database Layer + Read-Only API
+**Current focus:** v3.0 Tauri Desktop App — Phase 38 Settings Write Endpoints + WebSocket
 
 ## Current Position
 
-Phase: 37 of 40 (Database Layer + Read-Only API)
-Plan: 3 of 3 complete
-Status: Phase 37 complete
-Last activity: 2026-03-11 — Completed 37-03 Plan Endpoints + Diff Script
+Phase: 38 of 40 (Settings Write Endpoints + WebSocket)
+Plan: 1 of 2 complete
+Status: Phase 38 in progress
+Last activity: 2026-03-11 — Completed 38-01 Settings Endpoints
 
-Progress: [██████████] 100%
+Progress: [████████░░] 86%
 
 ## Performance Metrics
 
@@ -60,6 +60,9 @@ Recent decisions affecting current work:
 - [Phase 37]: N+1 avoidance via bulk IN() fetch + HashMap grouping for plan steps
 - [Phase 37-02]: Auto-granularity ported to Rust (daily <14d, weekly <=90d, monthly >90d)
 - [Phase 37-02]: Project stats per-project secondary queries inside single db.call() closure
+- [Phase 38-01]: AppStateInner holds db + broadcast::Sender; WebSocket route deferred to Plan 02
+- [Phase 38-01]: Broadcast channel capacity 256 messages for WebSocket fan-out
+- [Phase 38-01]: No file watcher restart on PUT /agent (Rust backend has no ingestion engine yet)
 
 ### Pending Todos
 
@@ -98,6 +101,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T07:26:38Z
-Stopped at: Completed 37-03-PLAN.md
-Resume file: None
+Last session: 2026-03-11T08:53:10Z
+Stopped at: Completed 38-01 Settings Endpoints
+Resume file: .planning/phases/38-settings-write-endpoints-websocket/38-02-PLAN.md

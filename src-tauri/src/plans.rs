@@ -148,7 +148,7 @@ fn sort_column(sort: &str) -> &'static str {
 
 /// GET /api/plans
 async fn plan_list(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     Query(params): Query<PlanListParams>,
 ) -> Result<Json<PlanListResponse>, AppError> {
     let date_range = DateRangeParams {
@@ -175,7 +175,8 @@ async fn plan_list(
     let sort_col = sort_column(&sort);
     let order_dir = if order == "asc" { "ASC" } else { "DESC" };
 
-    let result = db
+    let result = state
+        .db
         .call(move |conn| {
             // Build dynamic WHERE
             let mut conditions = vec![
@@ -282,10 +283,11 @@ async fn plan_list(
 
 /// GET /api/plans/{id}
 async fn plan_detail(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     Path(plan_id): Path<String>,
 ) -> Result<Json<PlanDetailResponse>, AppError> {
-    let result = db
+    let result = state
+        .db
         .call(move |conn| {
             // Fetch plan with conversation metadata
             let plan_opt: Option<(PlanRow, Option<String>, String)> = conn
@@ -362,14 +364,15 @@ async fn plan_detail(
 
 /// GET /api/plans/stats
 async fn plan_stats(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     Query(params): Query<DateRangeParams>,
 ) -> Result<Json<PlanStatsResponse>, AppError> {
     let (from, to) = params.resolve();
     let to_with_time = format!("{}T23:59:59Z", to);
     let agent = params.agent;
 
-    let result = db
+    let result = state
+        .db
         .call(move |conn| {
             let (sql, param_values): (String, Vec<Box<dyn tokio_rusqlite::rusqlite::types::ToSql>>) =
                 if let Some(ref agent_val) = agent {
@@ -432,7 +435,7 @@ async fn plan_stats(
 
 /// GET /api/plans/timeseries
 async fn plan_timeseries(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     Query(params): Query<PlanTimeseriesParams>,
 ) -> Result<Json<Vec<PlanTimeSeriesPoint>>, AppError> {
     let date_range = DateRangeParams {
@@ -453,7 +456,8 @@ async fn plan_timeseries(
         _ => "%Y-%m",
     };
 
-    let result = db
+    let result = state
+        .db
         .call(move |conn| {
             let (sql, param_values): (String, Vec<Box<dyn tokio_rusqlite::rusqlite::types::ToSql>>) =
                 if let Some(ref agent_val) = agent {
@@ -532,10 +536,11 @@ async fn plan_timeseries(
 
 /// GET /api/plans/by-conversation/{conversationId}
 async fn plans_by_conversation(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     Path(conversation_id): Path<String>,
 ) -> Result<Json<Vec<ConversationPlanEntry>>, AppError> {
-    let result = db
+    let result = state
+        .db
         .call(move |conn| {
             // Fetch all plans for this conversation
             let mut plan_stmt = conn.prepare(

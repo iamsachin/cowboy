@@ -1,23 +1,33 @@
 use axum::{extract::State, routing::get, Json, Router};
 use serde_json::{json, Value};
 use std::sync::Arc;
+use tokio::sync::broadcast;
 use tokio_rusqlite::Connection;
 
 use crate::analytics;
 use crate::conversations;
 use crate::plans;
+use crate::settings;
 
-pub type AppState = Arc<Connection>;
+pub struct AppStateInner {
+    pub db: Connection,
+    pub tx: broadcast::Sender<String>,
+}
+
+pub type AppState = Arc<AppStateInner>;
 
 pub async fn start(db: Connection) {
-    let shared_db: AppState = Arc::new(db);
+    let (tx, _rx) = broadcast::channel::<String>(256);
+
+    let shared_state: AppState = Arc::new(AppStateInner { db, tx });
 
     let app = Router::new()
         .route("/api/health", get(health))
         .merge(conversations::routes())
         .merge(analytics::routes())
         .merge(plans::routes())
-        .with_state(shared_db);
+        .merge(settings::routes())
+        .with_state(shared_state);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3001")
         .await
@@ -30,9 +40,10 @@ pub async fn start(db: Connection) {
         .expect("axum server error");
 }
 
-async fn health(State(db): State<AppState>) -> Json<Value> {
+async fn health(State(state): State<AppState>) -> Json<Value> {
     // Query database to confirm connectivity and schema existence
-    let tables_ok = db
+    let tables_ok = state
+        .db
         .call(|conn| {
             let count: i64 = conn.query_row(
                 "SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",

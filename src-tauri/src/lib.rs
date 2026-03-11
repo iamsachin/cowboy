@@ -8,6 +8,7 @@ mod extractors;
 mod plans;
 mod pricing;
 mod server;
+mod settings;
 
 pub fn run() {
     tauri::Builder::default()

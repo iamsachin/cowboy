@@ -170,7 +170,7 @@ struct PeriodStats {
 }
 
 async fn compute_period_stats(
-    db: &AppState,
+    state: &AppState,
     from: &str,
     to: &str,
     agent: &Option<String>,
@@ -179,7 +179,8 @@ async fn compute_period_stats(
     let to = to.to_string();
     let agent = agent.clone();
 
-    let stats = db
+    let stats = state
+        .db
         .call(move |conn| {
             let to_inclusive = format!("{}T23:59:59Z", to);
 
@@ -354,12 +355,12 @@ async fn compute_period_stats(
 // ── Handlers ──────────────────────────────────────────────────────────
 
 async fn overview(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     Query(params): Query<DateRangeParams>,
 ) -> Result<Json<OverviewStats>, AppError> {
     let (from, to) = params.resolve();
 
-    let stats = compute_period_stats(&db, &from, &to, &params.agent).await?;
+    let stats = compute_period_stats(&state, &from, &to, &params.agent).await?;
 
     // Compute prior period dates
     let from_date = chrono::NaiveDate::parse_from_str(&from, "%Y-%m-%d").unwrap_or_default();
@@ -370,7 +371,7 @@ async fn overview(
     let prior_from = prior_from_date.format("%Y-%m-%d").to_string();
     let prior_to = prior_to_date.format("%Y-%m-%d").to_string();
 
-    let prior_stats = compute_period_stats(&db, &prior_from, &prior_to, &params.agent).await?;
+    let prior_stats = compute_period_stats(&state, &prior_from, &prior_to, &params.agent).await?;
 
     let current_total_tokens = stats.total_input + stats.total_output + stats.total_cache_read + stats.total_cache_creation;
     let prior_total_tokens = prior_stats.total_input + prior_stats.total_output + prior_stats.total_cache_read + prior_stats.total_cache_creation;
@@ -401,7 +402,7 @@ async fn overview(
 }
 
 async fn timeseries(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     Query(params): Query<TimeSeriesParams>,
 ) -> Result<Json<Vec<TimeSeriesPoint>>, AppError> {
     let date_params = DateRangeParams {
@@ -426,7 +427,8 @@ async fn timeseries(
     let agent = params.agent.clone();
     let date_format = date_format.to_string();
 
-    let points = db
+    let points = state
+        .db
         .call(move |conn| {
             let to_inclusive = format!("{}T23:59:59Z", to_c);
             let agent_condition = if agent.is_some() {
@@ -517,13 +519,14 @@ async fn timeseries(
 }
 
 async fn model_distribution(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     Query(params): Query<DateRangeParams>,
 ) -> Result<Json<Vec<ModelDistributionEntry>>, AppError> {
     let (from, to) = params.resolve();
     let agent = params.agent.clone();
 
-    let rows = db
+    let rows = state
+        .db
         .call(move |conn| {
             let to_inclusive = format!("{}T23:59:59Z", to);
             let agent_condition = if agent.is_some() {
@@ -576,12 +579,13 @@ async fn model_distribution(
 }
 
 async fn filters(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     Query(params): Query<DateRangeParams>,
 ) -> Result<Json<FiltersResponse>, AppError> {
     let (from, to) = params.resolve();
 
-    let response = db
+    let response = state
+        .db
         .call(move |conn| {
             let to_inclusive = format!("{}T23:59:59Z", to);
 
@@ -615,13 +619,14 @@ async fn filters(
 // ── Tool Stats ────────────────────────────────────────────────────────
 
 async fn tool_stats(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     Query(params): Query<DateRangeParams>,
 ) -> Result<Json<Vec<ToolStatsRow>>, AppError> {
     let (from, to) = params.resolve();
     let agent = params.agent.clone();
 
-    let rows = db
+    let rows = state
+        .db
         .call(move |conn| {
             let to_inclusive = format!("{}T23:59:59Z", to);
             let agent_condition = if agent.is_some() {
@@ -689,13 +694,14 @@ async fn tool_stats(
 // ── Heatmap ───────────────────────────────────────────────────────────
 
 async fn heatmap(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     Query(params): Query<DateRangeParams>,
 ) -> Result<Json<Vec<HeatmapDay>>, AppError> {
     let (from, to) = params.resolve();
     let agent = params.agent.clone();
 
-    let rows = db
+    let rows = state
+        .db
         .call(move |conn| {
             let to_inclusive = format!("{}T23:59:59Z", to);
             let agent_condition = if agent.is_some() {
@@ -746,13 +752,14 @@ async fn heatmap(
 // ── Project Stats ─────────────────────────────────────────────────────
 
 async fn project_stats(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     Query(params): Query<DateRangeParams>,
 ) -> Result<Json<Vec<ProjectStatsRow>>, AppError> {
     let (from, to) = params.resolve();
     let agent = params.agent.clone();
 
-    let rows = db
+    let rows = state
+        .db
         .call(move |conn| {
             let to_inclusive = format!("{}T23:59:59Z", to);
             let agent_condition = if agent.is_some() {
@@ -1036,9 +1043,10 @@ async fn project_stats(
 // ── Token Rate ────────────────────────────────────────────────────────
 
 async fn token_rate(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
 ) -> Result<Json<Vec<TokenRatePoint>>, AppError> {
-    let rows = db
+    let rows = state
+        .db
         .call(move |conn| {
             let mut stmt = conn.prepare(
                 "SELECT

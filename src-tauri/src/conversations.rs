@@ -241,7 +241,7 @@ struct PerModelTokenRow {
 // ── Conversation List Handler ───────────────────────────────────────
 
 async fn conversation_list(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     Query(params): Query<ConversationListParams>,
 ) -> Result<Json<serde_json::Value>, AppError> {
     let from = params.from.unwrap_or_else(|| {
@@ -274,7 +274,8 @@ async fn conversation_list(
     let order_c = order.clone();
 
     // Main query: conversation rows + total count + per-model tokens
-    let (rows, total, per_model_tokens) = db
+    let (rows, total, per_model_tokens) = state
+        .db
         .call(move |conn| {
             // Build WHERE clause dynamically
             let mut conditions = vec![
@@ -463,7 +464,7 @@ async fn conversation_list(
     let agent_c2 = agent.clone();
 
     let (child_rows, child_per_model_tokens) = if !parent_ids.is_empty() {
-        db.call(move |conn| {
+        state.db.call(move |conn| {
             let mut conditions = vec![
                 "c.created_at >= ?".to_string(),
                 "c.created_at <= ?".to_string(),
@@ -650,7 +651,7 @@ async fn conversation_list(
         // Fetch snippets for all conversation IDs
         let conv_ids_for_snippets: Vec<String> = rows.iter().map(|r| r.id.clone()).collect();
         let snippets = if !conv_ids_for_snippets.is_empty() {
-            db.call(move |conn| {
+            state.db.call(move |conn| {
                 let mut snippet_map: HashMap<String, Option<String>> = HashMap::new();
                 for cid in &conv_ids_for_snippets {
                     let result: Option<String> = conn
@@ -844,12 +845,13 @@ fn extract_snippet(content: &str, search_term: &str, context_chars: usize) -> Op
 // ── Conversation Detail Handler ─────────────────────────────────────
 
 async fn conversation_detail(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     Path(id): Path<String>,
 ) -> Result<Json<ConversationDetailResponse>, AppError> {
     let conv_id = id.clone();
 
-    let result = db
+    let result = state
+        .db
         .call(move |conn| {
             // 1. Fetch conversation row
             let conv = conn.query_row(

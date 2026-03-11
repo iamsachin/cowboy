@@ -97,7 +97,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 37: Database Layer + Read-Only API** — All read endpoints ported to axum with response parity against Node.js backend (completed 2026-03-11)
 - [x] **Phase 38: Settings, Write Endpoints + WebSocket** — Mutation endpoints and typed WebSocket event infrastructure ported to Rust (completed 2026-03-11)
 - [x] **Phase 39: Ingestion Engine** — Claude Code and Cursor parsers ported to Rust with row-level data parity verification (completed 2026-03-11)
-- [ ] **Phase 40: File Watcher + Desktop Chrome** — notify-based file watching, system tray, close-to-tray, native menu, and Node.js removal
+- [x] **Phase 40: File Watcher + Desktop Chrome** — notify-based file watching, system tray, close-to-tray, native menu, and Node.js removal (completed 2026-03-11)
 
 ## Phase Details
 
@@ -229,4 +229,4 @@ Phases execute in numeric order: 36 -> 37 -> 38 -> 39 -> 40
 | 37. Database Layer + Read-Only API | v3.0 | 3/3 | Complete | 2026-03-11 |
 | 38. Settings, Write Endpoints + WebSocket | v3.0 | Complete    | 2026-03-11 | 2026-03-11 |
 | 39. Ingestion Engine | 4/4 | Complete    | 2026-03-11 | - |
-| 40. File Watcher + Desktop Chrome | 2/3 | In Progress|  | - |
+| 40. File Watcher + Desktop Chrome | 3/3 | Complete   | 2026-03-11 | - |

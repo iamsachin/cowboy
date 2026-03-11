@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Tauri Desktop App
 status: completed
-stopped_at: Completed 40-03-PLAN.md
-last_updated: "2026-03-11T11:33:55.036Z"
+stopped_at: Completed 40-02-PLAN.md
+last_updated: "2026-03-11T13:04:55.787Z"
 last_activity: 2026-03-11 — Completed 40-03 Node.js backend removal and type migration
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 15
-  completed_plans: 14
+  completed_plans: 15
   percent: 100
 ---
 
@@ -80,6 +80,7 @@ Recent decisions affecting current work:
 - [Phase 40-01]: Server port changed from 3001 to 8123 (configurable via settings table)
 - [Phase 40-01]: FileWatcherHandle Drop sends oneshot shutdown signal for clean lifecycle
 - [Phase 40-03]: Migrated shared types to frontend local imports, deleted Node.js backend entirely
+- [Phase 40-02]: include_bytes! for tray icon (avoids runtime path issues)
 
 ### Pending Todos
 
@@ -118,9 +119,10 @@ None.
 | Phase 39 P03 | 6min | 2 tasks | 4 files |
 | Phase 39-04 P04 | 8 | 2 tasks | 5 files |
 | Phase 40 P03 | 4 | 2 tasks | 151 files |
+| Phase 40 P02 | 5 | 2 tasks | 9 files |
 
 ## Session Continuity
 
-Last session: 2026-03-11T11:33:55.033Z
-Stopped at: Completed 40-03-PLAN.md
+Last session: 2026-03-11T13:02:37.817Z
+Stopped at: Completed 40-02-PLAN.md
 Resume file: None

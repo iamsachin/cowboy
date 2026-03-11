@@ -71,6 +71,7 @@ function connect(): void {
       lastSeq = msg.seq;
 
       // Route to type-specific listeners
+      // Note: settings:changed is handled by the settings page/store via on('settings:changed', cb)
       listeners.get(msg.type)?.forEach((cb) => cb(msg));
     } catch {
       // Ignore non-JSON messages

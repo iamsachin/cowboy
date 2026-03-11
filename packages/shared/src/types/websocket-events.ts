@@ -38,10 +38,17 @@ export interface SystemFullRefreshEvent {
   timestamp: string;
 }
 
+export interface SettingsChangedEvent {
+  type: 'settings:changed';
+  seq: number;
+  timestamp: string;
+}
+
 export type WebSocketEvent =
   | ConversationChangedEvent
   | ConversationCreatedEvent
-  | SystemFullRefreshEvent;
+  | SystemFullRefreshEvent
+  | SettingsChangedEvent;
 
 export type WebSocketEventType = WebSocketEvent['type'];
 
@@ -49,7 +56,8 @@ export type WebSocketEventType = WebSocketEvent['type'];
 export type WebSocketEventPayload =
   | Omit<ConversationChangedEvent, 'seq'>
   | Omit<ConversationCreatedEvent, 'seq'>
-  | Omit<SystemFullRefreshEvent, 'seq'>;
+  | Omit<SystemFullRefreshEvent, 'seq'>
+  | Omit<SettingsChangedEvent, 'seq'>;
 
 // Type guards
 export function isConversationChanged(e: WebSocketEvent): e is ConversationChangedEvent {
@@ -62,4 +70,8 @@ export function isConversationCreated(e: WebSocketEvent): e is ConversationCreat
 
 export function isSystemFullRefresh(e: WebSocketEvent): e is SystemFullRefreshEvent {
   return e.type === 'system:full-refresh';
+}
+
+export function isSettingsChanged(e: WebSocketEvent): e is SettingsChangedEvent {
+  return e.type === 'settings:changed';
 }

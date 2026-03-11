@@ -1,11 +1,13 @@
 #!/bin/bash
 # scripts/diff-backends.sh
 # Compare Node.js (:3000) vs Rust (:3001) API responses
-# Primary validation artifact for Phase 37: zero differences on all read endpoints
+# Primary validation artifact for Phase 37+38: zero differences on all endpoints
 #
 # Usage:
-#   ./scripts/diff-backends.sh           # Test all endpoints
-#   ./scripts/diff-backends.sh --all     # Same as above
+#   ./scripts/diff-backends.sh              # Read tests only (backward compatible)
+#   ./scripts/diff-backends.sh --read       # Explicit read-only tests
+#   ./scripts/diff-backends.sh --write      # Mutation tests only
+#   ./scripts/diff-backends.sh --all        # Both read + write tests
 #   ./scripts/diff-backends.sh --endpoint plans/stats  # Test single endpoint
 
 set -uo pipefail
@@ -25,20 +27,37 @@ PASS=0
 FAIL=0
 SKIP=0
 SINGLE_ENDPOINT=""
+RUN_READ=false
+RUN_WRITE=false
 
 # Parse args
+if [[ $# -eq 0 ]]; then
+  RUN_READ=true
+fi
+
 while [[ $# -gt 0 ]]; do
   case $1 in
     --all)
+      RUN_READ=true
+      RUN_WRITE=true
+      shift
+      ;;
+    --read)
+      RUN_READ=true
+      shift
+      ;;
+    --write)
+      RUN_WRITE=true
       shift
       ;;
     --endpoint)
       SINGLE_ENDPOINT="$2"
+      RUN_READ=true
       shift 2
       ;;
     *)
       echo "Unknown option: $1"
-      echo "Usage: $0 [--all | --endpoint NAME]"
+      echo "Usage: $0 [--all | --read | --write | --endpoint NAME]"
       exit 1
       ;;
   esac
@@ -84,6 +103,49 @@ compare_endpoint() {
   fi
 }
 
+# Compare a mutation: PUT on both, then GET and diff results, then cleanup
+compare_mutation() {
+  local put_endpoint="$1"
+  local get_endpoint="$2"
+  local label="$3"
+  local body="$4"
+
+  # PUT on both backends
+  local node_put rust_put
+  node_put=$(curl -sf -X PUT -H 'Content-Type: application/json' -d "$body" "$BASE_NODE/$put_endpoint" 2>/dev/null) || node_put=""
+  rust_put=$(curl -sf -X PUT -H 'Content-Type: application/json' -d "$body" "$BASE_RUST/$put_endpoint" 2>/dev/null) || rust_put=""
+
+  if [ -z "$node_put" ]; then
+    echo -e "${YELLOW}SKIP${NC}: $label PUT (Node.js returned empty/error)"
+    SKIP=$((SKIP + 1))
+    return
+  fi
+
+  if [ -z "$rust_put" ]; then
+    echo -e "${RED}FAIL${NC}: $label PUT (Rust returned empty/error)"
+    FAIL=$((FAIL + 1))
+    return
+  fi
+
+  # Compare PUT responses
+  local node_out rust_out
+  node_out=$(echo "$node_put" | normalize)
+  rust_out=$(echo "$rust_put" | normalize)
+
+  if [ "$node_out" = "$rust_out" ]; then
+    echo -e "${GREEN}PASS${NC}: $label (PUT response)"
+    PASS=$((PASS + 1))
+  else
+    echo -e "${RED}FAIL${NC}: $label (PUT response)"
+    diff --color=auto <(echo "$node_out") <(echo "$rust_out") | head -30
+    echo "..."
+    FAIL=$((FAIL + 1))
+  fi
+
+  # GET and diff
+  compare_endpoint "$get_endpoint" "$label (GET after PUT)"
+}
+
 # ── Static Endpoints ────────────────────────────────────────────────
 
 STATIC_ENDPOINTS=(
@@ -99,6 +161,8 @@ STATIC_ENDPOINTS=(
   "plans?from=${DATE_FROM}&to=${DATE_TO}&page=1&limit=5"
   "plans/stats?from=${DATE_FROM}&to=${DATE_TO}"
   "plans/timeseries?from=${DATE_FROM}&to=${DATE_TO}&granularity=weekly"
+  "settings"
+  "settings/db-stats"
 )
 
 echo "================================================"
@@ -110,8 +174,12 @@ echo ""
 
 if [ -n "$SINGLE_ENDPOINT" ]; then
   compare_endpoint "$SINGLE_ENDPOINT"
-else
-  echo "--- Static Endpoints ---"
+fi
+
+# ── Read Tests ──────────────────────────────────────────────────────
+
+if $RUN_READ && [ -z "$SINGLE_ENDPOINT" ]; then
+  echo "--- Read Endpoints ---"
   echo ""
 
   for endpoint in "${STATIC_ENDPOINTS[@]}"; do
@@ -142,6 +210,72 @@ else
   else
     echo -e "${YELLOW}SKIP${NC}: plans/:id (no plan found)"
     SKIP=$((SKIP + 1))
+  fi
+fi
+
+# ── Write Tests ─────────────────────────────────────────────────────
+
+if $RUN_WRITE; then
+  echo ""
+  echo "--- Write (Mutation) Tests ---"
+  echo ""
+
+  # Save current settings from both backends for restoration
+  SETTINGS_BACKUP_NODE=$(curl -sf "$BASE_NODE/settings" 2>/dev/null) || SETTINGS_BACKUP_NODE=""
+  SETTINGS_BACKUP_RUST=$(curl -sf "$BASE_RUST/settings" 2>/dev/null) || SETTINGS_BACKUP_RUST=""
+
+  if [ -z "$SETTINGS_BACKUP_NODE" ] || [ -z "$SETTINGS_BACKUP_RUST" ]; then
+    echo -e "${YELLOW}SKIP${NC}: Write tests (could not read current settings for backup)"
+    SKIP=$((SKIP + 1))
+  else
+    # Test 1: PUT /settings/agent
+    AGENT_BODY='{"claudeCodePath":"/tmp/test-cowboy-path","claudeCodeEnabled":true,"cursorPath":"/tmp/test-cursor-path","cursorEnabled":false}'
+    compare_mutation "settings/agent" "settings" "PUT /settings/agent" "$AGENT_BODY"
+
+    # Test 2: PUT /settings/sync
+    SYNC_BODY='{"syncEnabled":true,"syncUrl":"http://test.example.com","syncFrequency":600,"syncCategories":["conversations"]}'
+    compare_mutation "settings/sync" "settings" "PUT /settings/sync" "$SYNC_BODY"
+
+    # Test 3: POST /settings/validate-path (with a known-good path)
+    VALIDATE_BODY="{\"path\":\"$HOME\",\"agent\":\"claude-code\"}"
+    node_validate=$(curl -sf -X POST -H 'Content-Type: application/json' -d "$VALIDATE_BODY" "$BASE_NODE/settings/validate-path" 2>/dev/null) || node_validate=""
+    rust_validate=$(curl -sf -X POST -H 'Content-Type: application/json' -d "$VALIDATE_BODY" "$BASE_RUST/settings/validate-path" 2>/dev/null) || rust_validate=""
+
+    if [ -n "$node_validate" ] && [ -n "$rust_validate" ]; then
+      nv=$(echo "$node_validate" | normalize)
+      rv=$(echo "$rust_validate" | normalize)
+      if [ "$nv" = "$rv" ]; then
+        echo -e "${GREEN}PASS${NC}: POST /settings/validate-path"
+        PASS=$((PASS + 1))
+      else
+        echo -e "${RED}FAIL${NC}: POST /settings/validate-path"
+        diff --color=auto <(echo "$nv") <(echo "$rv") | head -20
+        FAIL=$((FAIL + 1))
+      fi
+    else
+      echo -e "${YELLOW}SKIP${NC}: POST /settings/validate-path (empty response)"
+      SKIP=$((SKIP + 1))
+    fi
+
+    # Test 4: GET /settings/db-stats diff
+    compare_endpoint "settings/db-stats" "GET /settings/db-stats (after mutations)"
+
+    # Restore original settings on both backends
+    RESTORE_AGENT=$(echo "$SETTINGS_BACKUP_NODE" | jq -c '{claudeCodePath: .claudeCodePath, claudeCodeEnabled: .claudeCodeEnabled, cursorPath: .cursorPath, cursorEnabled: .cursorEnabled}' 2>/dev/null)
+    RESTORE_SYNC=$(echo "$SETTINGS_BACKUP_NODE" | jq -c '{syncEnabled: .syncEnabled, syncUrl: .syncUrl, syncFrequency: .syncFrequency, syncCategories: .syncCategories}' 2>/dev/null)
+
+    if [ -n "$RESTORE_AGENT" ] && [ -n "$RESTORE_SYNC" ]; then
+      curl -sf -X PUT -H 'Content-Type: application/json' -d "$RESTORE_AGENT" "$BASE_NODE/settings/agent" > /dev/null 2>&1
+      curl -sf -X PUT -H 'Content-Type: application/json' -d "$RESTORE_AGENT" "$BASE_RUST/settings/agent" > /dev/null 2>&1
+      curl -sf -X PUT -H 'Content-Type: application/json' -d "$RESTORE_SYNC" "$BASE_NODE/settings/sync" > /dev/null 2>&1
+      curl -sf -X PUT -H 'Content-Type: application/json' -d "$RESTORE_SYNC" "$BASE_RUST/settings/sync" > /dev/null 2>&1
+      echo -e "${GREEN}OK${NC}: Settings restored to original values"
+    else
+      echo -e "${YELLOW}WARN${NC}: Could not restore original settings"
+    fi
+
+    # Note: DELETE /settings/clear-db skipped in automated tests (too destructive, would need repopulation)
+    echo -e "${YELLOW}NOTE${NC}: DELETE /settings/clear-db skipped (destructive -- verify manually)"
   fi
 fi
 

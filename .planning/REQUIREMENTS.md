@@ -12,7 +12,7 @@ Requirements for Tauri v2 desktop app with Rust backend. Each maps to roadmap ph
 - [x] **FOUND-01**: Tauri v2 project scaffolded with native macOS window chrome loading Vue frontend
 - [x] **FOUND-02**: Axum HTTP server starts on 127.0.0.1:3000 inside Tauri process
 - [x] **FOUND-03**: CSP configured to allow DaisyUI inline styles, localhost API, and WebSocket
-- [ ] **FOUND-04**: rusqlite opens existing SQLite database with tokio-rusqlite for async access
+- [x] **FOUND-04**: rusqlite opens existing SQLite database with tokio-rusqlite for async access
 
 ### API
 
@@ -80,7 +80,7 @@ Requirements for Tauri v2 desktop app with Rust backend. Each maps to roadmap ph
 | FOUND-01 | Phase 36 | Complete |
 | FOUND-02 | Phase 36 | Complete |
 | FOUND-03 | Phase 36 | Complete |
-| FOUND-04 | Phase 36 | Pending |
+| FOUND-04 | Phase 36 | Complete |
 | API-01 | Phase 37 | Pending |
 | API-02 | Phase 37 | Pending |
 | API-03 | Phase 37 | Pending |

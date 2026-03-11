@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Tauri Desktop App
-status: executing
-stopped_at: Completed 36-01-PLAN.md
-last_updated: "2026-03-11T06:17:29.270Z"
-last_activity: 2026-03-11 — Completed 36-01 Tauri scaffold
+status: completed
+stopped_at: Completed 36-02-PLAN.md
+last_updated: "2026-03-11T06:38:13.250Z"
+last_activity: 2026-03-11 — Completed 36-02 Database + Splash Screen
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 0
+  completed_plans: 2
+  percent: 100
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 ## Current Position
 
 Phase: 36 of 40 (Tauri Scaffold + Infrastructure)
-Plan: 1 of 2 complete
-Status: Executing
-Last activity: 2026-03-11 — Completed 36-01 Tauri scaffold
+Plan: 2 of 2 complete
+Status: Phase 36 complete
+Last activity: 2026-03-11 — Completed 36-02 Database + Splash Screen
 
-Progress: [█████░░░░░] 50%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Recent decisions affecting current work:
 - [v3.0]: Parallel migration — Node.js stays on :3000 while Rust develops on :3001, then swap
 - [36-01]: Manual Tauri scaffold (not cargo tauri init) for full control
 - [36-01]: CSP object format with dangerousDisableAssetCspModification for DaisyUI style-src
+- [Phase 36-02]: DB path uses Tauri identifier (com.cowboy.app) not product name for app data dir
 
 ### Pending Todos
 
@@ -89,9 +90,10 @@ None.
 | 23 | Show conversations with parent ID as sub-rows | 2026-03-10 | 708fe92 | [23-show-conversations-with-parent-id-as-sub](./quick/23-show-conversations-with-parent-id-as-sub/) |
 | 24 | Fix sub-conversations connected to wrong parent | 2026-03-10 | f9ac27d | [24-fix-sub-conversations-connected-to-wrong](./quick/24-fix-sub-conversations-connected-to-wrong/) |
 | Phase 36 P01 | 3 | 2 tasks | 9 files |
+| Phase 36 P02 | 25min | 4 tasks | 8 files |
 
 ## Session Continuity
 
-Last session: 2026-03-11T06:17:00Z
-Stopped at: Completed 36-01-PLAN.md
-Resume file: .planning/phases/36-tauri-scaffold-infrastructure/36-01-SUMMARY.md
+Last session: 2026-03-11T06:38:13.247Z
+Stopped at: Completed 36-02-PLAN.md
+Resume file: None

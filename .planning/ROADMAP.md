@@ -125,12 +125,12 @@ Plans:
   2. All analytics pages (token stats, cost stats, heatmap, model distribution) show correct data matching Node.js output
   3. Plan tracking page displays plans with correct titles, statuses, and completion counts
   4. JSON response diff between Node.js (:3000) and Rust (:3001) shows zero differences on all read endpoints
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 37-01: TBD
-- [ ] 37-02: TBD
-- [ ] 37-03: TBD
+- [ ] 37-01-PLAN.md — Shared foundation (error, extractors, pricing) and conversation endpoints
+- [ ] 37-02-PLAN.md — All 8 analytics endpoints (overview, timeseries, model-distribution, tool-stats, heatmap, project-stats, token-rate, filters)
+- [ ] 37-03-PLAN.md — Plan tracking endpoints and diff testing script
 
 ### Phase 38: Settings, Write Endpoints + WebSocket
 **Goal**: All 25 REST endpoints and the WebSocket event system work on the Rust backend -- settings save/load, database management, and live updates all function
@@ -222,8 +222,8 @@ Phases execute in numeric order: 36 -> 37 -> 38 -> 39 -> 40
 | 33. Realtime Conversation Discovery | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 34. Live Token Usage Widget | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 35. Conversation Timeline | v2.1 | 2/2 | Complete | 2026-03-10 |
-| 36. Tauri Scaffold + Infrastructure | 2/2 | Complete    | 2026-03-11 | - |
-| 37. Database Layer + Read-Only API | v3.0 | 0/0 | Not started | - |
+| 36. Tauri Scaffold + Infrastructure | v3.0 | 2/2 | Complete | 2026-03-11 |
+| 37. Database Layer + Read-Only API | v3.0 | 0/3 | Not started | - |
 | 38. Settings, Write Endpoints + WebSocket | v3.0 | 0/0 | Not started | - |
 | 39. Ingestion Engine | v3.0 | 0/0 | Not started | - |
 | 40. File Watcher + Desktop Chrome | v3.0 | 0/0 | Not started | - |

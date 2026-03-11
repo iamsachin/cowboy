@@ -10,7 +10,7 @@ export default defineConfig({
     clearScreen: false,
     proxy: {
       '/api': {
-        target: 'http://localhost:3000', // Node.js backend (change to :3001 for Rust backend)
+        target: 'http://127.0.0.1:3001',
         changeOrigin: true,
         ws: true,
       },

@@ -42,9 +42,9 @@ use self::types::{DiscoveredFile, IngestionLastRun, IngestionProgress, Ingestion
 
 // ── Shared ingestion status ─────────────────────────────────────────────
 
-type SharedStatus = Arc<Mutex<IngestionStatus>>;
+pub type SharedStatus = Arc<Mutex<IngestionStatus>>;
 
-fn new_shared_status() -> SharedStatus {
+pub fn new_shared_status() -> SharedStatus {
     Arc::new(Mutex::new(IngestionStatus {
         running: false,
         progress: None,

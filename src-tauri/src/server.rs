@@ -9,11 +9,13 @@ use crate::conversations;
 use crate::ingestion;
 use crate::plans;
 use crate::settings;
+use crate::watcher::{self, FileWatcherHandle};
 use crate::websocket;
 
 pub struct AppStateInner {
     pub db: Connection,
     pub tx: broadcast::Sender<String>,
+    pub watcher: tokio::sync::Mutex<Option<FileWatcherHandle>>,
 }
 
 pub type AppState = Arc<AppStateInner>;
@@ -21,7 +23,11 @@ pub type AppState = Arc<AppStateInner>;
 pub async fn start(db: Connection) {
     let (tx, _rx) = broadcast::channel::<String>(256);
 
-    let shared_state: AppState = Arc::new(AppStateInner { db, tx });
+    let shared_state: AppState = Arc::new(AppStateInner {
+        db,
+        tx,
+        watcher: tokio::sync::Mutex::new(None),
+    });
 
     let app = Router::new()
         .route("/api/health", get(health))
@@ -33,13 +39,83 @@ pub async fn start(db: Connection) {
         .route("/api/ws", any(websocket::ws_handler))
         .with_state(shared_state.clone());
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3001")
+    // Read port from settings table (default 8123)
+    let port: i64 = shared_state
+        .db
+        .call(|conn| {
+            let port = conn
+                .query_row("SELECT server_port FROM settings WHERE id = 1", [], |r| {
+                    r.get::<_, i64>(0)
+                })
+                .unwrap_or(8123);
+            Ok::<i64, tokio_rusqlite::Error>(port)
+        })
         .await
-        .expect("failed to bind to 127.0.0.1:3001");
+        .unwrap_or(8123);
 
-    println!("Cowboy Rust server listening on http://127.0.0.1:3001");
+    let bind_addr = format!("127.0.0.1:{}", port);
+    let listener = tokio::net::TcpListener::bind(&bind_addr)
+        .await
+        .unwrap_or_else(|_| panic!("failed to bind to {}", bind_addr));
 
-    // Spawn auto-ingest after server starts
+    println!("Cowboy Rust server listening on http://{}", bind_addr);
+
+    // Initialize file watcher with settings from DB
+    {
+        let state_clone = shared_state.clone();
+        let watcher_settings = shared_state
+            .db
+            .call(|conn| {
+                let result = conn.query_row(
+                    "SELECT claude_code_path, claude_code_enabled, cursor_path, cursor_enabled FROM settings WHERE id = 1",
+                    [],
+                    |row| {
+                        Ok((
+                            row.get::<_, String>(0)?,
+                            row.get::<_, i32>(1)? != 0,
+                            row.get::<_, String>(2)?,
+                            row.get::<_, i32>(3)? != 0,
+                        ))
+                    },
+                );
+                match result {
+                    Ok(s) => Ok::<_, tokio_rusqlite::Error>(Some(s)),
+                    Err(_) => Ok(None),
+                }
+            })
+            .await
+            .ok()
+            .flatten();
+
+        if let Some((claude_path, claude_enabled, cursor_path, cursor_enabled)) = watcher_settings {
+            match watcher::start_watcher(
+                state_clone.clone(),
+                Some(claude_path),
+                Some(cursor_path),
+                claude_enabled,
+                cursor_enabled,
+            ) {
+                Ok(handle) => {
+                    let mut w = state_clone.watcher.lock().await;
+                    *w = Some(handle);
+                    println!("File watcher initialized");
+                }
+                Err(e) => eprintln!("Failed to start file watcher: {}", e),
+            }
+        } else {
+            // No settings row yet; start watcher with defaults
+            match watcher::start_watcher(state_clone.clone(), None, None, true, true) {
+                Ok(handle) => {
+                    let mut w = state_clone.watcher.lock().await;
+                    *w = Some(handle);
+                    println!("File watcher initialized with defaults");
+                }
+                Err(e) => eprintln!("Failed to start file watcher: {}", e),
+            }
+        }
+    }
+
+    // Also run initial ingestion
     ingestion::spawn_auto_ingest(shared_state);
 
     axum::serve(listener, app)

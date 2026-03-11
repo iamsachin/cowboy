@@ -29,6 +29,20 @@ pub async fn init_database(
     })
     .await?;
 
+    // Migration: add server_port column to settings if missing (added in v3.0 Phase 40)
+    conn.call(|conn| {
+        let has_column: bool = conn
+            .prepare("SELECT server_port FROM settings LIMIT 0")
+            .is_ok();
+        if !has_column {
+            conn.execute_batch(
+                "ALTER TABLE settings ADD COLUMN server_port INTEGER NOT NULL DEFAULT 8123;",
+            )?;
+        }
+        Ok::<(), rusqlite::Error>(())
+    })
+    .await?;
+
     Ok(conn)
 }
 

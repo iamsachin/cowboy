@@ -24,7 +24,7 @@ pub fn run() {
             let db = tauri::async_runtime::block_on(db::init_database(db_path))
                 .expect("failed to initialize database");
 
-            // Spawn the axum HTTP server on :3001 with database connection
+            // Spawn the axum HTTP server on configurable port (default :8123) with database connection
             tauri::async_runtime::spawn(server::start(db));
 
             Ok(())

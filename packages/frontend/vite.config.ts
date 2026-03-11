@@ -10,7 +10,7 @@ export default defineConfig({
     clearScreen: false,
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:3001',
+        target: 'http://127.0.0.1:8123',
         changeOrigin: true,
         ws: true,
       },

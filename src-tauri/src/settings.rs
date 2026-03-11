@@ -16,6 +16,7 @@ pub fn routes() -> Router<AppState> {
         .route("/api/settings", get(get_settings))
         .route("/api/settings/agent", put(update_agent))
         .route("/api/settings/sync", put(update_sync))
+        .route("/api/settings/port", put(update_port))
         .route("/api/settings/validate-path", post(validate_path))
         .route("/api/settings/clear-db", delete(clear_db))
         .route("/api/settings/db-stats", get(db_stats))
@@ -42,6 +43,7 @@ pub struct SettingsResponse {
     pub last_sync_error: Option<String>,
     pub last_sync_success: Option<bool>,
     pub sync_cursor: Option<String>,
+    pub server_port: i64,
 }
 
 #[derive(Deserialize)]
@@ -60,6 +62,12 @@ struct SyncSettingsBody {
     sync_url: String,
     sync_frequency: i64,
     sync_categories: Vec<String>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct PortSettingsBody {
+    server_port: i64,
 }
 
 #[derive(Deserialize)]
@@ -109,6 +117,11 @@ fn expand_tilde(path: &str) -> String {
     path.to_string()
 }
 
+const SETTINGS_COLUMNS: &str =
+    "id, claude_code_path, claude_code_enabled, cursor_path, cursor_enabled, \
+     sync_enabled, sync_url, sync_frequency, sync_categories, \
+     last_sync_at, last_sync_error, last_sync_success, sync_cursor, server_port";
+
 fn map_settings_row(row: &tokio_rusqlite::rusqlite::Row) -> tokio_rusqlite::rusqlite::Result<SettingsResponse> {
     let sync_categories_str: String = row.get(8)?;
     let sync_categories: Vec<String> =
@@ -131,20 +144,16 @@ fn map_settings_row(row: &tokio_rusqlite::rusqlite::Row) -> tokio_rusqlite::rusq
         last_sync_error: row.get(10)?,
         last_sync_success,
         sync_cursor: row.get(12)?,
+        server_port: row.get(13)?,
     })
 }
 
 fn get_or_seed_settings(
     conn: &tokio_rusqlite::rusqlite::Connection,
 ) -> tokio_rusqlite::rusqlite::Result<SettingsResponse> {
-    let existing = conn.query_row(
-        "SELECT id, claude_code_path, claude_code_enabled, cursor_path, cursor_enabled,
-                sync_enabled, sync_url, sync_frequency, sync_categories,
-                last_sync_at, last_sync_error, last_sync_success, sync_cursor
-         FROM settings WHERE id = 1",
-        [],
-        map_settings_row,
-    );
+    let select_sql = format!("SELECT {} FROM settings WHERE id = 1", SETTINGS_COLUMNS);
+
+    let existing = conn.query_row(&select_sql, [], map_settings_row);
 
     match existing {
         Ok(row) => Ok(row),
@@ -159,8 +168,8 @@ fn get_or_seed_settings(
 
             conn.execute(
                 "INSERT INTO settings (id, claude_code_path, claude_code_enabled, cursor_path, cursor_enabled,
-                    sync_enabled, sync_url, sync_frequency, sync_categories)
-                 VALUES (1, ?1, 1, ?2, 1, 0, '', 900, ?3)",
+                    sync_enabled, sync_url, sync_frequency, sync_categories, server_port)
+                 VALUES (1, ?1, 1, ?2, 1, 0, '', 900, ?3, 8123)",
                 tokio_rusqlite::rusqlite::params![
                     default_claude_path,
                     default_cursor_path,
@@ -168,14 +177,7 @@ fn get_or_seed_settings(
                 ],
             )?;
 
-            conn.query_row(
-                "SELECT id, claude_code_path, claude_code_enabled, cursor_path, cursor_enabled,
-                        sync_enabled, sync_url, sync_frequency, sync_categories,
-                        last_sync_at, last_sync_error, last_sync_success, sync_cursor
-                 FROM settings WHERE id = 1",
-                [],
-                map_settings_row,
-            )
+            conn.query_row(&select_sql, [], map_settings_row)
         }
         Err(e) => Err(e),
     }
@@ -229,6 +231,37 @@ async fn update_agent(
     // Broadcast settings:changed event
     crate::websocket::broadcast_event(&state, "settings:changed", None);
 
+    // Restart file watcher with new settings
+    {
+        let mut watcher_lock = state.watcher.lock().await;
+        // Drop old watcher (triggers shutdown via oneshot channel)
+        *watcher_lock = None;
+
+        // Start new watcher with updated settings
+        match crate::watcher::start_watcher(
+            state.clone(),
+            Some(settings.claude_code_path.clone()),
+            Some(settings.cursor_path.clone()),
+            settings.claude_code_enabled,
+            settings.cursor_enabled,
+        ) {
+            Ok(handle) => {
+                *watcher_lock = Some(handle);
+                println!("File watcher restarted with updated agent settings");
+            }
+            Err(e) => eprintln!("Failed to restart file watcher: {}", e),
+        }
+    }
+
+    // Trigger re-ingestion with new paths
+    let state_for_ingest = state.clone();
+    tokio::spawn(async move {
+        let status = crate::ingestion::new_shared_status();
+        if let Err(e) = crate::ingestion::run_ingestion(&state_for_ingest, status).await {
+            eprintln!("Re-ingestion after agent settings change error: {}", e);
+        }
+    });
+
     Ok(Json(settings))
 }
 
@@ -265,6 +298,32 @@ async fn update_sync(
         .await?;
 
     // Broadcast settings:changed event
+    crate::websocket::broadcast_event(&state, "settings:changed", None);
+
+    Ok(Json(settings))
+}
+
+/// PUT /api/settings/port
+async fn update_port(
+    State(state): State<AppState>,
+    Json(body): Json<PortSettingsBody>,
+) -> Result<Json<SettingsResponse>, AppError> {
+    let port = body.server_port;
+
+    let settings = state
+        .db
+        .call(move |conn| {
+            get_or_seed_settings(conn)?;
+
+            conn.execute(
+                "UPDATE settings SET server_port = ?1 WHERE id = 1",
+                tokio_rusqlite::rusqlite::params![port],
+            )?;
+
+            Ok(get_or_seed_settings(conn)?)
+        })
+        .await?;
+
     crate::websocket::broadcast_event(&state, "settings:changed", None);
 
     Ok(Json(settings))
@@ -474,23 +533,31 @@ async fn db_stats(
     Ok(Json(result))
 }
 
-/// POST /api/settings/refresh-db -- 501 stub
-async fn refresh_db() -> Result<(), AppError> {
-    Err(AppError::NotImplemented(
-        "Requires ingestion engine -- Phase 39".into(),
-    ))
+/// POST /api/settings/refresh-db
+async fn refresh_db(
+    State(state): State<AppState>,
+) -> Result<Json<serde_json::Value>, AppError> {
+    let state_for_ingest = state.clone();
+    tokio::spawn(async move {
+        let status = crate::ingestion::new_shared_status();
+        if let Err(e) = crate::ingestion::run_ingestion(&state_for_ingest, status).await {
+            eprintln!("Refresh-db ingestion error: {}", e);
+        }
+    });
+
+    Ok(Json(serde_json::json!({"message": "Database refresh started"})))
 }
 
 /// POST /api/settings/test-sync -- 501 stub
 async fn test_sync() -> Result<(), AppError> {
     Err(AppError::NotImplemented(
-        "Requires sync scheduler -- Phase 40".into(),
+        "Remote sync out of scope for v3.0".into(),
     ))
 }
 
 /// POST /api/settings/sync-now -- 501 stub
 async fn sync_now() -> Result<(), AppError> {
     Err(AppError::NotImplemented(
-        "Requires sync scheduler -- Phase 40".into(),
+        "Remote sync out of scope for v3.0".into(),
     ))
 }

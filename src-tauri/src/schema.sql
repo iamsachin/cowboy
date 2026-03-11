@@ -100,7 +100,8 @@ CREATE TABLE IF NOT EXISTS settings (
     last_sync_at TEXT,
     last_sync_error TEXT,
     last_sync_success INTEGER,
-    sync_cursor TEXT
+    sync_cursor TEXT,
+    server_port INTEGER NOT NULL DEFAULT 8123
 );
 
 -- Performance indexes

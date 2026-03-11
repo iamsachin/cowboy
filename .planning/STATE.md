@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Tauri Desktop App
 status: in-progress
-stopped_at: Completed 38-01 Settings Endpoints
+stopped_at: Completed 38-02 WebSocket + Mutation Broadcasts
 last_updated: "2026-03-11T08:53:55.488Z"
-last_activity: 2026-03-11 — Completed 38-01 Settings Endpoints
+last_activity: 2026-03-11 — Completed 38-02 WebSocket + Mutation Broadcasts
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 7
-  completed_plans: 6
-  percent: 86
+  completed_plans: 7
+  percent: 90
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 ## Current Position
 
 Phase: 38 of 40 (Settings Write Endpoints + WebSocket)
-Plan: 1 of 2 complete
-Status: Phase 38 in progress
-Last activity: 2026-03-11 — Completed 38-01 Settings Endpoints
+Plan: 2 of 2 complete
+Status: Phase 38 complete
+Last activity: 2026-03-11 — Completed 38-02 WebSocket + Mutation Broadcasts
 
-Progress: [████████░░] 86%
+Progress: [█████████░] 90%
 
 ## Performance Metrics
 
@@ -63,6 +63,8 @@ Recent decisions affecting current work:
 - [Phase 38-01]: AppStateInner holds db + broadcast::Sender; WebSocket route deferred to Plan 02
 - [Phase 38-01]: Broadcast channel capacity 256 messages for WebSocket fan-out
 - [Phase 38-01]: No file watcher restart on PUT /agent (Rust backend has no ingestion engine yet)
+- [Phase 38-02]: broadcast_event helper centralizes seq+timestamp injection for all WebSocket events
+- [Phase 38-02]: Diff script --write tests backup and restore settings to avoid side effects
 
 ### Pending Todos
 
@@ -101,6 +103,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T08:53:10Z
-Stopped at: Completed 38-01 Settings Endpoints
-Resume file: .planning/phases/38-settings-write-endpoints-websocket/38-02-PLAN.md
+Last session: 2026-03-11T08:58:26Z
+Stopped at: Completed 38-02 WebSocket + Mutation Broadcasts
+Resume file: Phase 38 complete — next: Phase 39

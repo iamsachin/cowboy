@@ -21,13 +21,13 @@ Requirements for Tauri v2 desktop app with Rust backend. Each maps to roadmap ph
 - [x] **API-03**: Plan tracking endpoints ported
 - [x] **API-04**: Settings read/write endpoints ported
 - [x] **API-05**: Database clear and refresh-all write endpoints ported
-- [ ] **API-06**: JSON responses match Node.js backend (verified by diff testing)
+- [x] **API-06**: JSON responses match Node.js backend (verified by diff testing)
 
 ### Realtime
 
-- [ ] **RT-01**: WebSocket endpoint with typed event protocol matching existing discriminated union
-- [ ] **RT-02**: Conversation-scoped event routing (new messages, token updates)
-- [ ] **RT-03**: New conversation discovery events pushed to connected clients
+- [x] **RT-01**: WebSocket endpoint with typed event protocol matching existing discriminated union
+- [x] **RT-02**: Conversation-scoped event routing (new messages, token updates)
+- [x] **RT-03**: New conversation discovery events pushed to connected clients
 
 ### Ingestion
 
@@ -86,10 +86,10 @@ Requirements for Tauri v2 desktop app with Rust backend. Each maps to roadmap ph
 | API-03 | Phase 37 | Complete |
 | API-04 | Phase 38 | Complete |
 | API-05 | Phase 38 | Complete |
-| API-06 | Phase 38 | Pending |
-| RT-01 | Phase 38 | Pending |
-| RT-02 | Phase 38 | Pending |
-| RT-03 | Phase 38 | Pending |
+| API-06 | Phase 38 | Complete |
+| RT-01 | Phase 38 | Complete |
+| RT-02 | Phase 38 | Complete |
+| RT-03 | Phase 38 | Complete |
 | ING-01 | Phase 39 | Pending |
 | ING-02 | Phase 39 | Pending |
 | ING-03 | Phase 39 | Pending |

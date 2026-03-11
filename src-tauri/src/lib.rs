@@ -9,6 +9,7 @@ mod plans;
 mod pricing;
 mod server;
 mod settings;
+mod websocket;
 
 pub fn run() {
     tauri::Builder::default()

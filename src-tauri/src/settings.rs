@@ -226,6 +226,9 @@ async fn update_agent(
         })
         .await?;
 
+    // Broadcast settings:changed event
+    crate::websocket::broadcast_event(&state, "settings:changed", None);
+
     Ok(Json(settings))
 }
 
@@ -260,6 +263,9 @@ async fn update_sync(
             Ok(get_or_seed_settings(conn)?)
         })
         .await?;
+
+    // Broadcast settings:changed event
+    crate::websocket::broadcast_event(&state, "settings:changed", None);
 
     Ok(Json(settings))
 }
@@ -415,14 +421,8 @@ async fn clear_db(
         })
         .await?;
 
-    // Broadcast full-refresh event (ignore if no subscribers)
-    let _ = state.tx.send(
-        serde_json::json!({
-            "type": "system:full-refresh",
-            "timestamp": chrono::Utc::now().to_rfc3339()
-        })
-        .to_string(),
-    );
+    // Broadcast full-refresh event (uses monotonic seq for gap detection)
+    crate::websocket::broadcast_event(&state, "system:full-refresh", None);
 
     let response = if let Some(agent_name) = params.agent {
         serde_json::json!({ "message": "Database cleared", "agent": agent_name })

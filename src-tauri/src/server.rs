@@ -1,4 +1,4 @@
-use axum::{extract::State, routing::get, Json, Router};
+use axum::{extract::State, routing::{any, get}, Json, Router};
 use serde_json::{json, Value};
 use std::sync::Arc;
 use tokio::sync::broadcast;
@@ -8,6 +8,7 @@ use crate::analytics;
 use crate::conversations;
 use crate::plans;
 use crate::settings;
+use crate::websocket;
 
 pub struct AppStateInner {
     pub db: Connection,
@@ -27,6 +28,7 @@ pub async fn start(db: Connection) {
         .merge(analytics::routes())
         .merge(plans::routes())
         .merge(settings::routes())
+        .route("/api/ws", any(websocket::ws_handler))
         .with_state(shared_state);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3001")

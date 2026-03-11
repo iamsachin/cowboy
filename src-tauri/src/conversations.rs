@@ -54,8 +54,30 @@ pub struct ConversationRow {
     pub is_active: bool,
     pub has_compaction: bool,
     pub parent_conversation_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub parent_title: Option<String>,
-    pub children: Option<Vec<ConversationRow>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub children: Option<Vec<ChildConversationRow>>,
+}
+
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ChildConversationRow {
+    pub id: String,
+    pub date: String,
+    pub agent: String,
+    pub title: Option<String>,
+    pub project: Option<String>,
+    pub model: Option<String>,
+    pub input_tokens: i64,
+    pub output_tokens: i64,
+    pub cache_read_tokens: i64,
+    pub cache_creation_tokens: i64,
+    pub cost: Option<f64>,
+    pub savings: Option<f64>,
+    pub is_active: bool,
+    pub has_compaction: bool,
+    pub parent_conversation_id: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -85,8 +107,10 @@ pub struct SearchConversationRow {
     pub is_active: bool,
     pub has_compaction: bool,
     pub parent_conversation_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub parent_title: Option<String>,
-    pub children: Option<Vec<ConversationRow>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub children: Option<Vec<ChildConversationRow>>,
     pub snippet: Option<String>,
 }
 
@@ -572,7 +596,7 @@ async fn conversation_list(
     }
 
     // Build ConversationRow objects
-    let build_conv_row = |raw: &RawConvRow, children: Option<Vec<ConversationRow>>| -> ConversationRow {
+    let build_conv_row = |raw: &RawConvRow, children: Option<Vec<ChildConversationRow>>| -> ConversationRow {
         let cost_data = cost_by_conv.get(&raw.id);
         ConversationRow {
             id: raw.id.clone(),
@@ -592,6 +616,27 @@ async fn conversation_list(
             parent_conversation_id: raw.parent_conversation_id.clone(),
             parent_title: None,
             children,
+        }
+    };
+
+    let build_child_conv_row = |raw: &RawConvRow| -> ChildConversationRow {
+        let cost_data = cost_by_conv.get(&raw.id);
+        ChildConversationRow {
+            id: raw.id.clone(),
+            date: raw.date.clone(),
+            agent: raw.agent.clone(),
+            title: raw.title.clone(),
+            project: raw.project.clone(),
+            model: raw.model.clone(),
+            input_tokens: raw.input_tokens,
+            output_tokens: raw.output_tokens,
+            cache_read_tokens: raw.cache_read_tokens,
+            cache_creation_tokens: raw.cache_creation_tokens,
+            cost: cost_data.map(|c| c.0),
+            savings: cost_data.map(|c| c.1),
+            is_active: raw.is_active,
+            has_compaction: raw.has_compaction,
+            parent_conversation_id: raw.parent_conversation_id.clone(),
         }
     };
 
@@ -631,7 +676,7 @@ async fn conversation_list(
                 let child_convs = children_map.remove(&raw.id).map(|children| {
                     children
                         .iter()
-                        .map(|c| build_conv_row(c, None))
+                        .map(|c| build_child_conv_row(c))
                         .collect::<Vec<_>>()
                 });
                 let children = match child_convs {
@@ -716,7 +761,7 @@ async fn conversation_list(
             let child_convs = children_map.remove(&raw.id).map(|children| {
                 children
                     .iter()
-                    .map(|c| build_conv_row(c, None))
+                    .map(|c| build_child_conv_row(c))
                     .collect::<Vec<_>>()
             });
             let children = match child_convs {

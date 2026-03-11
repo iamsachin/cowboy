@@ -9,3 +9,11 @@ data/
 *.db
 *.tsbuildinfo
 .env
+
+# Rust
+target/
+**/*.rs.bk
+*.pdb
+
+# Tauri generated
+src-tauri/gen/

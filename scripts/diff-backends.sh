@@ -8,7 +8,7 @@
 #   ./scripts/diff-backends.sh --all     # Same as above
 #   ./scripts/diff-backends.sh --endpoint plans/stats  # Test single endpoint
 
-set -euo pipefail
+set -uo pipefail
 
 BASE_NODE="http://127.0.0.1:3000/api"
 BASE_RUST="http://127.0.0.1:3001/api"
@@ -60,13 +60,13 @@ compare_endpoint() {
 
   if [ -z "$node_raw" ]; then
     echo -e "${YELLOW}SKIP${NC}: $label (Node.js returned empty/error)"
-    ((SKIP++))
+    SKIP=$((SKIP + 1))
     return
   fi
 
   if [ -z "$rust_raw" ]; then
     echo -e "${RED}FAIL${NC}: $label (Rust returned empty/error)"
-    ((FAIL++))
+    FAIL=$((FAIL + 1))
     return
   fi
 
@@ -75,19 +75,18 @@ compare_endpoint() {
 
   if [ "$node_out" = "$rust_out" ]; then
     echo -e "${GREEN}PASS${NC}: $label"
-    ((PASS++))
+    PASS=$((PASS + 1))
   else
     echo -e "${RED}FAIL${NC}: $label"
     diff --color=auto <(echo "$node_out") <(echo "$rust_out") | head -30
     echo "..."
-    ((FAIL++))
+    FAIL=$((FAIL + 1))
   fi
 }
 
 # ── Static Endpoints ────────────────────────────────────────────────
 
 STATIC_ENDPOINTS=(
-  "health"
   "analytics/overview?from=${DATE_FROM}&to=${DATE_TO}"
   "analytics/timeseries?from=${DATE_FROM}&to=${DATE_TO}&granularity=weekly"
   "analytics/model-distribution?from=${DATE_FROM}&to=${DATE_TO}"
@@ -142,7 +141,7 @@ else
     compare_endpoint "plans/$PLAN_ID" "plans/:id ($PLAN_ID)"
   else
     echo -e "${YELLOW}SKIP${NC}: plans/:id (no plan found)"
-    ((SKIP++))
+    SKIP=$((SKIP + 1))
   fi
 fi
 

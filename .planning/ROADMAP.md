@@ -8,6 +8,7 @@
 - ✅ **v1.3 Bug Fix & Quality Audit** — Phases 17-24 (shipped 2026-03-08)
 - ✅ **v2.0 UX Overhaul** — Phases 25-30 (shipped 2026-03-09)
 - ✅ **v2.1 Realtime & Live Insights** — Phases 31-35 (shipped 2026-03-10)
+- **v3.0 Tauri Desktop App** — Phases 36-40 (in progress)
 
 ## Phases
 
@@ -18,7 +19,7 @@
 Decimal phases appear between their surrounding integers in numeric order.
 
 <details>
-<summary>✅ v1.0 MVP (Phases 1-9) — SHIPPED 2026-03-04</summary>
+<summary>v1.0 MVP (Phases 1-9) -- SHIPPED 2026-03-04</summary>
 
 - [x] **Phase 1: Project Foundation** — Scaffold the monorepo with Node.js/Fastify backend, Vue 3/DaisyUI frontend, and SQLite/Drizzle schema (completed 2026-03-03)
 - [x] **Phase 2: Claude Code Ingestion** — Parse Claude Code JSONL logs into the unified SQLite schema with deduplication
@@ -33,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 </details>
 
 <details>
-<summary>✅ v1.1 Conversation View Polish (Phases 10-13) — SHIPPED 2026-03-05</summary>
+<summary>v1.1 Conversation View Polish (Phases 10-13) -- SHIPPED 2026-03-05</summary>
 
 - [x] **Phase 10: Data Grouping Foundation** — Turn types and messageId-based grouping logic with unit tests (completed 2026-03-04)
 - [x] **Phase 11: Core Collapsible UI** — AssistantResponseBlock with progressive disclosure, summary headers, and expand/collapse all (completed 2026-03-05)
@@ -43,7 +44,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 </details>
 
 <details>
-<summary>✅ v1.2 Data Quality & Display Fixes (Phases 14-16) — SHIPPED 2026-03-05</summary>
+<summary>v1.2 Data Quality & Display Fixes (Phases 14-16) -- SHIPPED 2026-03-05</summary>
 
 - [x] **Phase 14: Ingestion Quality** — Fix title extraction and model attribution during backend ingestion (completed 2026-03-05)
 - [x] **Phase 15: Cursor Data Quality** — Fix Cursor assistant responses, agent filter, and project path display (completed 2026-03-05)
@@ -52,7 +53,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 </details>
 
 <details>
-<summary>✅ v1.3 Bug Fix & Quality Audit (Phases 17-24) — SHIPPED 2026-03-08</summary>
+<summary>v1.3 Bug Fix & Quality Audit (Phases 17-24) -- SHIPPED 2026-03-08</summary>
 
 - [x] **Phase 17: Cost Calculation Fixes** — Fix critical cost pricing, sorting, formatting, and token counting errors (completed 2026-03-08)
 - [x] **Phase 18: Data Accuracy Fixes** — Fix backend data computation: durations, timestamps, model backfill, tool stats, and timezone issues (completed 2026-03-08)
@@ -66,7 +67,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 </details>
 
 <details>
-<summary>✅ v2.0 UX Overhaul (Phases 25-30) — SHIPPED 2026-03-09</summary>
+<summary>v2.0 UX Overhaul (Phases 25-30) -- SHIPPED 2026-03-09</summary>
 
 - [x] **Phase 25: Data Quality & Code Cleanup** — Fix parser bugs, streaming deduplication, and consolidate dead code before building new features (completed 2026-03-09)
 - [x] **Phase 26: Display Quick Wins** — Always-visible AI responses, user message truncation, and semantic message colors (completed 2026-03-09)
@@ -78,7 +79,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 </details>
 
 <details>
-<summary>✅ v2.1 Realtime & Live Insights (Phases 31-35) — SHIPPED 2026-03-10</summary>
+<summary>v2.1 Realtime & Live Insights (Phases 31-35) -- SHIPPED 2026-03-10</summary>
 
 - [x] **Phase 31: WebSocket Event Infrastructure** — Typed, conversation-scoped WebSocket events replacing the untyped broadcast (completed 2026-03-10)
 - [x] **Phase 32: Realtime Conversation Detail** — Push new messages to open conversation pages with scroll preservation (completed 2026-03-10)
@@ -88,7 +89,101 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 </details>
 
+### v3.0 Tauri Desktop App (In Progress)
+
+**Milestone Goal:** Convert Cowboy into a native Tauri v2 desktop app with a Rust backend, preserving existing Vue 3 + DaisyUI frontend unchanged.
+
+- [ ] **Phase 36: Tauri Scaffold + Infrastructure** — Tauri v2 project with axum server, CSP, async SQLite, and Vue frontend loading in webview
+- [ ] **Phase 37: Database Layer + Read-Only API** — All read endpoints ported to axum with response parity against Node.js backend
+- [ ] **Phase 38: Settings, Write Endpoints + WebSocket** — Mutation endpoints and typed WebSocket event infrastructure ported to Rust
+- [ ] **Phase 39: Ingestion Engine** — Claude Code and Cursor parsers ported to Rust with row-level data parity verification
+- [ ] **Phase 40: File Watcher + Desktop Chrome** — notify-based file watching, system tray, close-to-tray, native menu, and Node.js removal
+
+## Phase Details
+
+### Phase 36: Tauri Scaffold + Infrastructure
+**Goal**: Tauri v2 app opens a native macOS window showing the existing Vue frontend, with axum and async SQLite ready for feature work
+**Depends on**: Nothing (first phase of v3.0)
+**Requirements**: FOUND-01, FOUND-02, FOUND-03, FOUND-04
+**Success Criteria** (what must be TRUE):
+  1. Running `cargo tauri dev` opens a native macOS window with the Vue frontend rendered via Vite dev server
+  2. Axum health endpoint responds at http://127.0.0.1:3001/api/health with JSON (development port, parallel to Node.js on :3000)
+  3. CSP allows DaisyUI inline styles, localhost API calls, and WebSocket connections (verified with `tauri build`)
+  4. tokio-rusqlite opens the existing cowboy.db and executes a test query without blocking the Tokio runtime
+**Plans**: 2 plans
+
+Plans:
+- [ ] 36-01-PLAN.md — Scaffold Tauri v2 project with axum server, CSP, and Vite integration
+- [ ] 36-02-PLAN.md — Database layer with tokio-rusqlite, transparent title bar, and end-to-end verification
+
+### Phase 37: Database Layer + Read-Only API
+**Goal**: The full dashboard renders real data from axum -- all conversation, analytics, and plan read endpoints return identical JSON to the Node.js backend
+**Depends on**: Phase 36
+**Requirements**: API-01, API-02, API-03
+**Success Criteria** (what must be TRUE):
+  1. Conversation list and detail pages render correctly when the frontend points at the Rust backend on :3001
+  2. All analytics pages (token stats, cost stats, heatmap, model distribution) show correct data matching Node.js output
+  3. Plan tracking page displays plans with correct titles, statuses, and completion counts
+  4. JSON response diff between Node.js (:3000) and Rust (:3001) shows zero differences on all read endpoints
+**Plans**: TBD
+
+Plans:
+- [ ] 37-01: TBD
+- [ ] 37-02: TBD
+- [ ] 37-03: TBD
+
+### Phase 38: Settings, Write Endpoints + WebSocket
+**Goal**: All 25 REST endpoints and the WebSocket event system work on the Rust backend -- settings save/load, database management, and live updates all function
+**Depends on**: Phase 37
+**Requirements**: API-04, API-05, API-06, RT-01, RT-02, RT-03
+**Success Criteria** (what must be TRUE):
+  1. Settings page saves and loads configuration round-trip through the Rust backend
+  2. Database clear and refresh-all operations execute successfully from the Settings page
+  3. WebSocket connects with typed event protocol (discriminated union payloads, sequence numbers, gap detection)
+  4. Conversation-scoped events (new messages, token updates) push to the correct open conversation page
+  5. New conversation discovery events appear in the conversation list without page refresh
+**Plans**: TBD
+
+Plans:
+- [ ] 38-01: TBD
+- [ ] 38-02: TBD
+
+### Phase 39: Ingestion Engine
+**Goal**: Rust ingestion produces identical SQLite data to the Node.js ingestion -- all conversations, messages, tool calls, tokens, plans, compaction events, and subagent links match row-for-row
+**Depends on**: Phase 38
+**Requirements**: ING-01, ING-02, ING-03, ING-04, ING-05
+**Success Criteria** (what must be TRUE):
+  1. Claude Code JSONL files ingest correctly: messages, tool calls, token usage, plans, compaction boundaries, and subagent links all present
+  2. Cursor vscdb files ingest correctly: messages, tool calls, workspace paths, and thinking content all present
+  3. Snapshot diffing detects changes and emits correct WebSocket events during ingestion
+  4. Row-level SQLite diff between Node.js and Rust ingestion of the same source files shows zero differences
+**Plans**: TBD
+
+Plans:
+- [ ] 39-01: TBD
+- [ ] 39-02: TBD
+- [ ] 39-03: TBD
+
+### Phase 40: File Watcher + Desktop Chrome
+**Goal**: Cowboy runs as a complete native desktop app -- file changes trigger automatic ingestion, system tray provides app control, and the Node.js backend is removed
+**Depends on**: Phase 39
+**Requirements**: WATCH-01, WATCH-02, DESK-01, DESK-02, DESK-03
+**Success Criteria** (what must be TRUE):
+  1. Saving a new Claude Code conversation to disk triggers automatic ingestion and the conversation appears in the dashboard within seconds
+  2. System tray icon is visible with Show and Quit menu items that work correctly
+  3. Closing the window hides the app to tray (file watching continues in background); clicking tray Show restores the window
+  4. Native menu bar shows app name menu with About and Quit, plus Edit menu with copy/paste shortcuts
+  5. The Node.js packages/backend directory is removed and `cargo tauri dev` is the only way to run the app
+**Plans**: TBD
+
+Plans:
+- [ ] 40-01: TBD
+- [ ] 40-02: TBD
+
 ## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 36 -> 37 -> 38 -> 39 -> 40
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -127,3 +222,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 | 33. Realtime Conversation Discovery | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 34. Live Token Usage Widget | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 35. Conversation Timeline | v2.1 | 2/2 | Complete | 2026-03-10 |
+| 36. Tauri Scaffold + Infrastructure | v3.0 | 0/2 | Not started | - |
+| 37. Database Layer + Read-Only API | v3.0 | 0/0 | Not started | - |
+| 38. Settings, Write Endpoints + WebSocket | v3.0 | 0/0 | Not started | - |
+| 39. Ingestion Engine | v3.0 | 0/0 | Not started | - |
+| 40. File Watcher + Desktop Chrome | v3.0 | 0/0 | Not started | - |

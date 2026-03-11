@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Cowboy",
+  "version": "3.0.0",
+  "identifier": "com.cowboy.app",
+  "build": {
+    "beforeDevCommand": "pnpm --filter @cowboy/frontend dev",
+    "beforeBuildCommand": "pnpm --filter @cowboy/frontend build",
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../packages/frontend/dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Cowboy",
+        "width": 1200,
+        "height": 800,
+        "center": true,
+        "titleBarStyle": "Overlay",
+        "decorations": true
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self' customprotocol: asset:",
+        "style-src": "'self' 'unsafe-inline'",
+        "connect-src": "'self' http://127.0.0.1:3001 ws://127.0.0.1:3001 http://localhost:3001 ws://localhost:3001 http://localhost:5173 ws://localhost:5173 ipc: http://ipc.localhost",
+        "img-src": "'self' asset: http://asset.localhost blob: data:",
+        "script-src": "'self'"
+      },
+      "dangerousDisableAssetCspModification": ["style-src"]
+    }
+  }
+}

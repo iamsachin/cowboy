@@ -6,6 +6,7 @@ use tokio_rusqlite::Connection;
 
 use crate::analytics;
 use crate::conversations;
+use crate::ingestion;
 use crate::plans;
 use crate::settings;
 use crate::websocket;
@@ -28,14 +29,18 @@ pub async fn start(db: Connection) {
         .merge(analytics::routes())
         .merge(plans::routes())
         .merge(settings::routes())
+        .merge(ingestion::routes())
         .route("/api/ws", any(websocket::ws_handler))
-        .with_state(shared_state);
+        .with_state(shared_state.clone());
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3001")
         .await
         .expect("failed to bind to 127.0.0.1:3001");
 
     println!("Cowboy Rust server listening on http://127.0.0.1:3001");
+
+    // Spawn auto-ingest after server starts
+    ingestion::spawn_auto_ingest(shared_state);
 
     axum::serve(listener, app)
         .await

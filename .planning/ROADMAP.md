@@ -176,11 +176,12 @@ Plans:
   3. Closing the window hides the app to tray (file watching continues in background); clicking tray Show restores the window
   4. Native menu bar shows app name menu with About and Quit, plus Edit menu with copy/paste shortcuts
   5. The Node.js packages/backend directory is removed and `cargo tauri dev` is the only way to run the app
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 40-01: TBD
-- [ ] 40-02: TBD
+- [ ] 40-01-PLAN.md — File watcher with notify, port 8123, settings integration
+- [ ] 40-02-PLAN.md — System tray, native menu, and close-to-tray behavior
+- [ ] 40-03-PLAN.md — Node.js cleanup and shared types migration
 
 ## Progress
 
@@ -227,5 +228,5 @@ Phases execute in numeric order: 36 -> 37 -> 38 -> 39 -> 40
 | 36. Tauri Scaffold + Infrastructure | v3.0 | 2/2 | Complete | 2026-03-11 |
 | 37. Database Layer + Read-Only API | v3.0 | 3/3 | Complete | 2026-03-11 |
 | 38. Settings, Write Endpoints + WebSocket | v3.0 | Complete    | 2026-03-11 | 2026-03-11 |
-| 39. Ingestion Engine | 4/4 | Complete   | 2026-03-11 | - |
-| 40. File Watcher + Desktop Chrome | v3.0 | 0/0 | Not started | - |
+| 39. Ingestion Engine | 4/4 | Complete    | 2026-03-11 | - |
+| 40. File Watcher + Desktop Chrome | v3.0 | 0/3 | Not started | - |

@@ -10,6 +10,7 @@ mod plans;
 mod pricing;
 mod server;
 mod settings;
+mod watcher;
 mod websocket;
 
 pub fn run() {

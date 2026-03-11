@@ -64,6 +64,7 @@
         <ClearDivider
           v-else-if="turn.type === 'clear-divider'"
           :turn="turn"
+          :isFirst="visibleTurns[0] === turn"
         />
         <CompactionDivider
           v-else-if="turn.type === 'compaction'"

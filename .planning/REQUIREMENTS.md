@@ -34,8 +34,8 @@ Requirements for Tauri v2 desktop app with Rust backend. Each maps to roadmap ph
 - [x] **ING-01**: Claude Code JSONL parser ported to Rust (messages, tool calls, tokens, plans)
 - [x] **ING-02**: Compaction detection and subagent resolution ported
 - [x] **ING-03**: Cursor vscdb parser ported (messages, tool calls, workspace paths)
-- [ ] **ING-04**: Ingestion orchestrator with snapshot diffing for change detection
-- [ ] **ING-05**: Parsed data matches Node.js output (verified by row-level SQLite diff)
+- [x] **ING-04**: Ingestion orchestrator with snapshot diffing for change detection
+- [x] **ING-05**: Parsed data matches Node.js output (verified by row-level SQLite diff)
 
 ### File Watcher
 
@@ -93,8 +93,8 @@ Requirements for Tauri v2 desktop app with Rust backend. Each maps to roadmap ph
 | ING-01 | Phase 39 | Complete |
 | ING-02 | Phase 39 | Complete |
 | ING-03 | Phase 39 | Complete |
-| ING-04 | Phase 39 | Pending |
-| ING-05 | Phase 39 | Pending |
+| ING-04 | Phase 39 | Complete |
+| ING-05 | Phase 39 | Complete |
 | WATCH-01 | Phase 40 | Pending |
 | WATCH-02 | Phase 40 | Pending |
 | DESK-01 | Phase 40 | Pending |

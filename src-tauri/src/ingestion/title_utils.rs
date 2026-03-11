@@ -71,7 +71,7 @@ pub fn derive_conversation_title(
         if let Some(text) = content {
             if text.trim().starts_with('<') {
                 let stripped = strip_xml_tags(text);
-                if stripped.len() > 10 {
+                if stripped.len() > 10 && !should_skip_for_title(&stripped) {
                     return Some(truncate(&stripped, 100));
                 }
             }
@@ -170,5 +170,30 @@ mod tests {
         let msgs: Vec<Option<&str>> = vec![Some(&long_msg)];
         let result = derive_conversation_title(&msgs, None).unwrap();
         assert_eq!(result.len(), 100);
+    }
+
+    #[test]
+    fn derive_title_xml_slash_command_skipped() {
+        // XML-wrapped /clear command should NOT become a title after tag stripping
+        let msgs: Vec<Option<&str>> = vec![
+            Some("<command-name>/clear</command-name><command-args>clear</command-args>"),
+        ];
+        // Without assistant fallback, should return None
+        assert_eq!(derive_conversation_title(&msgs, None), None);
+    }
+
+    #[test]
+    fn derive_title_xml_slash_command_falls_to_assistant() {
+        // When only message is XML slash command, title falls through to assistant text
+        let msgs: Vec<Option<&str>> = vec![
+            Some("<command-name>/clear</command-name><command-args>clear</command-args>"),
+        ];
+        let snippets: Vec<Option<&str>> = vec![
+            Some("Context has been cleared"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, Some(&snippets)),
+            Some("Context has been cleared".to_string())
+        );
     }
 }

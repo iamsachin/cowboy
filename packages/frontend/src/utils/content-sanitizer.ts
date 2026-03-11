@@ -113,6 +113,12 @@ export function cleanTitle(title: string): string {
     return 'Untitled Conversation';
   }
 
+  // Titles derived from /clear commands (e.g. "/clear\nclear") should not display
+  const normalized = cleaned.replace(/\s+/g, ' ').trim();
+  if (/^\/clear\b/i.test(normalized)) {
+    return 'Untitled Conversation';
+  }
+
   if (cleaned.length > 200) {
     return cleaned.slice(0, 200) + '...';
   }

@@ -9,7 +9,6 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@cowboy/shared": "workspace:*",
     "@highlightjs/vue-plugin": "^2.1.0",
     "@vuepic/vue-datepicker": "^12.1.0",
     "chart.js": "^4.5.1",

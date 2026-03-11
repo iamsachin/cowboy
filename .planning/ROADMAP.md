@@ -142,11 +142,12 @@ Plans:
   3. WebSocket connects with typed event protocol (discriminated union payloads, sequence numbers, gap detection)
   4. Conversation-scoped events (new messages, token updates) push to the correct open conversation page
   5. New conversation discovery events appear in the conversation list without page refresh
-**Plans**: 2 plans
+**Plans**: 3 plans
 
 Plans:
 - [ ] 38-01-PLAN.md — AppState expansion, settings endpoints (10 handlers), and existing handler refactor
 - [ ] 38-02-PLAN.md — WebSocket handler, broadcast wiring, frontend types, and diff script mutation tests
+- [ ] 38-03-PLAN.md — Gap closure: correct RT-02/RT-03 requirements status (infra ready, emitters deferred to Phase 39)
 
 ### Phase 39: Ingestion Engine
 **Goal**: Rust ingestion produces identical SQLite data to the Node.js ingestion -- all conversations, messages, tool calls, tokens, plans, compaction events, and subagent links match row-for-row
@@ -224,6 +225,6 @@ Phases execute in numeric order: 36 -> 37 -> 38 -> 39 -> 40
 | 35. Conversation Timeline | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 36. Tauri Scaffold + Infrastructure | v3.0 | 2/2 | Complete | 2026-03-11 |
 | 37. Database Layer + Read-Only API | v3.0 | 3/3 | Complete | 2026-03-11 |
-| 38. Settings, Write Endpoints + WebSocket | 2/2 | Complete   | 2026-03-11 | - |
+| 38. Settings, Write Endpoints + WebSocket | v3.0 | 2/3 | In Progress | - |
 | 39. Ingestion Engine | v3.0 | 0/0 | Not started | - |
 | 40. File Watcher + Desktop Chrome | v3.0 | 0/0 | Not started | - |

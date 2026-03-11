@@ -26,8 +26,8 @@ Requirements for Tauri v2 desktop app with Rust backend. Each maps to roadmap ph
 ### Realtime
 
 - [x] **RT-01**: WebSocket endpoint with typed event protocol matching existing discriminated union
-- [x] **RT-02**: Conversation-scoped event routing (new messages, token updates)
-- [x] **RT-03**: New conversation discovery events pushed to connected clients
+- [ ] **RT-02**: Conversation-scoped event routing (new messages, token updates) — Infrastructure ready (Phase 38: broadcast channel, WebSocket handler, TypeScript types); emitters deferred to Phase 39 ingestion engine
+- [ ] **RT-03**: New conversation discovery events pushed to connected clients — Infrastructure ready (Phase 38: broadcast channel, WebSocket handler, TypeScript types); emitters deferred to Phase 39 ingestion engine
 
 ### Ingestion
 
@@ -88,8 +88,8 @@ Requirements for Tauri v2 desktop app with Rust backend. Each maps to roadmap ph
 | API-05 | Phase 38 | Complete |
 | API-06 | Phase 38 | Complete |
 | RT-01 | Phase 38 | Complete |
-| RT-02 | Phase 38 | Complete |
-| RT-03 | Phase 38 | Complete |
+| RT-02 | Phase 38 / 39 | Infra ready (Phase 38), emitters Phase 39 |
+| RT-03 | Phase 38 / 39 | Infra ready (Phase 38), emitters Phase 39 |
 | ING-01 | Phase 39 | Pending |
 | ING-02 | Phase 39 | Pending |
 | ING-03 | Phase 39 | Pending |
@@ -108,4 +108,4 @@ Requirements for Tauri v2 desktop app with Rust backend. Each maps to roadmap ph
 
 ---
 *Requirements defined: 2026-03-11*
-*Last updated: 2026-03-11 after roadmap creation*
+*Last updated: 2026-03-11 after Phase 38-03 gap closure (RT-02/RT-03 corrected to infra-ready)*

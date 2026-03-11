@@ -1,9 +1,16 @@
 <template>
+  <!-- Draggable title bar region for Tauri transparent title bar -->
+  <div
+    data-tauri-drag-region
+    class="fixed top-0 left-0 right-0 h-[38px] z-50"
+    style="-webkit-app-region: drag;"
+  ></div>
+
   <aside
-    class="bg-base-200 h-screen flex flex-col transition-all duration-200 shrink-0"
+    class="bg-base-200 h-screen flex flex-col transition-all duration-200 shrink-0 pt-[38px]"
     :class="collapsed ? 'w-16' : 'w-60'"
   >
-    <!-- Header -->
+    <!-- Header (below traffic light padding) -->
     <div class="p-3 flex items-center justify-between border-b border-base-300">
       <div v-if="!collapsed" class="flex flex-col">
         <span class="text-lg font-bold text-primary tracking-tight">

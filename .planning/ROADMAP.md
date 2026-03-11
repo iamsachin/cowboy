@@ -229,4 +229,4 @@ Phases execute in numeric order: 36 -> 37 -> 38 -> 39 -> 40
 | 37. Database Layer + Read-Only API | v3.0 | 3/3 | Complete | 2026-03-11 |
 | 38. Settings, Write Endpoints + WebSocket | v3.0 | Complete    | 2026-03-11 | 2026-03-11 |
 | 39. Ingestion Engine | 4/4 | Complete    | 2026-03-11 | - |
-| 40. File Watcher + Desktop Chrome | 1/3 | In Progress|  | - |
+| 40. File Watcher + Desktop Chrome | 2/3 | In Progress|  | - |

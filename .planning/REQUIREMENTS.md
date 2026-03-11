@@ -46,7 +46,7 @@ Requirements for Tauri v2 desktop app with Rust backend. Each maps to roadmap ph
 
 - [ ] **DESK-01**: System tray icon with context menu (Show/Quit)
 - [ ] **DESK-02**: Close-to-tray behavior (closing window hides app, tray stays)
-- [ ] **DESK-03**: Minimal native menu bar (app name menu: About, Quit, Edit menu for copy/paste)
+- [x] **DESK-03**: Minimal native menu bar (app name menu: About, Quit, Edit menu for copy/paste)
 
 ## Future Requirements
 
@@ -99,7 +99,7 @@ Requirements for Tauri v2 desktop app with Rust backend. Each maps to roadmap ph
 | WATCH-02 | Phase 40 | Complete |
 | DESK-01 | Phase 40 | Pending |
 | DESK-02 | Phase 40 | Pending |
-| DESK-03 | Phase 40 | Pending |
+| DESK-03 | Phase 40 | Complete |
 
 **Coverage:**
 - v3.0 requirements: 23 total

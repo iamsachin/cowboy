@@ -1,6 +1,6 @@
 import { ref, watch, onScopeDispose } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { ConversationListResponse, SearchConversationListResponse } from '@cowboy/shared';
+import type { ConversationListResponse, SearchConversationListResponse } from '../types';
 import { useDateRange } from './useDateRange';
 import { useWebSocket } from './useWebSocket';
 

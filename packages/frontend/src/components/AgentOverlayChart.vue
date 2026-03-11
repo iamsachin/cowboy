@@ -23,7 +23,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import type { TimeSeriesPoint } from '@cowboy/shared';
+import type { TimeSeriesPoint } from '../types';
 import { AGENT_COLORS } from '../utils/agent-constants';
 import { formatCost } from '../utils/format-tokens';
 import { getChartThemeColors } from '../utils/chart-theme';

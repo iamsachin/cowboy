@@ -92,7 +92,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick, onUnmounted, toRef } from 'vue';
 import { ChevronsDown, ChevronsUp } from 'lucide-vue-next';
-import type { MessageRow, ToolCallRow, MessageTokenUsage, CompactionEvent } from '@cowboy/shared';
+import type { MessageRow, ToolCallRow, MessageTokenUsage, CompactionEvent } from '../types';
 import { groupTurns, type GroupedTurn } from '../composables/useGroupedTurns';
 import { useCollapseState } from '../composables/useCollapseState';
 import { useConversationSearch } from '../composables/useConversationSearch';

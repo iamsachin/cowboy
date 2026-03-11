@@ -47,7 +47,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { ToolCallRow } from '@cowboy/shared';
+import type { ToolCallRow } from '../types';
 import { getToolIcon } from '../utils/tool-icons';
 import DiffViewer from './tool-viewers/DiffViewer.vue';
 import CodeViewer from './tool-viewers/CodeViewer.vue';

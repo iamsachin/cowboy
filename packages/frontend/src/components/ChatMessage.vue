@@ -46,7 +46,7 @@
 import { computed, ref } from 'vue';
 import { ImageIcon } from 'lucide-vue-next';
 import DOMPurify from 'dompurify';
-import type { MessageRow } from '@cowboy/shared';
+import type { MessageRow } from '../types';
 import CodeBlock from './CodeBlock.vue';
 import { parseContent, formatTime } from '../utils/content-parser';
 import { isSlashCommand, extractCommandText } from '../utils/content-sanitizer';

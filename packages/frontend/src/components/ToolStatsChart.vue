@@ -23,7 +23,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import type { ToolStatsRow } from '@cowboy/shared';
+import type { ToolStatsRow } from '../types';
 import { getChartThemeColors } from '../utils/chart-theme';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);

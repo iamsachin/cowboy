@@ -87,7 +87,7 @@
 import { ref, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 import { ArrowLeft, AlertTriangle, ExternalLink } from 'lucide-vue-next';
-import type { PlanDetailResponse } from '@cowboy/shared';
+import type { PlanDetailResponse } from '../types';
 import AgentBadge from '../components/AgentBadge.vue';
 import PlanStepList from '../components/PlanStepList.vue';
 

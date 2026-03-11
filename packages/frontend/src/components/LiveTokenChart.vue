@@ -20,7 +20,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import type { TokenRatePoint } from '@cowboy/shared';
+import type { TokenRatePoint } from '../types';
 import { getChartThemeColors } from '../utils/chart-theme';
 import { formatTokenCount } from '../utils/format-tokens';
 

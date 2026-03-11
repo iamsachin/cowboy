@@ -1,4 +1,4 @@
-import type { MessageRow, ToolCallRow, CompactionEvent } from '@cowboy/shared';
+import type { MessageRow, ToolCallRow, CompactionEvent } from '../types';
 import {
   isSystemInjected,
   isSlashCommand,

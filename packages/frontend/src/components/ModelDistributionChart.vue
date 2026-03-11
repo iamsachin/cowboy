@@ -19,7 +19,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import type { ModelDistributionEntry } from '@cowboy/shared';
+import type { ModelDistributionEntry } from '../types';
 import { getChartThemeColors } from '../utils/chart-theme';
 
 ChartJS.register(ArcElement, Tooltip, Legend);

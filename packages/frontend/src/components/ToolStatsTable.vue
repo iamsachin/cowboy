@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { ToolStatsRow } from '@cowboy/shared';
+import type { ToolStatsRow } from '../types';
 
 const props = defineProps<{
   data: ToolStatsRow[];

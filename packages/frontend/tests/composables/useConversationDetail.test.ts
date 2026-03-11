@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { ConversationDetailResponse } from '@cowboy/shared';
+import type { ConversationDetailResponse } from '../../src/types';
 
 // Mock useWebSocket before importing the composable
 const mockListeners = new Map<string, Set<(event: any) => void>>();

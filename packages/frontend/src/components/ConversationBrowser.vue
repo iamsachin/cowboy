@@ -197,7 +197,7 @@ import { Bot as BotIcon } from 'lucide-vue-next';
 import AgentBadge from './AgentBadge.vue';
 import { AGENTS, AGENT_LABELS } from '../utils/agent-constants';
 import { cleanTitle } from '../utils/content-sanitizer';
-import type { ConversationRow } from '@cowboy/shared';
+import type { ConversationRow } from '../types';
 
 const router = useRouter();
 

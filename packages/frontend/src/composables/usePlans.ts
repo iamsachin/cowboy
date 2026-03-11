@@ -1,5 +1,5 @@
 import { ref, watch } from 'vue';
-import type { PlanListResponse, PlanStatsResponse, PlanTimeSeriesPoint } from '@cowboy/shared';
+import type { PlanListResponse, PlanStatsResponse, PlanTimeSeriesPoint } from '../types';
 import { useDateRange } from './useDateRange';
 import { useWebSocket } from './useWebSocket';
 

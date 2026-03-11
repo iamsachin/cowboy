@@ -30,7 +30,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import type { TimeSeriesPoint } from '@cowboy/shared';
+import type { TimeSeriesPoint } from '../types';
 import { formatCost } from '../utils/format-tokens';
 import { getChartThemeColors } from '../utils/chart-theme';
 

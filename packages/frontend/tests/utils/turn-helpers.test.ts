@@ -10,7 +10,7 @@ import {
   truncateAtWordBoundary,
 } from '../../src/utils/turn-helpers';
 import type { AssistantTurn, AssistantGroup, Turn } from '../../src/composables/useGroupedTurns';
-import type { MessageRow, ToolCallRow } from '@cowboy/shared';
+import type { MessageRow, ToolCallRow } from '../../src/types';
 
 function makeMessage(overrides: Partial<MessageRow> = {}): MessageRow {
   return {

@@ -137,7 +137,7 @@ import { ref, computed, watch } from 'vue';
 import {
   Bot, ChevronRight, CheckCircle2, XCircle, AlertCircle, ExternalLink,
 } from 'lucide-vue-next';
-import type { ToolCallRow, SubagentSummary, ConversationDetailResponse } from '@cowboy/shared';
+import type { ToolCallRow, SubagentSummary, ConversationDetailResponse } from '../types';
 import { formatTokenCount } from '../utils/format-tokens';
 import { getToolIcon } from '../utils/tool-icons';
 

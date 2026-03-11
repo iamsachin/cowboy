@@ -106,7 +106,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Brain, ChevronRight } from 'lucide-vue-next';
-import type { MessageTokenUsage } from '@cowboy/shared';
+import type { MessageTokenUsage } from '../types';
 import type { AssistantGroup, AssistantTurn } from '../composables/useGroupedTurns';
 import { parseContent, formatTime } from '../utils/content-parser';
 import { stripXmlTags } from '../utils/content-sanitizer';

@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import type { ConversationDetailResponse } from '@cowboy/shared';
+import type { ConversationDetailResponse } from '../types';
 import { useWebSocket } from './useWebSocket';
 import { groupTurns, type GroupedTurn } from './useGroupedTurns';
 

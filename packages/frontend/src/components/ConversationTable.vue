@@ -151,7 +151,7 @@ import { Scissors, Bot as BotIcon } from 'lucide-vue-next';
 import AgentBadge from './AgentBadge.vue';
 import { formatCost } from '../utils/format-tokens';
 import { cleanTitle } from '../utils/content-sanitizer';
-import type { ConversationRow } from '@cowboy/shared';
+import type { ConversationRow } from '../types';
 
 const props = defineProps<{
   agent?: string;

@@ -26,7 +26,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import type { TimeSeriesPoint } from '@cowboy/shared';
+import type { TimeSeriesPoint } from '../types';
 import { getChartThemeColors } from '../utils/chart-theme';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);

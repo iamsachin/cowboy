@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { CheckCircle2, XCircle, Circle } from 'lucide-vue-next';
-import type { PlanStepRow } from '@cowboy/shared';
+import type { PlanStepRow } from '../types';
 
 const props = withDefaults(
   defineProps<{

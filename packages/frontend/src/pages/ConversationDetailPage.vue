@@ -164,7 +164,7 @@
 import { computed, ref, watch, watchEffect, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, ArrowUpLeft, AlertTriangle, ClipboardList, PanelRight } from 'lucide-vue-next';
-import type { ConversationPlanEntry } from '@cowboy/shared';
+import type { ConversationPlanEntry } from '../types';
 import { useConversationDetail } from '../composables/useConversationDetail';
 import { useTimeline, extractTimelineEvents } from '../composables/useTimeline';
 import { useScrollTracker } from '../composables/useScrollTracker';

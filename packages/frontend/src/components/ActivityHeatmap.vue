@@ -65,7 +65,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { HeatmapDay } from '@cowboy/shared';
+import type { HeatmapDay } from '../types';
 
 const props = defineProps<{
   data: HeatmapDay[];

@@ -104,7 +104,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { ProjectStatsRow } from '@cowboy/shared';
+import type { ProjectStatsRow } from '../types';
 import KpiCard from './KpiCard.vue';
 import {
   ChevronRight,

@@ -1,5 +1,5 @@
 import { ref, watch } from 'vue';
-import type { ToolStatsRow, HeatmapDay, ProjectStatsRow } from '@cowboy/shared';
+import type { ToolStatsRow, HeatmapDay, ProjectStatsRow } from '../types';
 import { useDateRange } from './useDateRange';
 import { useWebSocket } from './useWebSocket';
 

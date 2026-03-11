@@ -1,6 +1,6 @@
 import { ref, watch } from 'vue';
-import { autoGranularity } from '@cowboy/shared';
-import type { OverviewStats, TimeSeriesPoint } from '@cowboy/shared';
+import { autoGranularity } from '../types';
+import type { OverviewStats, TimeSeriesPoint } from '../types';
 import { useDateRange } from './useDateRange';
 import { useWebSocket } from './useWebSocket';
 

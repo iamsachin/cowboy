@@ -1,5 +1,5 @@
 import { ref, readonly, getCurrentScope, onScopeDispose } from 'vue';
-import type { WebSocketEvent, WebSocketEventType, SystemFullRefreshEvent } from '@cowboy/shared';
+import type { WebSocketEvent, WebSocketEventType, SystemFullRefreshEvent } from '../types';
 
 // Types
 export type ConnectionState = 'connected' | 'reconnecting' | 'disconnected';

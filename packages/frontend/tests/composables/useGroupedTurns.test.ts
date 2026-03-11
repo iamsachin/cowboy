@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { groupTurns, classifySystemMessage } from '../../src/composables/useGroupedTurns';
-import type { MessageRow, ToolCallRow } from '@cowboy/shared';
+import type { MessageRow, ToolCallRow } from '../../src/types';
 
 // Factory helpers
 function makeMessage(overrides: Partial<MessageRow> & { id: string; role: string; createdAt: string }): MessageRow {

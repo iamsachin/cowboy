@@ -47,7 +47,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import type { PlanTimeSeriesPoint } from '@cowboy/shared';
+import type { PlanTimeSeriesPoint } from '../types';
 import { getChartThemeColors } from '../utils/chart-theme';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend);

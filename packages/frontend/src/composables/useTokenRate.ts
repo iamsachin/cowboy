@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue';
-import type { TokenRatePoint } from '@cowboy/shared';
+import type { TokenRatePoint } from '../types';
 import { useWebSocket } from './useWebSocket';
 
 // Module-level singleton state

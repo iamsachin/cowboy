@@ -2,20 +2,17 @@
   "name": "cowboy",
   "private": true,
   "scripts": {
-    "dev": "concurrently -n backend,frontend -c blue,green \"pnpm --filter @cowboy/backend dev\" \"pnpm --filter @cowboy/frontend dev\"",
-    "build": "pnpm --filter @cowboy/frontend build && pnpm --filter @cowboy/backend build",
-    "test": "vitest",
-    "db:generate": "pnpm --filter @cowboy/backend db:generate",
-    "db:migrate": "pnpm --filter @cowboy/backend db:migrate"
+    "dev": "cargo tauri dev",
+    "build": "cargo tauri build",
+    "test": "vitest"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.10.1",
     "typescript": "^5.7.0",
-    "concurrently": "^9.0.0",
     "vitest": "^3.0.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "better-sqlite3",
       "esbuild"
     ]
   }

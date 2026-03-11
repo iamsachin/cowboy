@@ -9,8 +9,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "env.d.ts"],
-  "references": [
-    { "path": "../shared" }
-  ]
+  "include": ["src", "env.d.ts"]
 }

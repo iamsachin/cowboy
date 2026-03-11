@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Tauri Desktop App
-status: completed
-stopped_at: Completed 36-02-PLAN.md
-last_updated: "2026-03-11T06:43:41.439Z"
-last_activity: 2026-03-11 — Completed 36-02 Database + Splash Screen
+status: executing
+stopped_at: Completed 37-01-PLAN.md
+last_updated: "2026-03-11T07:20:36.495Z"
+last_activity: 2026-03-11 — Completed 37-01 Conversation Endpoints
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 100
+  total_plans: 5
+  completed_plans: 3
+  percent: 96
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-11)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** v3.0 Tauri Desktop App — Phase 36 ready to plan
+**Current focus:** v3.0 Tauri Desktop App — Phase 37 Database Layer + Read-Only API
 
 ## Current Position
 
-Phase: 36 of 40 (Tauri Scaffold + Infrastructure)
-Plan: 2 of 2 complete
-Status: Phase 36 complete
-Last activity: 2026-03-11 — Completed 36-02 Database + Splash Screen
+Phase: 37 of 40 (Database Layer + Read-Only API)
+Plan: 1 of 3 complete
+Status: Phase 37 in progress
+Last activity: 2026-03-11 — Completed 37-01 Conversation Endpoints
 
-Progress: [██████████] 100%
+Progress: [██████████] 96%
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Recent decisions affecting current work:
 - [36-01]: Manual Tauri scaffold (not cargo tauri init) for full control
 - [36-01]: CSP object format with dangerousDisableAssetCspModification for DaisyUI style-src
 - [Phase 36-02]: DB path uses Tauri identifier (com.cowboy.app) not product name for app data dir
+- [Phase 37]: LazyLock for MODEL_PRICING HashMap (stable Rust 1.80+, zero rebuild per call)
 
 ### Pending Todos
 
@@ -94,6 +95,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T06:38:13.247Z
-Stopped at: Completed 36-02-PLAN.md
+Last session: 2026-03-11T07:20:36.493Z
+Stopped at: Completed 37-01-PLAN.md
 Resume file: None

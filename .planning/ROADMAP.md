@@ -223,7 +223,7 @@ Phases execute in numeric order: 36 -> 37 -> 38 -> 39 -> 40
 | 34. Live Token Usage Widget | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 35. Conversation Timeline | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 36. Tauri Scaffold + Infrastructure | v3.0 | 2/2 | Complete | 2026-03-11 |
-| 37. Database Layer + Read-Only API | v3.0 | 0/3 | Not started | - |
+| 37. Database Layer + Read-Only API | 1/3 | In Progress|  | - |
 | 38. Settings, Write Endpoints + WebSocket | v3.0 | 0/0 | Not started | - |
 | 39. Ingestion Engine | v3.0 | 0/0 | Not started | - |
 | 40. File Watcher + Desktop Chrome | v3.0 | 0/0 | Not started | - |

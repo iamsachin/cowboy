@@ -16,7 +16,7 @@ Requirements for Tauri v2 desktop app with Rust backend. Each maps to roadmap ph
 
 ### API
 
-- [ ] **API-01**: All conversation list/detail read endpoints ported to axum
+- [x] **API-01**: All conversation list/detail read endpoints ported to axum
 - [ ] **API-02**: All analytics endpoints ported (token stats, cost stats, heatmap, model distribution)
 - [ ] **API-03**: Plan tracking endpoints ported
 - [ ] **API-04**: Settings read/write endpoints ported
@@ -81,7 +81,7 @@ Requirements for Tauri v2 desktop app with Rust backend. Each maps to roadmap ph
 | FOUND-02 | Phase 36 | Complete |
 | FOUND-03 | Phase 36 | Complete |
 | FOUND-04 | Phase 36 | Complete |
-| API-01 | Phase 37 | Pending |
+| API-01 | Phase 37 | Complete |
 | API-02 | Phase 37 | Pending |
 | API-03 | Phase 37 | Pending |
 | API-04 | Phase 38 | Pending |

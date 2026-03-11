@@ -158,12 +158,13 @@ Plans:
   2. Cursor vscdb files ingest correctly: messages, tool calls, workspace paths, and thinking content all present
   3. Snapshot diffing detects changes and emits correct WebSocket events during ingestion
   4. Row-level SQLite diff between Node.js and Rust ingestion of the same source files shows zero differences
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 39-01: TBD
-- [ ] 39-02: TBD
-- [ ] 39-03: TBD
+- [ ] 39-01-PLAN.md — Module scaffold, types, ID generator, Claude Code JSONL parser, and normalizer
+- [ ] 39-02-PLAN.md — Plan extractor, subagent linker, and subagent summarizer
+- [ ] 39-03-PLAN.md — Cursor vscdb discovery, parser, and normalizer
+- [ ] 39-04-PLAN.md — Ingestion orchestrator, snapshot diffing, migration, routes, and row-level diff script
 
 ### Phase 40: File Watcher + Desktop Chrome
 **Goal**: Cowboy runs as a complete native desktop app -- file changes trigger automatic ingestion, system tray provides app control, and the Node.js backend is removed
@@ -225,6 +226,6 @@ Phases execute in numeric order: 36 -> 37 -> 38 -> 39 -> 40
 | 35. Conversation Timeline | v2.1 | 2/2 | Complete | 2026-03-10 |
 | 36. Tauri Scaffold + Infrastructure | v3.0 | 2/2 | Complete | 2026-03-11 |
 | 37. Database Layer + Read-Only API | v3.0 | 3/3 | Complete | 2026-03-11 |
-| 38. Settings, Write Endpoints + WebSocket | v3.0 | 3/3 | Complete | 2026-03-11 |
-| 39. Ingestion Engine | v3.0 | 0/0 | Not started | - |
+| 38. Settings, Write Endpoints + WebSocket | v3.0 | Complete    | 2026-03-11 | 2026-03-11 |
+| 39. Ingestion Engine | v3.0 | 0/4 | Not started | - |
 | 40. File Watcher + Desktop Chrome | v3.0 | 0/0 | Not started | - |

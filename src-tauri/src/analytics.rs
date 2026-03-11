@@ -156,30 +156,6 @@ fn compute_trend(current: f64, prior: f64) -> Option<f64> {
     }
 }
 
-/// Build WHERE clause fragments and params for date range + optional agent filter.
-/// Returns (where_clause, params) where params are boxed ToSql values.
-fn build_date_filter(
-    from: &str,
-    to: &str,
-    agent: &Option<String>,
-    table_prefix: &str,
-) -> (String, Vec<Box<dyn tokio_rusqlite::rusqlite::types::ToSql + Send>>) {
-    let to_inclusive = format!("{}T23:59:59Z", to);
-    let mut conditions = vec![
-        format!("{}.created_at >= ?", table_prefix),
-        format!("{}.created_at <= ?", table_prefix),
-    ];
-    let mut params: Vec<Box<dyn tokio_rusqlite::rusqlite::types::ToSql + Send>> = vec![
-        Box::new(from.to_string()),
-        Box::new(to_inclusive),
-    ];
-    if let Some(agent_val) = agent {
-        conditions.push(format!("{}.agent = ?", table_prefix));
-        params.push(Box::new(agent_val.clone()));
-    }
-    (conditions.join(" AND "), params)
-}
-
 // ── Period Stats (used by overview) ───────────────────────────────────
 
 struct PeriodStats {
@@ -636,31 +612,458 @@ async fn filters(
     Ok(Json(response))
 }
 
-// ── Stub Handlers (Task 2 will fill in) ───────────────────────────────
+// ── Tool Stats ────────────────────────────────────────────────────────
 
 async fn tool_stats(
-    State(_db): State<AppState>,
-    Query(_params): Query<DateRangeParams>,
+    State(db): State<AppState>,
+    Query(params): Query<DateRangeParams>,
 ) -> Result<Json<Vec<ToolStatsRow>>, AppError> {
-    Ok(Json(vec![]))
+    let (from, to) = params.resolve();
+    let agent = params.agent.clone();
+
+    let rows = db
+        .call(move |conn| {
+            let to_inclusive = format!("{}T23:59:59Z", to);
+            let agent_condition = if agent.is_some() {
+                " AND conversations.agent = ?"
+            } else {
+                ""
+            };
+
+            let sql = format!(
+                "SELECT
+                    tool_calls.name,
+                    COUNT(*) as total,
+                    SUM(CASE WHEN tool_calls.status = 'success' OR tool_calls.status = 'completed' THEN 1 ELSE 0 END) as success,
+                    SUM(CASE WHEN tool_calls.status = 'error' THEN 1 ELSE 0 END) as failure,
+                    SUM(CASE WHEN tool_calls.status IS NULL THEN 1 ELSE 0 END) as unknown,
+                    SUM(CASE WHEN tool_calls.status = 'rejected' THEN 1 ELSE 0 END) as rejected
+                FROM tool_calls
+                INNER JOIN conversations ON tool_calls.conversation_id = conversations.id
+                WHERE conversations.created_at >= ?1
+                    AND conversations.created_at <= ?2{}
+                GROUP BY tool_calls.name
+                ORDER BY total DESC",
+                agent_condition
+            );
+
+            let mut stmt = conn.prepare(&sql)?;
+
+            let rows: Vec<ToolStatsRow> = if let Some(ref agent_val) = agent {
+                let mapped = stmt.query_map(params![from, to_inclusive, agent_val], |row| {
+                    Ok(ToolStatsRow {
+                        name: row.get(0)?,
+                        total: row.get(1)?,
+                        success: row.get(2)?,
+                        failure: row.get(3)?,
+                        unknown: row.get(4)?,
+                        rejected: row.get(5)?,
+                        avg_duration: None,
+                        p95_duration: None,
+                    })
+                })?;
+                mapped.collect::<Result<Vec<_>, _>>()?
+            } else {
+                let mapped = stmt.query_map(params![from, to_inclusive], |row| {
+                    Ok(ToolStatsRow {
+                        name: row.get(0)?,
+                        total: row.get(1)?,
+                        success: row.get(2)?,
+                        failure: row.get(3)?,
+                        unknown: row.get(4)?,
+                        rejected: row.get(5)?,
+                        avg_duration: None,
+                        p95_duration: None,
+                    })
+                })?;
+                mapped.collect::<Result<Vec<_>, _>>()?
+            };
+
+            Ok(rows)
+        })
+        .await?;
+
+    Ok(Json(rows))
 }
+
+// ── Heatmap ───────────────────────────────────────────────────────────
 
 async fn heatmap(
-    State(_db): State<AppState>,
-    Query(_params): Query<DateRangeParams>,
+    State(db): State<AppState>,
+    Query(params): Query<DateRangeParams>,
 ) -> Result<Json<Vec<HeatmapDay>>, AppError> {
-    Ok(Json(vec![]))
+    let (from, to) = params.resolve();
+    let agent = params.agent.clone();
+
+    let rows = db
+        .call(move |conn| {
+            let to_inclusive = format!("{}T23:59:59Z", to);
+            let agent_condition = if agent.is_some() {
+                " AND conversations.agent = ?"
+            } else {
+                ""
+            };
+
+            let sql = format!(
+                "SELECT
+                    date(conversations.created_at) as date,
+                    COUNT(*) as count
+                FROM conversations
+                WHERE conversations.created_at >= ?1
+                    AND conversations.created_at <= ?2{}
+                GROUP BY date
+                ORDER BY date",
+                agent_condition
+            );
+
+            let mut stmt = conn.prepare(&sql)?;
+
+            let rows: Vec<HeatmapDay> = if let Some(ref agent_val) = agent {
+                let mapped = stmt.query_map(params![from, to_inclusive, agent_val], |row| {
+                    Ok(HeatmapDay {
+                        date: row.get(0)?,
+                        count: row.get(1)?,
+                    })
+                })?;
+                mapped.collect::<Result<Vec<_>, _>>()?
+            } else {
+                let mapped = stmt.query_map(params![from, to_inclusive], |row| {
+                    Ok(HeatmapDay {
+                        date: row.get(0)?,
+                        count: row.get(1)?,
+                    })
+                })?;
+                mapped.collect::<Result<Vec<_>, _>>()?
+            };
+
+            Ok(rows)
+        })
+        .await?;
+
+    Ok(Json(rows))
 }
+
+// ── Project Stats ─────────────────────────────────────────────────────
 
 async fn project_stats(
-    State(_db): State<AppState>,
-    Query(_params): Query<DateRangeParams>,
+    State(db): State<AppState>,
+    Query(params): Query<DateRangeParams>,
 ) -> Result<Json<Vec<ProjectStatsRow>>, AppError> {
-    Ok(Json(vec![]))
+    let (from, to) = params.resolve();
+    let agent = params.agent.clone();
+
+    let rows = db
+        .call(move |conn| {
+            let to_inclusive = format!("{}T23:59:59Z", to);
+            let agent_condition = if agent.is_some() {
+                " AND conversations.agent = ?"
+            } else {
+                ""
+            };
+
+            // Main query: per-project aggregation
+            let main_sql = format!(
+                "SELECT
+                    conversations.project,
+                    COUNT(DISTINCT conversations.id) as conversation_count,
+                    MAX(conversations.created_at) as last_active,
+                    COALESCE(SUM(token_usage.input_tokens), 0) as total_input,
+                    COALESCE(SUM(token_usage.output_tokens), 0) as total_output,
+                    COALESCE(SUM(token_usage.cache_read_tokens), 0) as total_cache_read,
+                    COALESCE(SUM(token_usage.cache_creation_tokens), 0) as total_cache_creation
+                FROM conversations
+                LEFT JOIN token_usage ON token_usage.conversation_id = conversations.id
+                WHERE conversations.created_at >= ?1
+                    AND conversations.created_at <= ?2{}
+                GROUP BY conversations.project
+                ORDER BY conversation_count DESC",
+                agent_condition
+            );
+
+            let mut main_stmt = conn.prepare(&main_sql)?;
+
+            struct ProjectRow {
+                project: Option<String>,
+                conversation_count: i64,
+                last_active: String,
+                total_input: i64,
+                total_output: i64,
+                total_cache_read: i64,
+                total_cache_creation: i64,
+            }
+
+            let project_rows: Vec<ProjectRow> = if let Some(ref agent_val) = agent {
+                let mapped = main_stmt.query_map(params![from, to_inclusive, agent_val], |row| {
+                    Ok(ProjectRow {
+                        project: row.get(0)?,
+                        conversation_count: row.get(1)?,
+                        last_active: row.get(2)?,
+                        total_input: row.get(3)?,
+                        total_output: row.get(4)?,
+                        total_cache_read: row.get(5)?,
+                        total_cache_creation: row.get(6)?,
+                    })
+                })?;
+                mapped.collect::<Result<Vec<_>, _>>()?
+            } else {
+                let mapped = main_stmt.query_map(params![from, to_inclusive], |row| {
+                    Ok(ProjectRow {
+                        project: row.get(0)?,
+                        conversation_count: row.get(1)?,
+                        last_active: row.get(2)?,
+                        total_input: row.get(3)?,
+                        total_output: row.get(4)?,
+                        total_cache_read: row.get(5)?,
+                        total_cache_creation: row.get(6)?,
+                    })
+                })?;
+                mapped.collect::<Result<Vec<_>, _>>()?
+            };
+
+            // For each project, get per-model cost and top models
+            let mut results: Vec<ProjectStatsRow> = Vec::new();
+
+            for pr in &project_rows {
+                let project_name = pr.project.as_deref().unwrap_or("Unknown");
+
+                // Per-model tokens for cost calculation
+                let cost_sql = if pr.project.is_some() {
+                    format!(
+                        "SELECT token_usage.model,
+                            SUM(token_usage.input_tokens),
+                            SUM(token_usage.output_tokens),
+                            SUM(token_usage.cache_read_tokens),
+                            SUM(token_usage.cache_creation_tokens)
+                        FROM token_usage
+                        INNER JOIN conversations ON token_usage.conversation_id = conversations.id
+                        WHERE conversations.created_at >= ?1
+                            AND conversations.created_at <= ?2{}
+                            AND conversations.project = ?{}
+                        GROUP BY token_usage.model",
+                        agent_condition,
+                        if agent.is_some() { "4" } else { "3" }
+                    )
+                } else {
+                    format!(
+                        "SELECT token_usage.model,
+                            SUM(token_usage.input_tokens),
+                            SUM(token_usage.output_tokens),
+                            SUM(token_usage.cache_read_tokens),
+                            SUM(token_usage.cache_creation_tokens)
+                        FROM token_usage
+                        INNER JOIN conversations ON token_usage.conversation_id = conversations.id
+                        WHERE conversations.created_at >= ?1
+                            AND conversations.created_at <= ?2{}
+                            AND conversations.project IS NULL
+                        GROUP BY token_usage.model",
+                        agent_condition
+                    )
+                };
+
+                let mut total_cost = 0.0_f64;
+                {
+                    let mut cost_stmt = conn.prepare(&cost_sql)?;
+                    let cost_rows: Vec<(String, i64, i64, i64, i64)> = if pr.project.is_some() {
+                        if let Some(ref agent_val) = agent {
+                            let mapped = cost_stmt.query_map(
+                                params![from, to_inclusive, agent_val, pr.project.as_ref().unwrap()],
+                                |row| {
+                                    Ok((
+                                        row.get::<_, String>(0)?,
+                                        row.get::<_, i64>(1)?,
+                                        row.get::<_, i64>(2)?,
+                                        row.get::<_, i64>(3)?,
+                                        row.get::<_, i64>(4)?,
+                                    ))
+                                },
+                            )?;
+                            mapped.collect::<Result<Vec<_>, _>>()?
+                        } else {
+                            let mapped = cost_stmt.query_map(
+                                params![from, to_inclusive, pr.project.as_ref().unwrap()],
+                                |row| {
+                                    Ok((
+                                        row.get::<_, String>(0)?,
+                                        row.get::<_, i64>(1)?,
+                                        row.get::<_, i64>(2)?,
+                                        row.get::<_, i64>(3)?,
+                                        row.get::<_, i64>(4)?,
+                                    ))
+                                },
+                            )?;
+                            mapped.collect::<Result<Vec<_>, _>>()?
+                        }
+                    } else if let Some(ref agent_val) = agent {
+                        let mapped = cost_stmt.query_map(
+                            params![from, to_inclusive, agent_val],
+                            |row| {
+                                Ok((
+                                    row.get::<_, String>(0)?,
+                                    row.get::<_, i64>(1)?,
+                                    row.get::<_, i64>(2)?,
+                                    row.get::<_, i64>(3)?,
+                                    row.get::<_, i64>(4)?,
+                                ))
+                            },
+                        )?;
+                        mapped.collect::<Result<Vec<_>, _>>()?
+                    } else {
+                        let mapped = cost_stmt.query_map(
+                            params![from, to_inclusive],
+                            |row| {
+                                Ok((
+                                    row.get::<_, String>(0)?,
+                                    row.get::<_, i64>(1)?,
+                                    row.get::<_, i64>(2)?,
+                                    row.get::<_, i64>(3)?,
+                                    row.get::<_, i64>(4)?,
+                                ))
+                            },
+                        )?;
+                        mapped.collect::<Result<Vec<_>, _>>()?
+                    };
+
+                    for (model, inp, outp, cr, cc) in cost_rows {
+                        if let Some(cost_result) = pricing::calculate_cost(&model, inp, outp, cr, cc) {
+                            total_cost += cost_result.cost;
+                        }
+                    }
+                }
+
+                // Top models per project
+                let top_models_sql = if pr.project.is_some() {
+                    format!(
+                        "SELECT token_usage.model,
+                            COUNT(DISTINCT token_usage.conversation_id) as count
+                        FROM token_usage
+                        INNER JOIN conversations ON token_usage.conversation_id = conversations.id
+                        WHERE conversations.created_at >= ?1
+                            AND conversations.created_at <= ?2{}
+                            AND conversations.project = ?{}
+                        GROUP BY token_usage.model
+                        ORDER BY count DESC",
+                        agent_condition,
+                        if agent.is_some() { "4" } else { "3" }
+                    )
+                } else {
+                    format!(
+                        "SELECT token_usage.model,
+                            COUNT(DISTINCT token_usage.conversation_id) as count
+                        FROM token_usage
+                        INNER JOIN conversations ON token_usage.conversation_id = conversations.id
+                        WHERE conversations.created_at >= ?1
+                            AND conversations.created_at <= ?2{}
+                            AND conversations.project IS NULL
+                        GROUP BY token_usage.model
+                        ORDER BY count DESC",
+                        agent_condition
+                    )
+                };
+
+                let top_models: Vec<ProjectModelEntry> = {
+                    let mut tm_stmt = conn.prepare(&top_models_sql)?;
+                    let tm_rows: Vec<ProjectModelEntry> = if pr.project.is_some() {
+                        if let Some(ref agent_val) = agent {
+                            let mapped = tm_stmt.query_map(
+                                params![from, to_inclusive, agent_val, pr.project.as_ref().unwrap()],
+                                |row| {
+                                    Ok(ProjectModelEntry {
+                                        model: row.get(0)?,
+                                        count: row.get(1)?,
+                                    })
+                                },
+                            )?;
+                            mapped.collect::<Result<Vec<_>, _>>()?
+                        } else {
+                            let mapped = tm_stmt.query_map(
+                                params![from, to_inclusive, pr.project.as_ref().unwrap()],
+                                |row| {
+                                    Ok(ProjectModelEntry {
+                                        model: row.get(0)?,
+                                        count: row.get(1)?,
+                                    })
+                                },
+                            )?;
+                            mapped.collect::<Result<Vec<_>, _>>()?
+                        }
+                    } else if let Some(ref agent_val) = agent {
+                        let mapped = tm_stmt.query_map(
+                            params![from, to_inclusive, agent_val],
+                            |row| {
+                                Ok(ProjectModelEntry {
+                                    model: row.get(0)?,
+                                    count: row.get(1)?,
+                                })
+                            },
+                        )?;
+                        mapped.collect::<Result<Vec<_>, _>>()?
+                    } else {
+                        let mapped = tm_stmt.query_map(
+                            params![from, to_inclusive],
+                            |row| {
+                                Ok(ProjectModelEntry {
+                                    model: row.get(0)?,
+                                    count: row.get(1)?,
+                                })
+                            },
+                        )?;
+                        mapped.collect::<Result<Vec<_>, _>>()?
+                    };
+                    tm_rows
+                };
+
+                results.push(ProjectStatsRow {
+                    project: project_name.to_string(),
+                    conversation_count: pr.conversation_count,
+                    last_active: pr.last_active.clone(),
+                    total_tokens: pr.total_input + pr.total_output + pr.total_cache_read + pr.total_cache_creation,
+                    total_cost,
+                    total_input: pr.total_input,
+                    total_output: pr.total_output,
+                    total_cache_read: pr.total_cache_read,
+                    total_cache_creation: pr.total_cache_creation,
+                    top_models,
+                });
+            }
+
+            Ok(results)
+        })
+        .await?;
+
+    Ok(Json(rows))
 }
 
+// ── Token Rate ────────────────────────────────────────────────────────
+
 async fn token_rate(
-    State(_db): State<AppState>,
+    State(db): State<AppState>,
 ) -> Result<Json<Vec<TokenRatePoint>>, AppError> {
-    Ok(Json(vec![]))
+    let rows = db
+        .call(move |conn| {
+            let mut stmt = conn.prepare(
+                "SELECT
+                    strftime('%Y-%m-%dT%H:%M', token_usage.created_at) as minute,
+                    COALESCE(SUM(token_usage.input_tokens), 0) as input_tokens,
+                    COALESCE(SUM(token_usage.output_tokens), 0) as output_tokens
+                FROM token_usage
+                WHERE token_usage.created_at >= strftime('%Y-%m-%dT%H:%M:%S', 'now', '-60 minutes')
+                GROUP BY minute
+                ORDER BY minute",
+            )?;
+
+            let rows: Vec<TokenRatePoint> = stmt
+                .query_map([], |row| {
+                    Ok(TokenRatePoint {
+                        minute: row.get(0)?,
+                        input_tokens: row.get(1)?,
+                        output_tokens: row.get(2)?,
+                    })
+                })?
+                .collect::<Result<Vec<_>, _>>()?;
+
+            Ok(rows)
+        })
+        .await?;
+
+    Ok(Json(rows))
 }

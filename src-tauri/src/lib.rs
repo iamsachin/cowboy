@@ -1,9 +1,11 @@
 use tauri::Manager;
 
+mod analytics;
 mod conversations;
 mod db;
 mod error;
 mod extractors;
+mod plans;
 mod pricing;
 mod server;
 

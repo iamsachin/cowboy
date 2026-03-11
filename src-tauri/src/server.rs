@@ -3,7 +3,9 @@ use serde_json::{json, Value};
 use std::sync::Arc;
 use tokio_rusqlite::Connection;
 
+use crate::analytics;
 use crate::conversations;
+use crate::plans;
 
 pub type AppState = Arc<Connection>;
 
@@ -13,6 +15,8 @@ pub async fn start(db: Connection) {
     let app = Router::new()
         .route("/api/health", get(health))
         .merge(conversations::routes())
+        .merge(analytics::routes())
+        .merge(plans::routes())
         .with_state(shared_db);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3001")

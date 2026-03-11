@@ -1,5 +1,6 @@
 use tauri::Manager;
 
+mod conversations;
 mod db;
 mod error;
 mod extractors;

@@ -3,11 +3,16 @@ use serde_json::{json, Value};
 use std::sync::Arc;
 use tokio_rusqlite::Connection;
 
+use crate::conversations;
+
+pub type AppState = Arc<Connection>;
+
 pub async fn start(db: Connection) {
-    let shared_db = Arc::new(db);
+    let shared_db: AppState = Arc::new(db);
 
     let app = Router::new()
         .route("/api/health", get(health))
+        .merge(conversations::routes())
         .with_state(shared_db);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3001")
@@ -21,7 +26,7 @@ pub async fn start(db: Connection) {
         .expect("axum server error");
 }
 
-async fn health(State(db): State<Arc<Connection>>) -> Json<Value> {
+async fn health(State(db): State<AppState>) -> Json<Value> {
     // Query database to confirm connectivity and schema existence
     let tables_ok = db
         .call(|conn| {

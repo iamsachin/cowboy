@@ -6,6 +6,7 @@ pub enum AppError {
     NotFound(String),
     DbError(tokio_rusqlite::Error),
     BadRequest(String),
+    SerializeError(serde_json::Error),
 }
 
 impl IntoResponse for AppError {
@@ -14,6 +15,7 @@ impl IntoResponse for AppError {
             AppError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
             AppError::DbError(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()),
             AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
+            AppError::SerializeError(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()),
         };
         let body = axum::Json(json!({ "error": message }));
         (status, body).into_response()
@@ -23,5 +25,11 @@ impl IntoResponse for AppError {
 impl From<tokio_rusqlite::Error> for AppError {
     fn from(e: tokio_rusqlite::Error) -> Self {
         AppError::DbError(e)
+    }
+}
+
+impl From<serde_json::Error> for AppError {
+    fn from(e: serde_json::Error) -> Self {
+        AppError::SerializeError(e)
     }
 }

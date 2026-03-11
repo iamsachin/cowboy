@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-screen bg-base-300">
     <AppSidebar v-show="!sidebarHidden" />
-    <main class="flex-1 overflow-y-auto">
+    <main class="flex-1 overflow-y-auto relative z-20" style="-webkit-app-region: no-drag;">
       <slot />
     </main>
     <ShortcutCheatSheet />

@@ -2,8 +2,8 @@
   <!-- Splash screen while backend is starting -->
   <div v-if="!backendReady" class="flex items-center justify-center h-screen bg-base-100 text-base-content">
     <div class="text-center">
-      <div class="text-6xl mb-4">🤠</div>
-      <p v-if="!startupError" class="text-lg animate-pulse">Starting...</p>
+      <img src="/cowboy-icon.png" alt="Cowboy" class="w-24 h-24 mx-auto mb-6 rounded-2xl" />
+      <p v-if="!startupError" class="text-base text-base-content/60 animate-pulse">{{ loadingQuip }}</p>
       <p v-else class="text-lg text-error">Backend failed to start</p>
     </div>
   </div>
@@ -23,6 +23,20 @@ import { RouterView } from 'vue-router';
 import DashboardLayout from './layouts/DashboardLayout.vue';
 import ToastContainer from './components/ToastContainer.vue';
 
+const loadingQuips = [
+  'Saddling up the AI agents...',
+  'Wrangling tokens from the digital frontier...',
+  'Teaching robots to line dance...',
+  'Herding LLMs into the corral...',
+  'Tipping hat to the token gods...',
+  'Riding shotgun with your copilot...',
+  'Lassoing context windows...',
+  'Rolling tumbleweeds through the codebase...',
+  'Brewing cowboy coffee for the bots...',
+  'Dusting off the neural spurs...',
+];
+
+const loadingQuip = loadingQuips[Math.floor(Math.random() * loadingQuips.length)];
 const backendReady = ref(false);
 const startupError = ref(false);
 

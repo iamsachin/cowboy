@@ -3,7 +3,7 @@
     class="tooltip tooltip-right"
     :data-tip="tooltipText"
   >
-    <div class="flex items-center gap-2 px-3 py-2">
+    <div class="flex items-center gap-2 py-2" :class="collapsed ? 'justify-center' : 'px-3'">
       <span
         class="w-2 h-2 rounded-full shrink-0"
         :class="dotClass"

@@ -1,8 +1,8 @@
 <template>
-  <!-- Draggable title bar region for Tauri transparent title bar -->
+  <!-- Draggable title bar region — z-10 so page content buttons stay clickable above it -->
   <div
     data-tauri-drag-region
-    class="fixed top-0 left-0 right-0 h-[38px] z-50"
+    class="fixed top-0 left-0 right-0 h-[38px] z-10"
     style="-webkit-app-region: drag;"
   ></div>
 
@@ -11,13 +11,15 @@
     :class="collapsed ? 'w-16' : 'w-60'"
   >
     <!-- Header (below traffic light padding) -->
-    <div class="p-3 flex items-center justify-between border-b border-base-300">
-      <div v-if="!collapsed" class="flex flex-col">
-        <span class="text-lg font-bold text-primary tracking-tight">
-          Cowboy
-        </span>
-        <span class="text-xs text-base-content/50 font-normal italic">Taming wild agents daily</span>
+    <div class="p-3 border-b border-base-300" :class="collapsed ? 'flex flex-col items-center gap-2' : 'flex items-center justify-between'">
+      <div v-if="!collapsed" class="flex items-center gap-2.5">
+        <img src="/cowboy-icon.png" alt="Cowboy" class="w-8 h-8 rounded-lg" />
+        <div class="flex flex-col">
+          <span class="text-sm font-bold text-primary tracking-tight leading-tight">Cowboy</span>
+          <span class="text-[10px] text-base-content/50 font-normal italic leading-tight">Taming wild agents daily</span>
+        </div>
       </div>
+      <img v-if="collapsed" src="/cowboy-icon.png" alt="Cowboy" class="w-8 h-8 rounded-lg" />
       <button
         class="btn btn-ghost btn-sm btn-square"
         @click="collapsed = !collapsed"
@@ -28,7 +30,7 @@
     </div>
 
     <!-- Navigation -->
-    <ul class="menu menu-sm gap-1 px-2 pt-2">
+    <ul class="menu menu-sm gap-1 pt-2" :class="collapsed ? 'px-0 items-center w-full' : 'px-2'">
       <li v-for="item in navItems" :key="item.path">
         <router-link
           :to="item.disabled ? '' : item.path"
@@ -100,7 +102,7 @@
     </div>
 
     <!-- Connection Status Footer -->
-    <div class="border-t border-base-300 mt-auto">
+    <div class="border-t border-base-300 mt-auto" :class="collapsed ? 'flex justify-center' : ''">
       <ConnectionStatus :collapsed="collapsed" />
     </div>
   </aside>

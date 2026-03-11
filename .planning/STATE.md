@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Tauri Desktop App
 status: executing
-stopped_at: Completed 37-01-PLAN.md
+stopped_at: Completed 37-03-PLAN.md
 last_updated: "2026-03-11T07:20:36.495Z"
 last_activity: 2026-03-11 — Completed 37-01 Conversation Endpoints
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 5
-  completed_plans: 3
-  percent: 96
+  completed_plans: 5
+  percent: 100
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 ## Current Position
 
 Phase: 37 of 40 (Database Layer + Read-Only API)
-Plan: 1 of 3 complete
-Status: Phase 37 in progress
-Last activity: 2026-03-11 — Completed 37-01 Conversation Endpoints
+Plan: 3 of 3 complete
+Status: Phase 37 complete
+Last activity: 2026-03-11 — Completed 37-03 Plan Endpoints + Diff Script
 
 Progress: [██████████] 96%
 
@@ -57,6 +57,8 @@ Recent decisions affecting current work:
 - [36-01]: CSP object format with dangerousDisableAssetCspModification for DaisyUI style-src
 - [Phase 36-02]: DB path uses Tauri identifier (com.cowboy.app) not product name for app data dir
 - [Phase 37]: LazyLock for MODEL_PRICING HashMap (stable Rust 1.80+, zero rebuild per call)
+- [Phase 37-02]: Auto-granularity ported to Rust (daily <14d, weekly <=90d, monthly >90d)
+- [Phase 37-02]: Project stats per-project secondary queries inside single db.call() closure
 
 ### Pending Todos
 
@@ -95,6 +97,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T07:20:36.493Z
-Stopped at: Completed 37-01-PLAN.md
+Last session: 2026-03-11T07:26:19Z
+Stopped at: Completed 37-02-PLAN.md
 Resume file: None

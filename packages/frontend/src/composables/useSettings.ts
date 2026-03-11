@@ -14,6 +14,7 @@ export interface SettingsResponse {
   lastSyncError: string | null;
   lastSyncSuccess: boolean | null;
   syncCursor: string | null;
+  serverPort: number;
 }
 
 export interface PathValidationResult {
@@ -184,6 +185,25 @@ export function useSettings() {
     }
   }
 
+  async function savePortSettings(data: { serverPort: number }): Promise<boolean> {
+    saving.value = true;
+    try {
+      const res = await fetch('/api/settings/port', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(`Save port settings failed: ${res.status}`);
+      settings.value = await res.json();
+      return true;
+    } catch (e) {
+      console.error('Failed to save port settings:', e);
+      return false;
+    } finally {
+      saving.value = false;
+    }
+  }
+
   async function validatePath(path: string, agent: string): Promise<void> {
     try {
       const res = await fetch('/api/settings/validate-path', {
@@ -247,6 +267,7 @@ export function useSettings() {
     fetchSettings,
     saveAgentSettings,
     saveSyncSettings,
+    savePortSettings,
     validatePath,
     testConnection,
     triggerSyncNow,

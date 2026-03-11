@@ -88,6 +88,53 @@
         </div>
       </div>
 
+      <!-- Server Configuration Section -->
+      <div class="card bg-base-200">
+        <div class="card-body">
+          <h2 class="card-title">
+            <Settings class="w-5 h-5" />
+            Server Configuration
+          </h2>
+          <div class="divider mt-0"></div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Server Port</span>
+            </label>
+            <input
+              type="number"
+              class="input input-bordered w-full max-w-xs"
+              v-model.number="form.serverPort"
+              min="1024"
+              max="65535"
+              placeholder="8123"
+            />
+            <label class="label">
+              <span class="label-text-alt opacity-60">Port for the internal API server (default: 8123)</span>
+            </label>
+          </div>
+
+          <!-- Port save toast -->
+          <div
+            v-if="portToast"
+            class="alert alert-success text-sm py-2 mt-2"
+          >
+            {{ portToast }}
+          </div>
+
+          <div class="card-actions justify-end mt-4">
+            <button
+              class="btn btn-primary"
+              :disabled="saving"
+              @click="handleSavePort"
+            >
+              <Loader2 v-if="saving" class="w-4 h-4 animate-spin" />
+              Save Port
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Data Management Section -->
       <div class="card bg-base-200">
         <div class="card-body">
@@ -382,6 +429,7 @@ import {
   Database,
   Trash2,
   RotateCcw,
+  Settings,
 } from 'lucide-vue-next';
 
 const {
@@ -395,6 +443,7 @@ const {
   clearing,
   saveAgentSettings,
   saveSyncSettings,
+  savePortSettings,
   validatePath,
   testConnection,
   triggerSyncNow,
@@ -515,7 +564,11 @@ const form = ref({
   syncUrl: '',
   syncFrequency: 300,
   syncCategories: [] as string[],
+  serverPort: 8123,
 });
+
+// Port toast state
+const portToast = ref<string | null>(null);
 
 const allCategories = [
   { value: 'conversations', label: 'Conversations' },
@@ -537,6 +590,7 @@ watch(settings, (val) => {
       syncUrl: val.syncUrl,
       syncFrequency: val.syncFrequency,
       syncCategories: [...val.syncCategories],
+      serverPort: val.serverPort ?? 8123,
     };
   }
 });
@@ -573,6 +627,18 @@ async function handleSaveAgent() {
     toastSuccess('Agent settings saved');
   } else {
     toastError('Failed to save agent settings');
+  }
+}
+
+async function handleSavePort() {
+  const ok = await savePortSettings({
+    serverPort: form.value.serverPort,
+  });
+  if (ok) {
+    portToast.value = 'Port changed. Restart app to apply.';
+    setTimeout(() => { portToast.value = null; }, 3000);
+  } else {
+    toastError('Failed to save port settings');
   }
 }
 

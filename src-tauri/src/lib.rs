@@ -1,6 +1,9 @@
 use tauri::Manager;
 
 mod db;
+mod error;
+mod extractors;
+mod pricing;
 mod server;
 
 pub fn run() {

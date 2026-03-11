@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Tauri Desktop App
-status: completed
-stopped_at: Completed 39-04 Ingestion orchestrator and verification
-last_updated: "2026-03-11T10:33:45.463Z"
-last_activity: 2026-03-11 — Completed 39-04 Ingestion orchestrator and verification
+status: in_progress
+stopped_at: Completed 40-01 plan
+last_updated: "2026-03-11T10:54:12.854Z"
+last_activity: 2026-03-11 — Completed 40-01 File watcher and port configuration
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 12
-  completed_plans: 12
-  percent: 100
+  completed_plans: 13
+  percent: 87
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 
 ## Current Position
 
-Phase: 39 of 40 (Ingestion Engine)
-Plan: 4 of 4 complete
-Status: Complete
-Last activity: 2026-03-11 — Completed 39-04 Ingestion orchestrator and verification
+Phase: 40 of 40 (File Watcher & Desktop/Chrome)
+Plan: 1 of 3 complete
+Status: In Progress
+Last activity: 2026-03-11 — Completed 40-01 File watcher, port config, settings integration
 
-Progress: [██████████] 100%
+Progress: [███-------] 33%
 
 ## Performance Metrics
 
@@ -75,6 +75,10 @@ Recent decisions affecting current work:
 - [Phase 39]: Used tokio_rusqlite::rusqlite re-export for Cursor vscdb reads (avoids version conflict)
 - [Phase 39-04]: Arc<Mutex<IngestionStatus>> for shared status between routes and orchestrator
 - [Phase 39-04]: WebSocket events collected during ingestion and emitted after DB writes complete
+- [Phase 40-01]: notify crate mpsc-to-tokio bridge for async file watching
+- [Phase 40-01]: Per-agent debounce timers (1s Claude, 3s Cursor) via tokio::select!
+- [Phase 40-01]: Server port changed from 3001 to 8123 (configurable via settings table)
+- [Phase 40-01]: FileWatcherHandle Drop sends oneshot shutdown signal for clean lifecycle
 
 ### Pending Todos
 
@@ -115,6 +119,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T10:33:45.461Z
-Stopped at: Completed 39-04 Ingestion orchestrator and verification
-Resume file: None
+Last session: 2026-03-11T11:26:07Z
+Stopped at: Completed 40-01-PLAN.md
+Resume file: .planning/phases/40-file-watcher-desktop-chrome/40-02-PLAN.md

@@ -39,8 +39,8 @@ Requirements for Tauri v2 desktop app with Rust backend. Each maps to roadmap ph
 
 ### File Watcher
 
-- [ ] **WATCH-01**: notify crate watches Claude Code and Cursor log directories
-- [ ] **WATCH-02**: Debounced events trigger ingestion (no duplicate processing)
+- [x] **WATCH-01**: notify crate watches Claude Code and Cursor log directories
+- [x] **WATCH-02**: Debounced events trigger ingestion (no duplicate processing)
 
 ### Desktop
 
@@ -95,8 +95,8 @@ Requirements for Tauri v2 desktop app with Rust backend. Each maps to roadmap ph
 | ING-03 | Phase 39 | Complete |
 | ING-04 | Phase 39 | Complete |
 | ING-05 | Phase 39 | Complete |
-| WATCH-01 | Phase 40 | Pending |
-| WATCH-02 | Phase 40 | Pending |
+| WATCH-01 | Phase 40 | Complete |
+| WATCH-02 | Phase 40 | Complete |
 | DESK-01 | Phase 40 | Pending |
 | DESK-02 | Phase 40 | Pending |
 | DESK-03 | Phase 40 | Pending |

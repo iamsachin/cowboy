@@ -1,8 +1,14 @@
-use axum::{routing::get, Json, Router};
+use axum::{extract::State, routing::get, Json, Router};
 use serde_json::{json, Value};
+use std::sync::Arc;
+use tokio_rusqlite::Connection;
 
-pub async fn start() {
-    let app = Router::new().route("/api/health", get(health));
+pub async fn start(db: Connection) {
+    let shared_db = Arc::new(db);
+
+    let app = Router::new()
+        .route("/api/health", get(health))
+        .with_state(shared_db);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3001")
         .await
@@ -15,10 +21,24 @@ pub async fn start() {
         .expect("axum server error");
 }
 
-async fn health() -> Json<Value> {
+async fn health(State(db): State<Arc<Connection>>) -> Json<Value> {
+    // Query database to confirm connectivity and schema existence
+    let tables_ok = db
+        .call(|conn| {
+            let count: i64 = conn.query_row(
+                "SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
+                [],
+                |row| row.get(0),
+            )?;
+            Ok::<bool, tokio_rusqlite::rusqlite::Error>(count == 9)
+        })
+        .await
+        .unwrap_or(false);
+
     Json(json!({
         "status": "ok",
         "server": "cowboy-rust",
-        "version": env!("CARGO_PKG_VERSION")
+        "version": env!("CARGO_PKG_VERSION"),
+        "tables_ok": tables_ok
     }))
 }

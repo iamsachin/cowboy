@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Tauri Desktop App
-status: in-progress
-stopped_at: Completed 38-03 Gap Closure (RT-02/RT-03 requirements correction)
-last_updated: "2026-03-11T08:53:55.488Z"
-last_activity: 2026-03-11 — Completed 38-03 Gap Closure (RT-02/RT-03 requirements correction)
+status: executing
+stopped_at: Completed 39-01 Ingestion module foundation (parser + normalizer)
+last_updated: "2026-03-11T10:13:17.070Z"
+last_activity: 2026-03-11 — Completed 39-01 Ingestion module foundation (parser + normalizer)
 progress:
   total_phases: 5
-  completed_phases: 2
-  total_plans: 8
-  completed_plans: 8
+  completed_phases: 3
+  total_plans: 12
+  completed_plans: 9
   percent: 90
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-11)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** v3.0 Tauri Desktop App — Phase 38 Settings Write Endpoints + WebSocket
+**Current focus:** v3.0 Tauri Desktop App — Phase 39 Ingestion Engine
 
 ## Current Position
 
-Phase: 38 of 40 (Settings Write Endpoints + WebSocket)
-Plan: 3 of 3 complete
-Status: Phase 38 complete
-Last activity: 2026-03-11 — Completed 38-03 Gap Closure (RT-02/RT-03 requirements correction)
+Phase: 39 of 40 (Ingestion Engine)
+Plan: 1 of 4 complete
+Status: In progress
+Last activity: 2026-03-11 — Completed 39-01 Ingestion module foundation (parser + normalizer)
 
 Progress: [█████████░] 90%
 
@@ -66,6 +66,9 @@ Recent decisions affecting current work:
 - [Phase 38-02]: broadcast_event helper centralizes seq+timestamp injection for all WebSocket events
 - [Phase 38-02]: Diff script --write tests backup and restore settings to avoid side effects
 - [Phase 38-03]: RT-02/RT-03 split ownership: Phase 38 broadcast infra, Phase 39 emitters
+- [Phase 39-01]: Skipped standalone rusqlite dep (tokio-rusqlite 0.7 re-exports 0.37)
+- [Phase 39-01]: LazyLock for compiled regex patterns in ingestion (stable Rust 1.80+)
+- [Phase 39-01]: Sorted chunk_map by earliest_timestamp for deterministic ordering
 
 ### Pending Todos
 
@@ -104,6 +107,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T08:58:26Z
-Stopped at: Completed 38-03 Gap Closure (RT-02/RT-03 requirements correction)
-Resume file: Phase 38 complete — next: Phase 39
+Last session: 2026-03-11T10:11:34Z
+Stopped at: Completed 39-01 Ingestion module foundation (parser + normalizer)
+Resume file: Phase 39 in progress — next: Plan 02 (database insertion)

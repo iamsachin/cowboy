@@ -5,6 +5,7 @@ mod conversations;
 mod db;
 mod error;
 mod extractors;
+mod ingestion;
 mod plans;
 mod pricing;
 mod server;

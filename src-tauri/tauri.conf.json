@@ -9,6 +9,12 @@
     "devUrl": "http://localhost:5173",
     "frontendDist": "../packages/frontend/dist"
   },
+  "bundle": {
+    "icon": [
+      "icons/icon.icns",
+      "icons/icon.png"
+    ]
+  },
   "app": {
     "windows": [
       {

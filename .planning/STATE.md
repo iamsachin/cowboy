@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 ## Current Position
 
 Phase: 39 of 40 (Ingestion Engine)
-Plan: 1 of 4 complete
+Plan: 2 of 4 complete
 Status: In progress
-Last activity: 2026-03-11 — Completed 39-01 Ingestion module foundation (parser + normalizer)
+Last activity: 2026-03-11 — Completed 39-02 Plan extractor, subagent linker & summarizer
 
 Progress: [█████████░] 90%
 
@@ -69,6 +69,9 @@ Recent decisions affecting current work:
 - [Phase 39-01]: Skipped standalone rusqlite dep (tokio-rusqlite 0.7 re-exports 0.37)
 - [Phase 39-01]: LazyLock for compiled regex patterns in ingestion (stable Rust 1.80+)
 - [Phase 39-01]: Sorted chunk_map by earliest_timestamp for deterministic ordering
+- [Phase 39-02]: 54 action verbs ported (plan said 51, Node.js source has 54)
+- [Phase 39-02]: Generic closures for linker callbacks (simpler API than trait objects)
+- [Phase 39-02]: chrono for timestamp delta computation in summarizer
 
 ### Pending Todos
 
@@ -107,6 +110,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T10:11:34Z
-Stopped at: Completed 39-01 Ingestion module foundation (parser + normalizer)
-Resume file: Phase 39 in progress — next: Plan 02 (database insertion)
+Last session: 2026-03-11T10:19:50Z
+Stopped at: Completed 39-02 Plan extractor, subagent linker & summarizer
+Resume file: Phase 39 in progress — next: Plan 03 (database insertion)

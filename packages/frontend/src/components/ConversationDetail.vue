@@ -32,7 +32,7 @@
 
     <!-- Turn list -->
     <template v-for="turn in visibleTurns" :key="turnKey(turn)">
-      <div :data-turn-key="turnKey(turn)" :class="{ 'group-fade-in': newGroupKeys.has(turnKey(turn)) }">
+      <div :data-turn-key="turnKey(turn)" :class="{ 'group-fade-in': newGroupKeys.has(turnKey(turn)) }" style="scroll-margin-top: 2.5rem">
         <ChatMessage
           v-if="turn.type === 'user'"
           :message="turn.message"

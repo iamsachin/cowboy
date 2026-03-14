@@ -737,8 +737,12 @@ fn insert_conversation_data(
     for tc in &normalized.tool_calls {
         let input_str = serde_json::to_string(&tc.input).unwrap_or_default();
         tx.execute(
-            "INSERT OR IGNORE INTO tool_calls (id, message_id, conversation_id, name, input, output, status, duration, created_at) \
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+            "INSERT INTO tool_calls (id, message_id, conversation_id, name, input, output, status, duration, created_at) \
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9) \
+             ON CONFLICT(id) DO UPDATE SET \
+               output = COALESCE(excluded.output, tool_calls.output), \
+               status = COALESCE(excluded.status, tool_calls.status), \
+               duration = COALESCE(excluded.duration, tool_calls.duration)",
             rusqlite::params![
                 tc.id,
                 tc.message_id,

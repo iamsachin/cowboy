@@ -25,8 +25,8 @@
           v-if="duration"
           class="text-base-content/50"
         >{{ duration }}</span>
-        <span v-if="groupTokens" class="text-base-content/50">
-          {{ formatTokenCount(groupTokens.inputTokens + groupTokens.cacheReadTokens) }} in / {{ formatTokenCount(groupTokens.outputTokens) }} out
+        <span v-if="groupTokens" class="text-base-content/50 tooltip tooltip-bottom" :data-tip="tokenTooltip">
+          {{ formatTokenCount(groupTokens.contextTokens) }} ctx / {{ formatTokenCount(groupTokens.outputTokens) }} out
         </span>
         <span v-if="groupTokens?.cost != null" class="text-success/70">
           {{ formatCost(groupTokens.cost) }}
@@ -185,7 +185,26 @@ const groupTokens = computed(() => {
     }
   }
 
-  return found ? { inputTokens, outputTokens, cacheReadTokens, cacheCreationTokens, cost } : null;
+  // Context tokens = last turn's (inputTokens + cacheReadTokens) — actual context window size
+  let contextTokens = 0;
+  for (const turn of [...props.group.turns].reverse()) {
+    const lastUsage = props.tokenUsageByMessage[turn.message.id];
+    if (lastUsage) {
+      contextTokens = lastUsage.inputTokens + lastUsage.cacheReadTokens;
+      break;
+    }
+  }
+
+  return found ? { inputTokens, outputTokens, cacheReadTokens, cacheCreationTokens, cost, contextTokens } : null;
+});
+
+const tokenTooltip = computed(() => {
+  if (!groupTokens.value) return '';
+  const ctx = formatTokenCount(groupTokens.value.contextTokens);
+  const cache = formatTokenCount(groupTokens.value.cacheReadTokens);
+  const newInput = formatTokenCount(groupTokens.value.inputTokens);
+  const output = formatTokenCount(groupTokens.value.outputTokens);
+  return `Context: ${ctx} | Cache reads: ${cache} | New input: ${newInput} | Output: ${output}`;
 });
 
 function getTurnContent(turn: AssistantTurn) {

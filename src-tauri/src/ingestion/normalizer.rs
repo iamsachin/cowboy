@@ -228,14 +228,24 @@ fn derive_title(parse_result: &ParseResult) -> Option<String> {
         if let Some(ref content) = user.content {
             if content.trim().starts_with('<') {
                 let stripped = strip_xml_tags(content);
-                if stripped.len() > 10 {
+                if stripped.len() > 10 && !should_skip_for_title(&stripped) {
                     return Some(truncate(&stripped, 100));
                 }
             }
         }
     }
 
-    // Third pass: fall back to first assistant message text content
+    // Third pass: slash command fallback -- use first slash command as title
+    for user in &parse_result.user_messages {
+        if let Some(ref content) = user.content {
+            let trimmed = content.trim();
+            if trimmed.starts_with('/') {
+                return Some(truncate(trimmed, 100));
+            }
+        }
+    }
+
+    // Fourth pass: fall back to first assistant message text content
     for assistant in &parse_result.assistant_messages {
         let extracted = extract_assistant_content(&assistant.content_blocks);
         if let Some(ref content) = extracted.content {

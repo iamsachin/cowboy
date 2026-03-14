@@ -12,6 +12,9 @@ pub fn should_skip_for_title(content: &str) -> bool {
     if trimmed.is_empty() {
         return true;
     }
+    if trimmed.len() <= 2 {
+        return true;
+    }
     if trimmed.starts_with('/') {
         return true;
     }
@@ -78,7 +81,17 @@ pub fn derive_conversation_title(
         }
     }
 
-    // Third pass: assistant text fallback
+    // Third pass: slash command fallback -- use first slash command as title
+    for content in user_messages {
+        if let Some(text) = content {
+            let trimmed = text.trim();
+            if trimmed.starts_with('/') {
+                return Some(truncate(trimmed, 100));
+            }
+        }
+    }
+
+    // Fourth pass: assistant text fallback
     if let Some(snippets) = assistant_text_snippets {
         for snippet in snippets {
             if let Some(text) = snippet {
@@ -152,8 +165,24 @@ mod tests {
 
     #[test]
     fn derive_title_assistant_fallback() {
+        // Slash command now takes priority over assistant text (slash command fallback pass)
         let msgs: Vec<Option<&str>> = vec![
             Some("/command"),
+        ];
+        let snippets: Vec<Option<&str>> = vec![
+            Some("I'll help you with that"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, Some(&snippets)),
+            Some("/command".to_string())
+        );
+    }
+
+    #[test]
+    fn derive_title_assistant_fallback_no_slash() {
+        // When no slash commands exist, assistant text is used as fallback
+        let msgs: Vec<Option<&str>> = vec![
+            Some("<system>test</system>"),
         ];
         let snippets: Vec<Option<&str>> = vec![
             Some("I'll help you with that"),
@@ -170,6 +199,41 @@ mod tests {
         let msgs: Vec<Option<&str>> = vec![Some(&long_msg)];
         let result = derive_conversation_title(&msgs, None).unwrap();
         assert_eq!(result.len(), 100);
+    }
+
+    #[test]
+    fn skip_short_message() {
+        assert!(should_skip_for_title("4"));
+        assert!(should_skip_for_title("ab"));
+    }
+
+    #[test]
+    fn allow_three_char_message() {
+        assert!(!should_skip_for_title("abc"));
+    }
+
+    #[test]
+    fn derive_title_slash_command_fallback() {
+        let msgs: Vec<Option<&str>> = vec![
+            Some("/gsd:discuss-phase"),
+            Some("4"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("/gsd:discuss-phase".to_string())
+        );
+    }
+
+    #[test]
+    fn derive_title_normal_over_slash() {
+        let msgs: Vec<Option<&str>> = vec![
+            Some("/gsd:discuss-phase"),
+            Some("Fix the login bug"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("Fix the login bug".to_string())
+        );
     }
 
     #[test]

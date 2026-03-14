@@ -65,7 +65,7 @@ const chartOptions = computed(() => {
       grid: { color: themeColors.grid },
       ticks: {
         color: themeColors.text,
-        stepSize: 1,
+        maxTicksLimit: 6,
       },
     },
   },

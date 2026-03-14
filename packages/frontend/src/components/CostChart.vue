@@ -184,8 +184,8 @@ const chartData = computed<any>(() => {
         {
           label: 'Cost',
           data: props.data.map((p) => p.cost),
-          backgroundColor: 'rgba(244, 114, 182, 0.8)',
-          borderColor: 'rgba(244, 114, 182, 1)',
+          backgroundColor: 'rgba(52, 211, 153, 0.8)',
+          borderColor: 'rgba(52, 211, 153, 1)',
           borderWidth: 1,
           borderRadius: 4,
         },
@@ -201,8 +201,8 @@ const chartData = computed<any>(() => {
       {
         label: 'Cost',
         data: projection.historicalCosts,
-        backgroundColor: 'rgba(244, 114, 182, 0.8)',
-        borderColor: 'rgba(244, 114, 182, 1)',
+        backgroundColor: 'rgba(52, 211, 153, 0.8)',
+        borderColor: 'rgba(52, 211, 153, 1)',
         borderWidth: 1,
         borderRadius: 4,
       },
@@ -210,7 +210,8 @@ const chartData = computed<any>(() => {
         type: 'line' as const,
         label: 'Projected',
         data: projection.projectionLine,
-        borderColor: 'rgba(244, 114, 182, 0.7)',
+        borderColor: 'rgba(52, 211, 153, 0.7)',
+        borderWidth: 1.5,
         borderDash: [6, 4],
         pointRadius: 0,
         fill: false,
@@ -224,7 +225,7 @@ const chartData = computed<any>(() => {
         borderColor: 'transparent',
         pointRadius: 0,
         fill: '+1',
-        backgroundColor: 'rgba(244, 114, 182, 0.1)',
+        backgroundColor: 'rgba(52, 211, 153, 0.1)',
         spanGaps: false,
       },
       {
@@ -255,6 +256,7 @@ const chartOptions = computed(() => {
       grid: { color: themeColors.grid },
       ticks: {
         color: themeColors.text,
+        maxTicksLimit: 6,
         callback: (value: number | string) => formatCost(Number(value)),
       },
     },

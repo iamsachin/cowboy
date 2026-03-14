@@ -1,8 +1,5 @@
 <template>
   <div class="stat bg-base-200 rounded-box">
-    <div class="stat-figure text-primary">
-      <component :is="icon" class="w-8 h-8" />
-    </div>
     <div class="stat-title text-xs uppercase tracking-wide">{{ title }}</div>
     <div class="stat-value text-base-content">{{ value }}</div>
     <div v-if="trend !== undefined || description" class="stat-desc">

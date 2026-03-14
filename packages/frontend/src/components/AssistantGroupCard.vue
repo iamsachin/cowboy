@@ -26,7 +26,7 @@
           class="text-base-content/50"
         >{{ duration }}</span>
         <span v-if="groupTokens" class="text-base-content/50">
-          {{ formatTokenCount(groupTokens.inputTokens) }} in / {{ formatTokenCount(groupTokens.outputTokens) }} out
+          {{ formatTokenCount(groupTokens.inputTokens + groupTokens.cacheReadTokens) }} in / {{ formatTokenCount(groupTokens.outputTokens) }} out
         </span>
         <span v-if="groupTokens?.cost != null" class="text-success/70">
           {{ formatCost(groupTokens.cost) }}
@@ -95,7 +95,7 @@
 
         <!-- Per-turn token info -->
         <div v-if="getTurnTokens(turn)" class="text-xs text-base-content/40 mt-1">
-          {{ formatTokenCount(getTurnTokens(turn)!.inputTokens) }} in / {{ formatTokenCount(getTurnTokens(turn)!.outputTokens) }} out
+          {{ formatTokenCount(getTurnTokens(turn)!.inputTokens + getTurnTokens(turn)!.cacheReadTokens) }} in / {{ formatTokenCount(getTurnTokens(turn)!.outputTokens) }} out
           <span v-if="getTurnTokens(turn)!.cost != null"> &middot; {{ formatCost(getTurnTokens(turn)!.cost!) }}</span>
         </div>
       </div>

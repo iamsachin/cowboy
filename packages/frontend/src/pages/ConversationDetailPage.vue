@@ -233,7 +233,17 @@ async function handleToggle() {
 }
 
 // --- Click-to-scroll navigation handler ---
+const navigating = ref(false);
+let navigatingTimeout: ReturnType<typeof setTimeout> | null = null;
+
 async function handleTimelineNavigate(key: string, turnIndex: number) {
+  // Set navigating flag to prevent observer from interfering
+  navigating.value = true;
+  if (navigatingTimeout) clearTimeout(navigatingTimeout);
+
+  // Manually set activeKey so timeline highlights immediately
+  setActiveKey(key);
+
   // 1. Load more if beyond pagination boundary
   detailRef.value?.loadUpTo(turnIndex);
   await nextTick();
@@ -245,6 +255,9 @@ async function handleTimelineNavigate(key: string, turnIndex: number) {
   // 3. Smooth scroll to element
   const el = scrollContainer.value?.querySelector(`[data-turn-key="${key}"]`);
   el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Clear navigating flag after scroll settles
+  navigatingTimeout = setTimeout(() => { navigating.value = false; }, 600);
 }
 
 // --- IntersectionObserver for active event tracking ---
@@ -265,6 +278,8 @@ function setupObserver() {
         if (entry.isIntersecting) visibleTurnKeys.add(key);
         else visibleTurnKeys.delete(key);
       }
+      // Skip observer updates during programmatic navigation
+      if (navigating.value) return;
       // Find topmost visible key in timeline event order
       const eventKeys = timelineEvents.value.map(e => e.key);
       for (const k of eventKeys) {
@@ -284,13 +299,16 @@ function setupObserver() {
 watch(timelineEvents, () => nextTick(setupObserver), { immediate: false });
 // Initial setup after mount
 onMounted(() => nextTick(setupObserver));
-onUnmounted(() => observer?.disconnect());
+onUnmounted(() => {
+  observer?.disconnect();
+  if (navigatingTimeout) clearTimeout(navigatingTimeout);
+});
 
 // --- Timeline panel auto-scroll to keep highlighted event in view ---
 watch(activeKey, (key) => {
   if (!key || !timelinePanelRef.value) return;
   const el = timelinePanelRef.value.querySelector(`[data-timeline-key="${key}"]`);
-  el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  el?.scrollIntoView({ behavior: navigating.value ? 'instant' : 'smooth', block: 'nearest' });
 });
 
 // --- Timeline auto-scroll to new events only when user is at bottom ---

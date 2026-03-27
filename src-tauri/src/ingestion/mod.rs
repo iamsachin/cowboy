@@ -168,7 +168,8 @@ pub async fn run_ingestion(
 
     match migration_result {
         Ok(result) => {
-            if result.titles_fixed > 0
+            if result.cursor_data_purged > 0
+                || result.titles_fixed > 0
                 || result.models_fixed > 0
                 || result.cursor_projects_fixed > 0
                 || result.cursor_messages_fixed > 0

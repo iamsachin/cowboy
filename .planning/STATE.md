@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.1
 milestone_name: Remove Cursor Support
 status: completed
-stopped_at: Completed 41-01-PLAN.md
-last_updated: "2026-03-27T20:48:20.552Z"
-last_activity: 2026-03-28 — Completed Phase 41 Plan 01 (Cursor Data Migration)
+stopped_at: Completed 42-01-PLAN.md
+last_updated: "2026-03-27T21:03:21.209Z"
+last_activity: 2026-03-28 — Completed Phase 42 Plan 01 (Ingestion Pipeline Removal)
 progress:
   total_phases: 6
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
 ---
 
 # Project State
@@ -20,16 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 41 — Cursor Data Migration (v3.1 Remove Cursor Support)
+**Current focus:** Phase 42 — Ingestion Pipeline Removal (v3.1 Remove Cursor Support)
 
 ## Current Position
 
-Phase: 41 of 46 (Cursor Data Migration) -- COMPLETE
+Phase: 42 of 46 (Ingestion Pipeline Removal) -- COMPLETE
 Plan: 1 of 1 in current phase
-Status: Phase 41 complete, ready for Phase 42
+Status: Phase 42 complete, ready for Phase 43
 Last activity: 2026-03-28 — Completed Phase 41 Plan 01 (Cursor Data Migration)
 
-Progress (v3.1): [████░░░░░░░░░░░░░░░░] 17% (1/6 phases)
+Progress (v3.1): [███████░░░░░░░░░░░░░] 33% (2/6 phases)
 
 ## Performance Metrics
 
@@ -41,8 +41,8 @@ Progress (v3.1): [████░░░░░░░░░░░░░░░░] 
 - v2.0: 13 plans, 6 phases
 - v2.1: 10 plans, 5 phases
 - v3.0: 15 plans, 5 phases
-- v3.1: 1 plan, 1 phase (in progress)
-- Total plans completed: 98
+- v3.1: 2 plans, 2 phases (in progress)
+- Total plans completed: 99
 
 ## Accumulated Context
 
@@ -55,6 +55,8 @@ Recent decisions affecting current work:
 - [v3.1]: Agent column in conversations table stays generic for future agent additions
 - [41-01]: Purge runs as FIRST operation in run_data_quality_migration to avoid wasting time on cursor data
 - [41-01]: Transaction wraps all deletes for atomicity
+- [42-01]: Preserved purge_cursor_data() in migration.rs as the Phase 41 data cleanup migration
+- [42-01]: Removed Cursor 'default' model fix from fix_conversation_models since cursor data is purged
 
 ### Pending Todos
 
@@ -92,6 +94,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T20:39:31Z
-Stopped at: Completed 41-01-PLAN.md
-Resume file: .planning/phases/41-cursor-data-migration/41-01-SUMMARY.md
+Last session: 2026-03-27T20:59:29Z
+Stopped at: Completed 42-01-PLAN.md
+Resume file: .planning/phases/42-ingestion-pipeline-removal/42-01-SUMMARY.md

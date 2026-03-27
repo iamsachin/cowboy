@@ -106,7 +106,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Milestone Goal:** Remove all Cursor-specific code while keeping the architecture open for future agent additions.
 
 - [x] **Phase 41: Cursor Data Migration** — Startup migration to delete all Cursor conversations and related records from SQLite (completed 2026-03-27)
-- [ ] **Phase 42: Ingestion Pipeline Removal** — Remove Cursor parser, normalizer, file discovery, pipeline integration, and data migrations
+- [x] **Phase 42: Ingestion Pipeline Removal** — Remove Cursor parser, normalizer, file discovery, pipeline integration, and data migrations (completed 2026-03-27)
 - [ ] **Phase 43: Watcher & Pricing Cleanup** — Remove Cursor from AgentKind enum, vscdb file detection, debounce timer, and model pricing
 - [ ] **Phase 44: Settings Removal** — Remove Cursor fields from DB schema, settings API, validation logic, and Settings page UI
 - [ ] **Phase 45: Frontend Removal** — Remove Cursor from agent constants, AgentsPage, comparison composable, and settings composable
@@ -135,7 +135,7 @@ Plans:
   2. The main ingestion pipeline (mod.rs) has no Cursor match arms, imports, or conditional branches
   3. Cursor-specific startup migrations (fix_cursor_projects, fix_cursor_messages) are removed
   4. The project compiles with zero errors and zero warnings related to missing Cursor modules
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
 - [ ] 42-01-PLAN.md — Delete Cursor modules and remove Cursor code from pipeline and migrations
 
@@ -230,7 +230,7 @@ Phases execute in numeric order: 41 -> 42 -> 43 -> 44 -> 45 -> 46
 | 39. Ingestion Engine | v3.0 | 4/4 | Complete | 2026-03-11 |
 | 40. File Watcher + Desktop Chrome | v3.0 | 3/3 | Complete | 2026-03-11 |
 | 41. Cursor Data Migration | v3.1 | 1/1 | Complete | 2026-03-27 |
-| 42. Ingestion Pipeline Removal | v3.1 | 0/1 | Not started | - |
+| 42. Ingestion Pipeline Removal | 1/1 | Complete   | 2026-03-27 | - |
 | 43. Watcher & Pricing Cleanup | v3.1 | 0/0 | Not started | - |
 | 44. Settings Removal | v3.1 | 0/0 | Not started | - |
 | 45. Frontend Removal | v3.1 | 0/0 | Not started | - |

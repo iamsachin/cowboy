@@ -9,11 +9,11 @@ Requirements for removing Cursor support. Each maps to roadmap phases.
 
 ### Ingestion
 
-- [ ] **ING-01**: Cursor parser module (cursor_parser.rs) is fully removed
-- [ ] **ING-02**: Cursor normalizer module (cursor_normalizer.rs) is fully removed
-- [ ] **ING-03**: Cursor file discovery module (cursor_file_discovery.rs) is fully removed
-- [ ] **ING-04**: Cursor processing removed from main ingestion pipeline (mod.rs)
-- [ ] **ING-05**: Cursor-specific data migrations removed (fix_cursor_projects, fix_cursor_messages)
+- [x] **ING-01**: Cursor parser module (cursor_parser.rs) is fully removed
+- [x] **ING-02**: Cursor normalizer module (cursor_normalizer.rs) is fully removed
+- [x] **ING-03**: Cursor file discovery module (cursor_file_discovery.rs) is fully removed
+- [x] **ING-04**: Cursor processing removed from main ingestion pipeline (mod.rs)
+- [x] **ING-05**: Cursor-specific data migrations removed (fix_cursor_projects, fix_cursor_messages)
 
 ### Watcher
 
@@ -65,11 +65,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DATA-01 | Phase 41 | Complete |
-| ING-01 | Phase 42 | Pending |
-| ING-02 | Phase 42 | Pending |
-| ING-03 | Phase 42 | Pending |
-| ING-04 | Phase 42 | Pending |
-| ING-05 | Phase 42 | Pending |
+| ING-01 | Phase 42 | Complete |
+| ING-02 | Phase 42 | Complete |
+| ING-03 | Phase 42 | Complete |
+| ING-04 | Phase 42 | Complete |
+| ING-05 | Phase 42 | Complete |
 | WATCH-01 | Phase 43 | Pending |
 | WATCH-02 | Phase 43 | Pending |
 | PRICE-01 | Phase 43 | Pending |

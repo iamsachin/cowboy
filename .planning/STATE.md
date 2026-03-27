@@ -1,34 +1,35 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.0
-milestone_name: Tauri Desktop App
-status: completed
-stopped_at: Milestone v3.0 archived
-last_updated: "2026-03-11T13:30:00.000Z"
-last_activity: 2026-03-14 - Completed quick task 27: Fix token display, conversation title, and timeline scroll
+milestone: v3.1
+milestone_name: Remove Cursor Support
+status: executing
+stopped_at: Completed 41-01-PLAN.md
+last_updated: "2026-03-27T20:39:31Z"
+last_activity: 2026-03-28 — Completed Phase 41 Plan 01 (Cursor Data Migration)
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 15
-  completed_plans: 15
-  percent: 100
+  total_phases: 6
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-11)
+See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** No active milestone — use `/gsd:new-milestone` to start the next one
+**Current focus:** Phase 41 — Cursor Data Migration (v3.1 Remove Cursor Support)
 
 ## Current Position
 
-Milestone: v3.0 Tauri Desktop App — SHIPPED 2026-03-11
-All 40 phases across 7 milestones complete (97 plans total).
+Phase: 41 of 46 (Cursor Data Migration) -- COMPLETE
+Plan: 1 of 1 in current phase
+Status: Phase 41 complete, ready for Phase 42
+Last activity: 2026-03-28 — Completed Phase 41 Plan 01 (Cursor Data Migration)
 
-Progress: [██████████] 100%
+Progress (v3.1): [████░░░░░░░░░░░░░░░░] 17% (1/6 phases)
 
 ## Performance Metrics
 
@@ -40,13 +41,20 @@ Progress: [██████████] 100%
 - v2.0: 13 plans, 6 phases
 - v2.1: 10 plans, 5 phases
 - v3.0: 15 plans, 5 phases
-- Total plans completed: 97
+- v3.1: 1 plan, 1 phase (in progress)
+- Total plans completed: 98
 
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
+Recent decisions affecting current work:
+
+- [v3.1]: Removal order is data-first (purge DB), then backend leaf modules, then watcher/pricing, then settings, then frontend, then verification
+- [v3.1]: Agent column in conversations table stays generic for future agent additions
+- [41-01]: Purge runs as FIRST operation in run_data_quality_migration to avoid wasting time on cursor data
+- [41-01]: Transaction wraps all deletes for atomicity
 
 ### Pending Todos
 
@@ -54,7 +62,7 @@ None.
 
 ### Blockers/Concerns
 
-None — milestone complete.
+- v3.0 tech debt: 14 compiler warnings (unused imports/dead code) — some may be resolved by Cursor removal
 
 ### Quick Tasks Completed
 
@@ -84,6 +92,6 @@ None — milestone complete.
 
 ## Session Continuity
 
-Last session: 2026-03-14
-Stopped at: Completed quick-27
-Resume file: None
+Last session: 2026-03-27T20:39:31Z
+Stopped at: Completed 41-01-PLAN.md
+Resume file: .planning/phases/41-cursor-data-migration/41-01-SUMMARY.md

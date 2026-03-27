@@ -527,6 +527,182 @@ mod tests {
     }
 
     #[test]
+    fn purge_cursor_data_deletes_all_cursor_records() {
+        let conn = create_test_db();
+
+        // Insert a Claude Code conversation with full child records
+        conn.execute(
+            "INSERT INTO conversations (id, agent, created_at, updated_at, status, model) VALUES ('cc1', 'claude-code', '2024-01-01', '2024-01-01', 'completed', 'claude-3-opus')",
+            [],
+        ).unwrap();
+        conn.execute(
+            "INSERT INTO messages (id, conversation_id, role, created_at, content) VALUES ('cc_m1', 'cc1', 'user', '2024-01-01', 'hello')",
+            [],
+        ).unwrap();
+        conn.execute(
+            "INSERT INTO messages (id, conversation_id, role, created_at, content) VALUES ('cc_m2', 'cc1', 'assistant', '2024-01-01', 'hi there')",
+            [],
+        ).unwrap();
+        conn.execute(
+            "INSERT INTO tool_calls (id, message_id, conversation_id, name, created_at) VALUES ('cc_tc1', 'cc_m2', 'cc1', 'read_file', '2024-01-01')",
+            [],
+        ).unwrap();
+        conn.execute(
+            "INSERT INTO token_usage (id, conversation_id, message_id, model, input_tokens, output_tokens, created_at) VALUES ('cc_tu1', 'cc1', 'cc_m2', 'claude-3-opus', 100, 50, '2024-01-01')",
+            [],
+        ).unwrap();
+        conn.execute(
+            "INSERT INTO plans (id, conversation_id, source_message_id, title, total_steps, created_at) VALUES ('cc_p1', 'cc1', 'cc_m2', 'Plan A', 2, '2024-01-01')",
+            [],
+        ).unwrap();
+        conn.execute(
+            "INSERT INTO plan_steps (id, plan_id, step_number, content, created_at) VALUES ('cc_ps1', 'cc_p1', 1, 'Step 1', '2024-01-01')",
+            [],
+        ).unwrap();
+        conn.execute(
+            "INSERT INTO compaction_events (id, conversation_id, timestamp, created_at) VALUES ('cc_ce1', 'cc1', '2024-01-01', '2024-01-01')",
+            [],
+        ).unwrap();
+
+        // Insert a Cursor conversation with full child records
+        conn.execute(
+            "INSERT INTO conversations (id, agent, created_at, updated_at, status, model) VALUES ('cur1', 'cursor', '2024-01-01', '2024-01-01', 'completed', 'gpt-4')",
+            [],
+        ).unwrap();
+        conn.execute(
+            "INSERT INTO messages (id, conversation_id, role, created_at, content) VALUES ('cur_m1', 'cur1', 'user', '2024-01-01', 'hey')",
+            [],
+        ).unwrap();
+        conn.execute(
+            "INSERT INTO messages (id, conversation_id, role, created_at, content) VALUES ('cur_m2', 'cur1', 'assistant', '2024-01-01', 'yo')",
+            [],
+        ).unwrap();
+        conn.execute(
+            "INSERT INTO tool_calls (id, message_id, conversation_id, name, created_at) VALUES ('cur_tc1', 'cur_m2', 'cur1', 'edit_file', '2024-01-01')",
+            [],
+        ).unwrap();
+        conn.execute(
+            "INSERT INTO token_usage (id, conversation_id, message_id, model, input_tokens, output_tokens, created_at) VALUES ('cur_tu1', 'cur1', 'cur_m2', 'gpt-4', 200, 100, '2024-01-01')",
+            [],
+        ).unwrap();
+        conn.execute(
+            "INSERT INTO plans (id, conversation_id, source_message_id, title, total_steps, created_at) VALUES ('cur_p1', 'cur1', 'cur_m2', 'Plan B', 3, '2024-01-01')",
+            [],
+        ).unwrap();
+        conn.execute(
+            "INSERT INTO plan_steps (id, plan_id, step_number, content, created_at) VALUES ('cur_ps1', 'cur_p1', 1, 'Step X', '2024-01-01')",
+            [],
+        ).unwrap();
+        conn.execute(
+            "INSERT INTO compaction_events (id, conversation_id, timestamp, created_at) VALUES ('cur_ce1', 'cur1', '2024-01-01', '2024-01-01')",
+            [],
+        ).unwrap();
+
+        // Insert ingested files: one .vscdb (cursor) and one .jsonl (claude)
+        conn.execute(
+            "INSERT INTO ingested_files (file_path, mtime_ms, size, ingested_at) VALUES ('/path/to/state.vscdb', 1000, 5000, '2024-01-01')",
+            [],
+        ).unwrap();
+        conn.execute(
+            "INSERT INTO ingested_files (file_path, mtime_ms, size, ingested_at) VALUES ('/path/to/conv.jsonl', 2000, 3000, '2024-01-01')",
+            [],
+        ).unwrap();
+
+        // Run the purge
+        let purged = purge_cursor_data(&conn);
+        assert!(purged > 0, "Should have purged some rows");
+
+        // Assert: zero cursor conversations
+        let cursor_count: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM conversations WHERE agent = 'cursor'", [], |row| row.get(0)
+        ).unwrap();
+        assert_eq!(cursor_count, 0, "All cursor conversations should be deleted");
+
+        // Assert: cursor child records gone
+        let cursor_msgs: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM messages WHERE conversation_id = 'cur1'", [], |row| row.get(0)
+        ).unwrap();
+        assert_eq!(cursor_msgs, 0);
+
+        let cursor_tcs: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM tool_calls WHERE conversation_id = 'cur1'", [], |row| row.get(0)
+        ).unwrap();
+        assert_eq!(cursor_tcs, 0);
+
+        let cursor_tu: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM token_usage WHERE conversation_id = 'cur1'", [], |row| row.get(0)
+        ).unwrap();
+        assert_eq!(cursor_tu, 0);
+
+        let cursor_plans: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM plans WHERE conversation_id = 'cur1'", [], |row| row.get(0)
+        ).unwrap();
+        assert_eq!(cursor_plans, 0);
+
+        let cursor_steps: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM plan_steps WHERE plan_id = 'cur_p1'", [], |row| row.get(0)
+        ).unwrap();
+        assert_eq!(cursor_steps, 0);
+
+        let cursor_ce: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM compaction_events WHERE conversation_id = 'cur1'", [], |row| row.get(0)
+        ).unwrap();
+        assert_eq!(cursor_ce, 0);
+
+        // Assert: .vscdb ingested file gone
+        let vscdb_count: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM ingested_files WHERE file_path LIKE '%.vscdb'", [], |row| row.get(0)
+        ).unwrap();
+        assert_eq!(vscdb_count, 0);
+
+        // Assert: Claude Code conversation and ALL its child records still intact
+        let cc_conv: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM conversations WHERE id = 'cc1'", [], |row| row.get(0)
+        ).unwrap();
+        assert_eq!(cc_conv, 1, "Claude Code conversation should be untouched");
+
+        let cc_msgs: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM messages WHERE conversation_id = 'cc1'", [], |row| row.get(0)
+        ).unwrap();
+        assert_eq!(cc_msgs, 2);
+
+        let cc_tcs: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM tool_calls WHERE conversation_id = 'cc1'", [], |row| row.get(0)
+        ).unwrap();
+        assert_eq!(cc_tcs, 1);
+
+        let cc_tu: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM token_usage WHERE conversation_id = 'cc1'", [], |row| row.get(0)
+        ).unwrap();
+        assert_eq!(cc_tu, 1);
+
+        let cc_plans: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM plans WHERE conversation_id = 'cc1'", [], |row| row.get(0)
+        ).unwrap();
+        assert_eq!(cc_plans, 1);
+
+        let cc_steps: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM plan_steps WHERE plan_id = 'cc_p1'", [], |row| row.get(0)
+        ).unwrap();
+        assert_eq!(cc_steps, 1);
+
+        let cc_ce: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM compaction_events WHERE conversation_id = 'cc1'", [], |row| row.get(0)
+        ).unwrap();
+        assert_eq!(cc_ce, 1);
+
+        // Assert: .jsonl ingested file still intact
+        let jsonl_count: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM ingested_files WHERE file_path LIKE '%.jsonl'", [], |row| row.get(0)
+        ).unwrap();
+        assert_eq!(jsonl_count, 1);
+
+        // Idempotent: second call returns 0
+        let purged2 = purge_cursor_data(&conn);
+        assert_eq!(purged2, 0, "Second call should be idempotent");
+    }
+
+    #[test]
     fn stale_links_cleared_once() {
         let conn = create_test_db();
         let cleared1 = clear_stale_subagent_links(&conn);

@@ -107,7 +107,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 41: Cursor Data Migration** — Startup migration to delete all Cursor conversations and related records from SQLite (completed 2026-03-27)
 - [x] **Phase 42: Ingestion Pipeline Removal** — Remove Cursor parser, normalizer, file discovery, pipeline integration, and data migrations (completed 2026-03-27)
-- [ ] **Phase 43: Watcher & Pricing Cleanup** — Remove Cursor from AgentKind enum, vscdb file detection, debounce timer, and model pricing
+- [x] **Phase 43: Watcher & Pricing Cleanup** — Remove Cursor from AgentKind enum, vscdb file detection, debounce timer, and model pricing (completed 2026-03-27)
 - [ ] **Phase 44: Settings Removal** — Remove Cursor fields from DB schema, settings API, validation logic, and Settings page UI
 - [ ] **Phase 45: Frontend Removal** — Remove Cursor from agent constants, AgentsPage, comparison composable, and settings composable
 - [ ] **Phase 46: Architecture Verification** — Verify generic agent schema survives and analytics queries handle single-agent gracefully
@@ -137,7 +137,7 @@ Plans:
   4. The project compiles with zero errors and zero warnings related to missing Cursor modules
 **Plans:** 1/1 plans complete
 Plans:
-- [ ] 42-01-PLAN.md — Delete Cursor modules and remove Cursor code from pipeline and migrations
+- [x] 42-01-PLAN.md — Delete Cursor modules and remove Cursor code from pipeline and migrations
 
 ### Phase 43: Watcher & Pricing Cleanup
 **Goal**: The file watcher only watches for Claude Code logs, and pricing tables contain no Cursor/OpenAI model entries
@@ -147,7 +147,9 @@ Plans:
   1. The AgentKind enum has no Cursor variant
   2. The file watcher does not scan for vscdb files or maintain a Cursor-specific debounce timer
   3. MODEL_PRICING contains no Cursor-specific model aliases or OpenAI model entries
-**Plans:** [to be planned]
+**Plans:** 1/1 plans complete
+Plans:
+- [ ] 43-01-PLAN.md — Remove Cursor from watcher (AgentKind, vscdb, debounce) and pricing table
 
 ### Phase 44: Settings Removal
 **Goal**: No Cursor configuration exists in the database schema, settings API, or Settings page
@@ -230,8 +232,8 @@ Phases execute in numeric order: 41 -> 42 -> 43 -> 44 -> 45 -> 46
 | 39. Ingestion Engine | v3.0 | 4/4 | Complete | 2026-03-11 |
 | 40. File Watcher + Desktop Chrome | v3.0 | 3/3 | Complete | 2026-03-11 |
 | 41. Cursor Data Migration | v3.1 | 1/1 | Complete | 2026-03-27 |
-| 42. Ingestion Pipeline Removal | 1/1 | Complete   | 2026-03-27 | - |
-| 43. Watcher & Pricing Cleanup | v3.1 | 0/0 | Not started | - |
+| 42. Ingestion Pipeline Removal | v3.1 | 1/1 | Complete | 2026-03-27 |
+| 43. Watcher & Pricing Cleanup | 1/1 | Complete   | 2026-03-27 | - |
 | 44. Settings Removal | v3.1 | 0/0 | Not started | - |
 | 45. Frontend Removal | v3.1 | 0/0 | Not started | - |
 | 46. Architecture Verification | v3.1 | 0/0 | Not started | - |

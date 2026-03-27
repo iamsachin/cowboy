@@ -17,8 +17,8 @@ Requirements for removing Cursor support. Each maps to roadmap phases.
 
 ### Watcher
 
-- [ ] **WATCH-01**: Cursor variant removed from AgentKind enum
-- [ ] **WATCH-02**: vscdb file detection and Cursor debounce timer removed from watcher
+- [x] **WATCH-01**: Cursor variant removed from AgentKind enum
+- [x] **WATCH-02**: vscdb file detection and Cursor debounce timer removed from watcher
 
 ### Settings
 
@@ -35,7 +35,7 @@ Requirements for removing Cursor support. Each maps to roadmap phases.
 
 ### Pricing
 
-- [ ] **PRICE-01**: Cursor-specific model aliases and OpenAI model pricing removed
+- [x] **PRICE-01**: Cursor-specific model aliases and OpenAI model pricing removed
 
 ### Data
 
@@ -70,9 +70,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ING-03 | Phase 42 | Complete |
 | ING-04 | Phase 42 | Complete |
 | ING-05 | Phase 42 | Complete |
-| WATCH-01 | Phase 43 | Pending |
-| WATCH-02 | Phase 43 | Pending |
-| PRICE-01 | Phase 43 | Pending |
+| WATCH-01 | Phase 43 | Complete |
+| WATCH-02 | Phase 43 | Complete |
+| PRICE-01 | Phase 43 | Complete |
 | SET-01 | Phase 44 | Pending |
 | SET-02 | Phase 44 | Pending |
 | SET-03 | Phase 44 | Pending |

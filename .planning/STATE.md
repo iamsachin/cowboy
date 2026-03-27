@@ -4,8 +4,8 @@ milestone: v3.1
 milestone_name: Remove Cursor Support
 status: completed
 stopped_at: Completed 42-01-PLAN.md
-last_updated: "2026-03-27T21:03:21.209Z"
-last_activity: 2026-03-28 — Completed Phase 42 Plan 01 (Ingestion Pipeline Removal)
+last_updated: "2026-03-27T21:06:47.691Z"
+last_activity: 2026-03-28 — Completed Phase 41 Plan 01 (Cursor Data Migration)
 progress:
   total_phases: 6
   completed_phases: 2
@@ -20,16 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 42 — Ingestion Pipeline Removal (v3.1 Remove Cursor Support)
+**Current focus:** Phase 43 — Watcher Pricing Cleanup (v3.1 Remove Cursor Support)
 
 ## Current Position
 
-Phase: 42 of 46 (Ingestion Pipeline Removal) -- COMPLETE
+Phase: 43 of 46 (Watcher Pricing Cleanup) -- COMPLETE
 Plan: 1 of 1 in current phase
-Status: Phase 42 complete, ready for Phase 43
-Last activity: 2026-03-28 — Completed Phase 41 Plan 01 (Cursor Data Migration)
+Status: Phase 43 complete, ready for Phase 44
+Last activity: 2026-03-27 — Completed Phase 43 Plan 01 (Watcher Pricing Cleanup)
 
-Progress (v3.1): [███████░░░░░░░░░░░░░] 33% (2/6 phases)
+Progress (v3.1): [██████████░░░░░░░░░░] 50% (3/6 phases)
 
 ## Performance Metrics
 
@@ -41,8 +41,8 @@ Progress (v3.1): [███████░░░░░░░░░░░░░] 
 - v2.0: 13 plans, 6 phases
 - v2.1: 10 plans, 5 phases
 - v3.0: 15 plans, 5 phases
-- v3.1: 2 plans, 2 phases (in progress)
-- Total plans completed: 99
+- v3.1: 3 plans, 3 phases (in progress)
+- Total plans completed: 100
 
 ## Accumulated Context
 
@@ -57,6 +57,8 @@ Recent decisions affecting current work:
 - [41-01]: Transaction wraps all deletes for atomicity
 - [42-01]: Preserved purge_cursor_data() in migration.rs as the Phase 41 data cleanup migration
 - [42-01]: Removed Cursor 'default' model fix from fix_conversation_models since cursor data is purged
+- [43-01]: Removed AgentKind enum entirely; classify_event returns bool for JSONL files
+- [43-01]: Removed debounce_key/debounce_duration methods; hardcoded 1s duration inline
 
 ### Pending Todos
 
@@ -94,6 +96,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T20:59:29Z
-Stopped at: Completed 42-01-PLAN.md
-Resume file: .planning/phases/42-ingestion-pipeline-removal/42-01-SUMMARY.md
+Last session: 2026-03-27T21:17:27Z
+Stopped at: Completed 43-01-PLAN.md
+Resume file: .planning/phases/43-watcher-pricing-cleanup/43-01-SUMMARY.md

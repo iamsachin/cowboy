@@ -241,9 +241,7 @@ async fn update_agent(
         match crate::watcher::start_watcher(
             state.clone(),
             Some(settings.claude_code_path.clone()),
-            Some(settings.cursor_path.clone()),
             settings.claude_code_enabled,
-            settings.cursor_enabled,
         ) {
             Ok(handle) => {
                 *watcher_lock = Some(handle);

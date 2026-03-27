@@ -67,14 +67,12 @@ pub async fn start(db: Connection) {
             .db
             .call(|conn| {
                 let result = conn.query_row(
-                    "SELECT claude_code_path, claude_code_enabled, cursor_path, cursor_enabled FROM settings WHERE id = 1",
+                    "SELECT claude_code_path, claude_code_enabled FROM settings WHERE id = 1",
                     [],
                     |row| {
                         Ok((
                             row.get::<_, String>(0)?,
                             row.get::<_, i32>(1)? != 0,
-                            row.get::<_, String>(2)?,
-                            row.get::<_, i32>(3)? != 0,
                         ))
                     },
                 );
@@ -87,13 +85,11 @@ pub async fn start(db: Connection) {
             .ok()
             .flatten();
 
-        if let Some((claude_path, claude_enabled, cursor_path, cursor_enabled)) = watcher_settings {
+        if let Some((claude_path, claude_enabled)) = watcher_settings {
             match watcher::start_watcher(
                 state_clone.clone(),
                 Some(claude_path),
-                Some(cursor_path),
                 claude_enabled,
-                cursor_enabled,
             ) {
                 Ok(handle) => {
                     let mut w = state_clone.watcher.lock().await;
@@ -104,7 +100,7 @@ pub async fn start(db: Connection) {
             }
         } else {
             // No settings row yet; start watcher with defaults
-            match watcher::start_watcher(state_clone.clone(), None, None, true, true) {
+            match watcher::start_watcher(state_clone.clone(), None, true) {
                 Ok(handle) => {
                     let mut w = state_clone.watcher.lock().await;
                     *w = Some(handle);

@@ -35,20 +35,6 @@ static MODEL_PRICING: LazyLock<HashMap<&'static str, ModelPricing>> = LazyLock::
     m.insert("claude-3-5-haiku", ModelPricing { input_per_m_tok: 0.80, output_per_m_tok: 4.0, cache_read_per_m_tok: 0.08, cache_creation_per_m_tok: 1.00 });
     m.insert("claude-3-haiku", ModelPricing { input_per_m_tok: 0.25, output_per_m_tok: 1.25, cache_read_per_m_tok: 0.03, cache_creation_per_m_tok: 0.30 });
 
-    // Cursor-specific Claude model aliases
-    m.insert("claude-4.5-sonnet", ModelPricing { input_per_m_tok: 3.0, output_per_m_tok: 15.0, cache_read_per_m_tok: 0.30, cache_creation_per_m_tok: 3.75 });
-    m.insert("claude-4-sonnet", ModelPricing { input_per_m_tok: 3.0, output_per_m_tok: 15.0, cache_read_per_m_tok: 0.30, cache_creation_per_m_tok: 3.75 });
-
-    // OpenAI models (for Cursor users)
-    m.insert("gpt-4o", ModelPricing { input_per_m_tok: 2.50, output_per_m_tok: 10.0, cache_read_per_m_tok: 1.25, cache_creation_per_m_tok: 2.50 });
-    m.insert("gpt-4o-mini", ModelPricing { input_per_m_tok: 0.15, output_per_m_tok: 0.60, cache_read_per_m_tok: 0.075, cache_creation_per_m_tok: 0.15 });
-    m.insert("gpt-4-turbo", ModelPricing { input_per_m_tok: 10.0, output_per_m_tok: 30.0, cache_read_per_m_tok: 5.0, cache_creation_per_m_tok: 10.0 });
-    m.insert("o1", ModelPricing { input_per_m_tok: 15.0, output_per_m_tok: 60.0, cache_read_per_m_tok: 7.50, cache_creation_per_m_tok: 15.0 });
-    m.insert("o1-mini", ModelPricing { input_per_m_tok: 1.10, output_per_m_tok: 4.40, cache_read_per_m_tok: 0.55, cache_creation_per_m_tok: 1.10 });
-    m.insert("o3", ModelPricing { input_per_m_tok: 2.0, output_per_m_tok: 8.0, cache_read_per_m_tok: 1.0, cache_creation_per_m_tok: 2.0 });
-    m.insert("o3-mini", ModelPricing { input_per_m_tok: 1.10, output_per_m_tok: 4.40, cache_read_per_m_tok: 0.55, cache_creation_per_m_tok: 1.10 });
-    m.insert("o4-mini", ModelPricing { input_per_m_tok: 1.10, output_per_m_tok: 4.40, cache_read_per_m_tok: 0.55, cache_creation_per_m_tok: 1.10 });
-
     m
 });
 

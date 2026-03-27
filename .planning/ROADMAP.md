@@ -124,7 +124,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Claude Code conversations and all their related data remain completely untouched
 **Plans:** 1/1 plans complete
 Plans:
-- [ ] 41-01-PLAN.md — Purge all Cursor data with one-time startup migration
+- [x] 41-01-PLAN.md — Purge all Cursor data with one-time startup migration
 
 ### Phase 42: Ingestion Pipeline Removal
 **Goal**: The Rust ingestion engine contains zero Cursor-specific code — no parser, normalizer, file discovery, or pipeline references
@@ -137,7 +137,7 @@ Plans:
   4. The project compiles with zero errors and zero warnings related to missing Cursor modules
 **Plans:** 1 plan
 Plans:
-- [ ] 41-01-PLAN.md — Purge all Cursor data with one-time startup migration
+- [ ] 42-01-PLAN.md — Delete Cursor modules and remove Cursor code from pipeline and migrations
 
 ### Phase 43: Watcher & Pricing Cleanup
 **Goal**: The file watcher only watches for Claude Code logs, and pricing tables contain no Cursor/OpenAI model entries
@@ -147,9 +147,7 @@ Plans:
   1. The AgentKind enum has no Cursor variant
   2. The file watcher does not scan for vscdb files or maintain a Cursor-specific debounce timer
   3. MODEL_PRICING contains no Cursor-specific model aliases or OpenAI model entries
-**Plans:** 1 plan
-Plans:
-- [ ] 41-01-PLAN.md — Purge all Cursor data with one-time startup migration
+**Plans:** [to be planned]
 
 ### Phase 44: Settings Removal
 **Goal**: No Cursor configuration exists in the database schema, settings API, or Settings page
@@ -159,9 +157,7 @@ Plans:
   1. The settings database schema has no cursor_path, cursor_enabled, or sync_cursor columns
   2. The settings API endpoints neither accept nor return Cursor-related fields
   3. The Settings page UI shows no Cursor path input, enable toggle, or sync checkbox
-**Plans:** 1 plan
-Plans:
-- [ ] 41-01-PLAN.md — Purge all Cursor data with one-time startup migration
+**Plans:** [to be planned]
 
 ### Phase 45: Frontend Removal
 **Goal**: The frontend has zero Cursor references in agent constants, pages, or composables
@@ -173,9 +169,7 @@ Plans:
   3. The useAgentComparison composable has no Cursor-specific computed properties or data fetching
   4. The useSettings composable has no Cursor-related fields or form bindings
   5. The agent filter dropdown in conversation list contains no Cursor option
-**Plans:** 1 plan
-Plans:
-- [ ] 41-01-PLAN.md — Purge all Cursor data with one-time startup migration
+**Plans:** [to be planned]
 
 ### Phase 46: Architecture Verification
 **Goal**: The application works correctly as a single-agent (Claude Code only) system with no broken queries or empty states
@@ -186,9 +180,7 @@ Plans:
   2. The AgentsPage and comparison views render correctly with only Claude Code data (no empty cards, no JS errors)
   3. Overview dashboard, analytics, and all aggregate queries return correct results with single-agent data
   4. The application compiles cleanly, starts without errors, and all pages load without console errors
-**Plans:** 1 plan
-Plans:
-- [ ] 41-01-PLAN.md — Purge all Cursor data with one-time startup migration
+**Plans:** [to be planned]
 
 ## Progress
 
@@ -237,8 +229,8 @@ Phases execute in numeric order: 41 -> 42 -> 43 -> 44 -> 45 -> 46
 | 38. Settings, Write Endpoints + WebSocket | v3.0 | 3/3 | Complete | 2026-03-11 |
 | 39. Ingestion Engine | v3.0 | 4/4 | Complete | 2026-03-11 |
 | 40. File Watcher + Desktop Chrome | v3.0 | 3/3 | Complete | 2026-03-11 |
-| 41. Cursor Data Migration | 1/1 | Complete   | 2026-03-27 | - |
-| 42. Ingestion Pipeline Removal | v3.1 | 0/0 | Not started | - |
+| 41. Cursor Data Migration | v3.1 | 1/1 | Complete | 2026-03-27 |
+| 42. Ingestion Pipeline Removal | v3.1 | 0/1 | Not started | - |
 | 43. Watcher & Pricing Cleanup | v3.1 | 0/0 | Not started | - |
 | 44. Settings Removal | v3.1 | 0/0 | Not started | - |
 | 45. Frontend Removal | v3.1 | 0/0 | Not started | - |

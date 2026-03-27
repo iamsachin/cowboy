@@ -5,9 +5,6 @@ pub mod compaction_utils;
 pub mod file_discovery;
 pub mod claude_code_parser;
 pub mod normalizer;
-pub mod cursor_file_discovery;
-pub mod cursor_parser;
-pub mod cursor_normalizer;
 pub mod plan_extractor;
 pub mod subagent_linker;
 pub mod subagent_summarizer;
@@ -15,7 +12,6 @@ pub mod snapshot;
 pub mod migration;
 
 use std::collections::HashMap;
-use std::path::Path;
 use std::sync::Arc;
 
 use axum::{extract::State, routing::{get, post}, Json, Router};
@@ -27,9 +23,6 @@ use crate::server::AppState;
 use crate::websocket::broadcast_event;
 
 use self::claude_code_parser::parse_jsonl_file;
-use self::cursor_file_discovery::discover_cursor_db;
-use self::cursor_normalizer::normalize_cursor_conversation;
-use self::cursor_parser::{get_bubbles_for_conversation, parse_cursor_db};
 use self::file_discovery::discover_jsonl_files;
 use self::id_generator::generate_id;
 use self::migration::run_data_quality_migration;
@@ -171,8 +164,6 @@ pub async fn run_ingestion(
             if result.cursor_data_purged > 0
                 || result.titles_fixed > 0
                 || result.models_fixed > 0
-                || result.cursor_projects_fixed > 0
-                || result.cursor_messages_fixed > 0
                 || result.content_fixed > 0
                 || result.stale_links_cleared > 0
             {
@@ -210,15 +201,6 @@ pub async fn run_ingestion(
     // ── Subagent linking ────────────────────────────────────────────────
     if let Err(e) = link_subagents_post_processing(state, &files).await {
         eprintln!("Subagent linking error (non-fatal): {}", e);
-    }
-
-    // ── Cursor ingestion ────────────────────────────────────────────────
-    let cursor_db_path = discover_cursor_db();
-    if let Some(ref db_path) = cursor_db_path {
-        match process_cursor_conversations(state, db_path, &mut stats).await {
-            Ok(events) => all_events.extend(events),
-            Err(e) => eprintln!("Cursor ingestion error: {}", e),
-        }
     }
 
     // ── Mark stale active conversations as completed ────────────────────
@@ -363,70 +345,6 @@ async fn process_claude_code_file(
     stats.tokens_recorded += normalized.token_usage.len();
 
     Ok(events)
-}
-
-// ── Process Cursor conversations ────────────────────────────────────────
-
-async fn process_cursor_conversations(
-    state: &AppState,
-    db_path: &str,
-    stats: &mut IngestionStats,
-) -> Result<Vec<Value>, Box<dyn std::error::Error + Send + Sync>> {
-    let db_path_owned = db_path.to_string();
-    let cursor_convs = tokio::task::spawn_blocking(move || {
-        parse_cursor_db(&db_path_owned)
-    })
-    .await??;
-
-    println!("Discovered {} Cursor conversations", cursor_convs.len());
-
-    let mut all_events = Vec::new();
-
-    for conv in &cursor_convs {
-        let db_path_owned = db_path.to_string();
-        let composer_id = conv.composer_id.clone();
-        let bubbles = tokio::task::spawn_blocking(move || {
-            get_bubbles_for_conversation(&db_path_owned, &composer_id)
-        })
-        .await??;
-
-        let project = conv
-            .workspace_path
-            .as_ref()
-            .and_then(|p| Path::new(p).file_name())
-            .and_then(|n| n.to_str())
-            .unwrap_or("Cursor");
-
-        let normalized = match normalize_cursor_conversation(conv, &bubbles, project) {
-            Some(n) => n,
-            None => continue,
-        };
-
-        let norm_clone = normalized.clone();
-        let events = state
-            .db
-            .call(move |conn| {
-                let snap = snapshot_conversation(conn, &norm_clone.conversation.id);
-                let conv_id = norm_clone.conversation.id.clone();
-
-                let tx = conn.transaction()?;
-                insert_conversation_data(&tx, &norm_clone)?;
-                insert_extracted_plans_sql(&tx, &norm_clone)?;
-                tx.commit()?;
-
-                let events = track_changes(conn, &conv_id, &norm_clone, &snap);
-                Ok::<_, tokio_rusqlite::Error>(events)
-            })
-            .await?;
-
-        all_events.extend(events);
-        stats.conversations_found += 1;
-        stats.messages_parsed += normalized.messages.len();
-        stats.tool_calls_extracted += normalized.tool_calls.len();
-        stats.tokens_recorded += normalized.token_usage.len();
-    }
-
-    Ok(all_events)
 }
 
 // ── Subagent linking post-processing ────────────────────────────────────

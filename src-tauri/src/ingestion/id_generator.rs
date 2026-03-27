@@ -26,15 +26,6 @@ mod tests {
     }
 
     #[test]
-    fn matches_nodejs_cursor() {
-        // node -e "console.log(require('crypto').createHash('sha256').update('cursor::abc-123').digest('hex').substring(0,32))"
-        assert_eq!(
-            generate_id(&["cursor", "abc-123"]),
-            "cd74a83187d138819c244cabc743e51a"
-        );
-    }
-
-    #[test]
     fn single_part() {
         // Should still work with a single part (no :: separator)
         let result = generate_id(&["hello"]);

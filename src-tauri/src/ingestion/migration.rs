@@ -445,99 +445,63 @@ fn fix_duplicate_content_blocks(conn: &Connection) -> usize {
 
 /// One-time migration: purge all Cursor conversations and related records.
 fn purge_cursor_data(conn: &Connection) -> usize {
-    conn.execute_batch(
-        "CREATE TABLE IF NOT EXISTS migrations_applied (
-            name TEXT PRIMARY KEY,
-            applied_at TEXT NOT NULL
-        )",
-    )
-    .unwrap();
+    let mut total = 0usize;
 
-    let already: bool = conn
-        .query_row(
-            "SELECT 1 FROM migrations_applied WHERE name = 'purge_cursor_data_v1'",
+    total += conn
+        .execute(
+            "DELETE FROM plan_steps WHERE plan_id IN (SELECT id FROM plans WHERE conversation_id IN (SELECT id FROM conversations WHERE agent = 'cursor'))",
             [],
-            |_| Ok(true),
         )
-        .unwrap_or(false);
-
-    if already {
-        return 0;
-    }
-
-    // Delete in child-first order within a transaction for atomicity
-    let total: usize = conn
-        .execute_batch("BEGIN TRANSACTION")
-        .map(|_| {
-            let mut total = 0usize;
-
-            total += conn
-                .execute(
-                    "DELETE FROM plan_steps WHERE plan_id IN (SELECT id FROM plans WHERE conversation_id IN (SELECT id FROM conversations WHERE agent = 'cursor'))",
-                    [],
-                )
-                .unwrap_or(0);
-
-            total += conn
-                .execute(
-                    "DELETE FROM plans WHERE conversation_id IN (SELECT id FROM conversations WHERE agent = 'cursor')",
-                    [],
-                )
-                .unwrap_or(0);
-
-            total += conn
-                .execute(
-                    "DELETE FROM compaction_events WHERE conversation_id IN (SELECT id FROM conversations WHERE agent = 'cursor')",
-                    [],
-                )
-                .unwrap_or(0);
-
-            total += conn
-                .execute(
-                    "DELETE FROM token_usage WHERE conversation_id IN (SELECT id FROM conversations WHERE agent = 'cursor')",
-                    [],
-                )
-                .unwrap_or(0);
-
-            total += conn
-                .execute(
-                    "DELETE FROM tool_calls WHERE conversation_id IN (SELECT id FROM conversations WHERE agent = 'cursor')",
-                    [],
-                )
-                .unwrap_or(0);
-
-            total += conn
-                .execute(
-                    "DELETE FROM messages WHERE conversation_id IN (SELECT id FROM conversations WHERE agent = 'cursor')",
-                    [],
-                )
-                .unwrap_or(0);
-
-            total += conn
-                .execute(
-                    "DELETE FROM conversations WHERE agent = 'cursor'",
-                    [],
-                )
-                .unwrap_or(0);
-
-            total += conn
-                .execute(
-                    "DELETE FROM ingested_files WHERE file_path LIKE '%.vscdb'",
-                    [],
-                )
-                .unwrap_or(0);
-
-            conn.execute_batch("COMMIT").unwrap();
-            total
-        })
         .unwrap_or(0);
 
-    let now = chrono::Utc::now().to_rfc3339();
-    conn.execute(
-        "INSERT INTO migrations_applied (name, applied_at) VALUES ('purge_cursor_data_v1', ?1)",
-        rusqlite::params![now],
-    )
-    .unwrap();
+    total += conn
+        .execute(
+            "DELETE FROM plans WHERE conversation_id IN (SELECT id FROM conversations WHERE agent = 'cursor')",
+            [],
+        )
+        .unwrap_or(0);
+
+    total += conn
+        .execute(
+            "DELETE FROM compaction_events WHERE conversation_id IN (SELECT id FROM conversations WHERE agent = 'cursor')",
+            [],
+        )
+        .unwrap_or(0);
+
+    total += conn
+        .execute(
+            "DELETE FROM token_usage WHERE conversation_id IN (SELECT id FROM conversations WHERE agent = 'cursor')",
+            [],
+        )
+        .unwrap_or(0);
+
+    total += conn
+        .execute(
+            "DELETE FROM tool_calls WHERE conversation_id IN (SELECT id FROM conversations WHERE agent = 'cursor')",
+            [],
+        )
+        .unwrap_or(0);
+
+    total += conn
+        .execute(
+            "DELETE FROM messages WHERE conversation_id IN (SELECT id FROM conversations WHERE agent = 'cursor')",
+            [],
+        )
+        .unwrap_or(0);
+
+    total += conn
+        .execute(
+            "DELETE FROM conversations WHERE agent = 'cursor'",
+            [],
+        )
+        .unwrap_or(0);
+
+    total += conn
+        .execute(
+            "DELETE FROM ingested_files WHERE file_path LIKE '%.vscdb'",
+            [],
+        )
+        .unwrap_or(0);
 
     total
 }
@@ -801,9 +765,9 @@ mod tests {
         ).unwrap();
         assert_eq!(jsonl_count, 1);
 
-        // Idempotent: second call returns 0
+        // Second call returns 0 (no cursor data left)
         let purged2 = purge_cursor_data(&conn);
-        assert_eq!(purged2, 0, "Second call should be idempotent");
+        assert_eq!(purged2, 0, "No cursor data left to purge");
     }
 
     #[test]

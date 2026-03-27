@@ -3,9 +3,6 @@ use std::sync::LazyLock;
 use regex::Regex;
 use tokio_rusqlite::rusqlite::{self, Connection};
 
-use super::cursor_file_discovery::discover_cursor_db;
-use super::cursor_parser::{get_bubbles_for_conversation, parse_cursor_db};
-use super::id_generator::generate_id;
 use super::title_utils::should_skip_for_title;
 
 /// Result of running all data quality migrations.
@@ -14,8 +11,6 @@ pub struct MigrationResult {
     pub cursor_data_purged: usize,
     pub titles_fixed: usize,
     pub models_fixed: usize,
-    pub cursor_projects_fixed: usize,
-    pub cursor_messages_fixed: usize,
     pub content_fixed: usize,
     pub stale_links_cleared: usize,
 }
@@ -53,10 +48,6 @@ pub fn run_data_quality_migration(conn: &Connection) -> MigrationResult {
 
     let titles_fixed = fix_conversation_titles(conn);
     let models_fixed = fix_conversation_models(conn);
-
-    let cursor_db_path = discover_cursor_db();
-    let cursor_projects_fixed = fix_cursor_projects(conn, cursor_db_path.as_deref());
-    let cursor_messages_fixed = fix_cursor_message_content(conn, cursor_db_path.as_deref());
     let content_fixed = fix_duplicate_content_blocks(conn);
     let stale_links_cleared = clear_stale_subagent_links(conn);
 
@@ -64,8 +55,6 @@ pub fn run_data_quality_migration(conn: &Connection) -> MigrationResult {
         cursor_data_purged,
         titles_fixed,
         models_fixed,
-        cursor_projects_fixed,
-        cursor_messages_fixed,
         content_fixed,
         stale_links_cleared,
     }
@@ -229,179 +218,6 @@ fn fix_conversation_models(conn: &Connection) -> usize {
             .unwrap();
             fixed += 1;
         }
-    }
-
-    // Fix Cursor conversations with "default" model
-    let mut default_stmt = conn
-        .prepare("SELECT id FROM conversations WHERE model = 'default' AND agent = 'cursor'")
-        .unwrap();
-    let default_convs: Vec<String> = default_stmt
-        .query_map([], |row| row.get::<_, String>(0))
-        .unwrap()
-        .filter_map(|r| r.ok())
-        .collect();
-
-    for conv_id in &default_convs {
-        let resolved: String = conn
-            .query_row(
-                "SELECT model FROM messages WHERE conversation_id = ?1 AND role = 'assistant' AND model IS NOT NULL AND model != 'default' GROUP BY model ORDER BY count(*) DESC LIMIT 1",
-                rusqlite::params![conv_id],
-                |row| row.get(0),
-            )
-            .unwrap_or_else(|_| "unknown".to_string());
-
-        conn.execute(
-            "UPDATE conversations SET model = ?1 WHERE id = ?2",
-            rusqlite::params![resolved, conv_id],
-        )
-        .unwrap();
-
-        // Also fix per-message "default" model
-        conn.execute(
-            "UPDATE messages SET model = 'unknown' WHERE conversation_id = ?1 AND model = 'default'",
-            rusqlite::params![conv_id],
-        )
-        .unwrap();
-
-        fixed += 1;
-    }
-
-    fixed
-}
-
-/// Fix cursor conversations with hardcoded 'Cursor' project name.
-fn fix_cursor_projects(conn: &Connection, cursor_db_path: Option<&str>) -> usize {
-    let cursor_db_path = match cursor_db_path {
-        Some(p) => p,
-        None => return 0,
-    };
-
-    let mut stmt = conn
-        .prepare("SELECT id FROM conversations WHERE agent = 'cursor' AND project = 'Cursor'")
-        .unwrap();
-    let cursor_convs: Vec<String> = stmt
-        .query_map([], |row| row.get::<_, String>(0))
-        .unwrap()
-        .filter_map(|r| r.ok())
-        .collect();
-
-    if cursor_convs.is_empty() {
-        return 0;
-    }
-
-    let cursor_data = match parse_cursor_db(cursor_db_path) {
-        Ok(data) => data,
-        Err(_) => return 0,
-    };
-
-    // Build map: generateId('cursor', composerId) -> workspacePath
-    let mut id_to_workspace = std::collections::HashMap::new();
-    for conv in &cursor_data {
-        if let Some(ref ws_path) = conv.workspace_path {
-            let id = generate_id(&["cursor", &conv.composer_id]);
-            id_to_workspace.insert(id, ws_path.clone());
-        }
-    }
-
-    let mut fixed = 0;
-
-    for conv_id in &cursor_convs {
-        if let Some(ws_path) = id_to_workspace.get(conv_id) {
-            let project_name = std::path::Path::new(ws_path)
-                .file_name()
-                .and_then(|n| n.to_str())
-                .unwrap_or("");
-            if !project_name.is_empty() {
-                conn.execute(
-                    "UPDATE conversations SET project = ?1 WHERE id = ?2",
-                    rusqlite::params![project_name, conv_id],
-                )
-                .unwrap();
-                fixed += 1;
-            }
-        }
-    }
-
-    fixed
-}
-
-/// Fix assistant messages with null/empty content in cursor conversations.
-fn fix_cursor_message_content(conn: &Connection, cursor_db_path: Option<&str>) -> usize {
-    let cursor_conv_ids: Vec<String> = {
-        let mut stmt = conn
-            .prepare("SELECT id FROM conversations WHERE agent = 'cursor'")
-            .unwrap();
-        stmt.query_map([], |row| row.get::<_, String>(0))
-            .unwrap()
-            .filter_map(|r| r.ok())
-            .collect()
-    };
-
-    if cursor_conv_ids.is_empty() {
-        return 0;
-    }
-
-    // Build IN clause
-    let placeholders: Vec<String> = cursor_conv_ids.iter().map(|id| format!("'{}'", id.replace('\'', "''"))).collect();
-    let in_clause = placeholders.join(",");
-
-    let query = format!(
-        "SELECT id, conversation_id FROM messages WHERE role = 'assistant' AND (content IS NULL OR content = '') AND conversation_id IN ({})",
-        in_clause
-    );
-
-    let empty_messages: Vec<(String, String)> = {
-        let mut stmt = conn.prepare(&query).unwrap();
-        stmt.query_map([], |row| {
-            Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
-        })
-        .unwrap()
-        .filter_map(|r| r.ok())
-        .collect()
-    };
-
-    if empty_messages.is_empty() {
-        return 0;
-    }
-
-    // Try to get cursor data for re-deriving content
-    let cursor_data = cursor_db_path.and_then(|p| parse_cursor_db(p).ok());
-
-    let mut conv_id_to_composer_id = std::collections::HashMap::new();
-    if let Some(ref data) = cursor_data {
-        for conv in data {
-            let id = generate_id(&["cursor", &conv.composer_id]);
-            conv_id_to_composer_id.insert(id, conv.composer_id.clone());
-        }
-    }
-
-    let mut fixed = 0;
-
-    for (msg_id, conv_id) in &empty_messages {
-        let mut content: Option<String> = None;
-
-        // Try to re-derive from Cursor DB
-        if let (Some(db_path), Some(ref data)) = (cursor_db_path, &cursor_data) {
-            if let Some(composer_id) = conv_id_to_composer_id.get(conv_id) {
-                if let Ok(bubbles) = get_bubbles_for_conversation(db_path, composer_id) {
-                    for bubble in &bubbles {
-                        let candidate_id = generate_id(&[conv_id, &bubble.bubble_id]);
-                        if candidate_id == *msg_id && !bubble.text.trim().is_empty() {
-                            content = Some(bubble.text.clone());
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        let content = content.unwrap_or_else(|| "Executed tool call".to_string());
-        conn.execute(
-            "UPDATE messages SET content = ?1 WHERE id = ?2",
-            rusqlite::params![content, msg_id],
-        )
-        .unwrap();
-        fixed += 1;
     }
 
     fixed

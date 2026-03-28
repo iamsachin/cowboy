@@ -43,8 +43,8 @@ Requirements for removing Cursor support. Each maps to roadmap phases.
 
 ### Architecture
 
-- [ ] **ARCH-01**: Agent field in conversations table remains generic (not hardcoded to single agent)
-- [ ] **ARCH-02**: Analytics queries handle single-agent gracefully (no empty comparison errors)
+- [x] **ARCH-01**: Agent field in conversations table remains generic (not hardcoded to single agent)
+- [x] **ARCH-02**: Analytics queries handle single-agent gracefully (no empty comparison errors)
 
 ## Future Requirements
 
@@ -80,8 +80,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UI-02 | Phase 45 | Complete |
 | UI-03 | Phase 45 | Complete |
 | UI-04 | Phase 45 | Complete |
-| ARCH-01 | Phase 46 | Pending |
-| ARCH-02 | Phase 46 | Pending |
+| ARCH-01 | Phase 46 | Complete |
+| ARCH-02 | Phase 46 | Complete |
 
 **Coverage:**
 - v3.1 requirements: 18 total

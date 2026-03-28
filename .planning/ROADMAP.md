@@ -110,7 +110,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 43: Watcher & Pricing Cleanup** — Remove Cursor from AgentKind enum, vscdb file detection, debounce timer, and model pricing (completed 2026-03-27)
 - [x] **Phase 44: Settings Removal** — Remove Cursor fields from DB schema, settings API, validation logic, and Settings page UI (completed 2026-03-28)
 - [x] **Phase 45: Frontend Removal** — Remove Cursor from agent constants, AgentsPage, comparison composable, and settings composable (completed 2026-03-28)
-- [ ] **Phase 46: Architecture Verification** — Verify generic agent schema survives and analytics queries handle single-agent gracefully
+- [x] **Phase 46: Architecture Verification** — Verify generic agent schema survives and analytics queries handle single-agent gracefully (completed 2026-03-28)
 
 ## Phase Details
 
@@ -186,7 +186,7 @@ Plans:
   2. The AgentsPage and comparison views render correctly with only Claude Code data (no empty cards, no JS errors)
   3. Overview dashboard, analytics, and all aggregate queries return correct results with single-agent data
   4. The application compiles cleanly, starts without errors, and all pages load without console errors
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
 - [ ] 46-01-PLAN.md — Verify single-agent architecture and analytics correctness
 
@@ -241,5 +241,5 @@ Phases execute in numeric order: 41 -> 42 -> 43 -> 44 -> 45 -> 46
 | 42. Ingestion Pipeline Removal | v3.1 | 1/1 | Complete | 2026-03-27 |
 | 43. Watcher & Pricing Cleanup | v3.1 | 1/1 | Complete | 2026-03-27 |
 | 44. Settings Removal | v3.1 | 1/1 | Complete | 2026-03-28 |
-| 45. Frontend Removal | 1/1 | Complete   | 2026-03-28 | - |
-| 46. Architecture Verification | v3.1 | 0/1 | Not started | - |
+| 45. Frontend Removal | 1/1 | Complete    | 2026-03-28 | - |
+| 46. Architecture Verification | 1/1 | Complete   | 2026-03-28 | - |

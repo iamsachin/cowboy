@@ -106,9 +106,10 @@
       <LiveTokenPill :collapsed="collapsed" />
     </div>
 
-    <!-- Connection Status Footer -->
-    <div class="border-t border-base-300" :class="collapsed ? 'flex justify-center' : ''">
-      <ConnectionStatus :collapsed="collapsed" />
+    <!-- Connection Status + Theme Toggle Footer -->
+    <div class="border-t border-base-300 flex items-center" :class="collapsed ? 'flex-col gap-1 py-1' : ''">
+      <ConnectionStatus :collapsed="collapsed" :class="collapsed ? '' : 'flex-1'" />
+      <ThemeToggle :collapsed="collapsed" :class="collapsed ? '' : 'pr-2'" />
     </div>
   </aside>
 </template>
@@ -117,6 +118,7 @@
 import { ref, watch, onUnmounted } from 'vue';
 import ConnectionStatus from './ConnectionStatus.vue';
 import LiveTokenPill from './LiveTokenPill.vue';
+import ThemeToggle from './ThemeToggle.vue';
 import { useAnalytics } from '../composables/useAnalytics';
 import { useTokenRate } from '../composables/useTokenRate';
 import {

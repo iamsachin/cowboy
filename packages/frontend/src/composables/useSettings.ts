@@ -4,8 +4,6 @@ export interface SettingsResponse {
   id: number;
   claudeCodePath: string;
   claudeCodeEnabled: boolean;
-  cursorPath: string;
-  cursorEnabled: boolean;
   syncEnabled: boolean;
   syncUrl: string;
   syncFrequency: number;
@@ -13,7 +11,6 @@ export interface SettingsResponse {
   lastSyncAt: string | null;
   lastSyncError: string | null;
   lastSyncSuccess: boolean | null;
-  syncCursor: string | null;
   serverPort: number;
 }
 
@@ -140,8 +137,6 @@ export function useSettings() {
   async function saveAgentSettings(data: {
     claudeCodePath: string;
     claudeCodeEnabled: boolean;
-    cursorPath: string;
-    cursorEnabled: boolean;
   }): Promise<boolean> {
     saving.value = true;
     try {

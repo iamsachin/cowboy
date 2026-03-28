@@ -46,35 +46,6 @@
             </div>
           </div>
 
-          <!-- Cursor -->
-          <div class="space-y-2 mt-4">
-            <div class="flex items-center gap-3">
-              <input
-                type="checkbox"
-                class="toggle toggle-primary"
-                v-model="form.cursorEnabled"
-              />
-              <span class="font-medium">Cursor</span>
-            </div>
-            <div class="form-control">
-              <input
-                type="text"
-                class="input input-bordered w-full"
-                placeholder="Log directory path"
-                v-model="form.cursorPath"
-                :disabled="!form.cursorEnabled"
-              />
-              <label class="label" v-if="pathValidation['cursor']">
-                <span
-                  class="label-text-alt"
-                  :class="pathValidation['cursor'].valid ? 'text-success' : 'text-error'"
-                >
-                  {{ pathValidation['cursor'].message }}
-                </span>
-              </label>
-            </div>
-          </div>
-
           <div class="card-actions justify-end mt-4">
             <button
               class="btn btn-primary"
@@ -170,7 +141,7 @@
 
           <div v-if="dbStats && Object.keys(dbStats.byAgent).length > 0" class="flex flex-wrap gap-3 text-sm opacity-70 mt-1">
             <span v-for="(count, agent) in dbStats.byAgent" :key="agent">
-              {{ agent === 'claude-code' ? 'Claude Code' : agent === 'cursor' ? 'Cursor' : agent }}: {{ count }} conversations
+              {{ agent === 'claude-code' ? 'Claude Code' : agent }}: {{ count }} conversations
             </span>
           </div>
 
@@ -223,7 +194,7 @@
               class="flex items-center justify-between bg-base-300 rounded-lg px-4 py-2"
             >
               <span class="text-sm">
-                {{ agent === 'claude-code' ? 'Claude Code' : agent === 'cursor' ? 'Cursor' : agent }}
+                {{ agent === 'claude-code' ? 'Claude Code' : agent }}
                 <span class="opacity-60">-- {{ count }} conversations</span>
               </span>
               <div class="flex gap-1">
@@ -558,8 +529,6 @@ async function handleClearAgent(agent: string) {
 const form = ref({
   claudeCodePath: '',
   claudeCodeEnabled: true,
-  cursorPath: '',
-  cursorEnabled: false,
   syncEnabled: false,
   syncUrl: '',
   syncFrequency: 300,
@@ -584,8 +553,6 @@ watch(settings, (val) => {
     form.value = {
       claudeCodePath: val.claudeCodePath,
       claudeCodeEnabled: val.claudeCodeEnabled,
-      cursorPath: val.cursorPath,
-      cursorEnabled: val.cursorEnabled,
       syncEnabled: val.syncEnabled,
       syncUrl: val.syncUrl,
       syncFrequency: val.syncFrequency,
@@ -597,7 +564,6 @@ watch(settings, (val) => {
 
 // Debounced path validation
 let claudeCodeDebounce: ReturnType<typeof setTimeout> | null = null;
-let cursorDebounce: ReturnType<typeof setTimeout> | null = null;
 
 watch(() => form.value.claudeCodePath, (val) => {
   if (claudeCodeDebounce) clearTimeout(claudeCodeDebounce);
@@ -607,21 +573,11 @@ watch(() => form.value.claudeCodePath, (val) => {
   }, 500);
 });
 
-watch(() => form.value.cursorPath, (val) => {
-  if (cursorDebounce) clearTimeout(cursorDebounce);
-  if (!val || !form.value.cursorEnabled) return;
-  cursorDebounce = setTimeout(() => {
-    validatePath(val, 'cursor');
-  }, 500);
-});
-
 // Handlers
 async function handleSaveAgent() {
   const ok = await saveAgentSettings({
     claudeCodePath: form.value.claudeCodePath,
     claudeCodeEnabled: form.value.claudeCodeEnabled,
-    cursorPath: form.value.cursorPath,
-    cursorEnabled: form.value.cursorEnabled,
   });
   if (ok) {
     toastSuccess('Agent settings saved');

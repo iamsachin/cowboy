@@ -1,180 +1,75 @@
 <template>
   <div class="p-4 space-y-4">
-    <!-- Tab bar -->
-    <div class="tabs tabs-border tabs-lg mb-4" role="tablist">
-      <button
-        v-for="tab in tabs"
-        :key="tab.id"
-        role="tab"
-        class="tab"
-        :class="{ 'tab-active': activeTab === tab.id }"
-        @click="setTab(tab.id)"
-      >
-        <component :is="tab.icon" class="w-4 h-4 mr-1.5" />
-        {{ tab.label }}
-      </button>
+    <!-- Error alert -->
+    <div v-if="agentError" class="alert alert-error">
+      <span>{{ agentError }}</span>
     </div>
 
-    <!-- Per-agent tab content (Claude Code or Cursor) -->
-    <template v-if="activeTab === 'claude-code' || activeTab === 'cursor'">
-      <!-- Error alert -->
-      <div v-if="agentError" class="alert alert-error">
-        <span>{{ agentError }}</span>
+    <!-- Loading state -->
+    <div v-if="agentLoading && !agentOverview" class="flex justify-center items-center py-16">
+      <span class="loading loading-spinner loading-lg"></span>
+    </div>
+
+    <template v-else>
+      <!-- Header row -->
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <h1 class="text-2xl font-bold">Claude Code</h1>
+        <DateRangeFilter />
       </div>
 
-      <!-- Loading state -->
-      <div v-if="agentLoading && !agentOverview" class="flex justify-center items-center py-16">
-        <span class="loading loading-spinner loading-lg"></span>
+      <!-- KPI Cards Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <KpiCard
+          title="Total Tokens"
+          :value="agentOverview ? formatNumber(agentOverview.totalTokens) : '--'"
+          :description="tokenDescription"
+          :icon="Coins"
+          :trend="agentOverview?.trends.tokensTrend"
+          :trend-label="trendLabel"
+        />
+        <KpiCard
+          title="Estimated Cost"
+          :value="agentOverview ? formatCurrency(agentOverview.estimatedCost) : '$--'"
+          :description="costDescription"
+          :icon="DollarSign"
+          :trend="agentOverview?.trends.costTrend"
+          :trend-label="trendLabel"
+        />
+        <KpiCard
+          title="Conversations"
+          :value="agentOverview ? agentOverview.conversationCount.toString() : '--'"
+          :description="conversationsDescription"
+          :icon="MessageSquare"
+          :trend="agentOverview?.trends.conversationsTrend"
+          :trend-label="trendLabel"
+        />
+        <KpiCard
+          title="Active Days"
+          :value="agentOverview ? agentOverview.activeDays.toString() : '--'"
+          :description="activeDaysDescription"
+          :icon="CalendarDays"
+          :trend="agentOverview?.trends.activeDaysTrend"
+          :trend-label="trendLabel"
+        />
       </div>
 
-      <template v-else>
-        <!-- Header row -->
-        <div class="flex items-center justify-between flex-wrap gap-2">
-          <h1 class="text-2xl font-bold">{{ agentLabel }}</h1>
-          <DateRangeFilter />
-        </div>
-
-        <!-- KPI Cards Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <KpiCard
-            title="Total Tokens"
-            :value="isCursorTokenUnavailable ? 'N/A' : (agentOverview ? formatNumber(agentOverview.totalTokens) : '--')"
-            :description="isCursorTokenUnavailable ? 'Cursor does not expose token usage data' : tokenDescription"
-            :icon="Coins"
-            :trend="isCursorTokenUnavailable ? undefined : agentOverview?.trends.tokensTrend"
-            :trend-label="trendLabel"
-          />
-          <KpiCard
-            title="Estimated Cost"
-            :value="isCursorCostUnavailable ? 'N/A' : (agentOverview ? formatCurrency(agentOverview.estimatedCost) : '$--')"
-            :description="isCursorCostUnavailable ? 'Cursor does not expose cost data' : costDescription"
-            :icon="DollarSign"
-            :trend="isCursorCostUnavailable ? undefined : agentOverview?.trends.costTrend"
-            :trend-label="trendLabel"
-          />
-          <KpiCard
-            title="Conversations"
-            :value="agentOverview ? agentOverview.conversationCount.toString() : '--'"
-            :description="conversationsDescription"
-            :icon="MessageSquare"
-            :trend="agentOverview?.trends.conversationsTrend"
-            :trend-label="trendLabel"
-          />
-          <KpiCard
-            title="Active Days"
-            :value="agentOverview ? agentOverview.activeDays.toString() : '--'"
-            :description="activeDaysDescription"
-            :icon="CalendarDays"
-            :trend="agentOverview?.trends.activeDaysTrend"
-            :trend-label="trendLabel"
-          />
-        </div>
-
-        <!-- Charts Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <TokenChart :data="agentTimeseries" :loading="agentLoading" />
-          <CostChart :data="agentTimeseries" :loading="agentLoading" />
-          <ConversationsChart :data="agentTimeseries" :loading="agentLoading" />
-          <div v-if="isCursorModelDistributionEmpty" class="bg-base-200 rounded-lg p-6 flex items-center justify-center min-h-[200px]">
-            <p class="text-base-content/60 text-sm">Token data not available for Cursor</p>
-          </div>
-          <ModelDistributionChart v-else :data="agentModelDistribution" />
-        </div>
-
-        <!-- Conversation Table -->
-        <ConversationTable :agent="activeTab" />
-      </template>
-    </template>
-
-    <!-- Compare tab content -->
-    <template v-if="activeTab === 'compare'">
-      <!-- Error alert -->
-      <div v-if="compareError" class="alert alert-error">
-        <span>{{ compareError }}</span>
+      <!-- Charts Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <TokenChart :data="agentTimeseries" :loading="agentLoading" />
+        <CostChart :data="agentTimeseries" :loading="agentLoading" />
+        <ConversationsChart :data="agentTimeseries" :loading="agentLoading" />
+        <ModelDistributionChart :data="agentModelDistribution" />
       </div>
 
-      <!-- Loading state -->
-      <div v-if="compareLoading && !claudeCode.overview.value && !cursorData.overview.value" class="flex justify-center items-center py-16">
-        <span class="loading loading-spinner loading-lg"></span>
-      </div>
-
-      <template v-else>
-        <!-- Header row -->
-        <div class="flex items-center justify-between flex-wrap gap-2">
-          <h1 class="text-2xl font-bold">Agent Comparison</h1>
-          <DateRangeFilter />
-        </div>
-
-        <!-- Comparison Cards Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <ComparisonCard
-            title="Total Tokens"
-            :claude-value="claudeCode.overview.value ? formatNumber(claudeCode.overview.value.totalTokens) : '--'"
-            :cursor-value="cursorData.overview.value ? formatNumber(cursorData.overview.value.totalTokens) : '--'"
-            :claude-trend="claudeCode.overview.value?.trends.tokensTrend"
-            :cursor-trend="cursorData.overview.value?.trends.tokensTrend"
-            :icon="Coins"
-          />
-          <ComparisonCard
-            title="Estimated Cost"
-            :claude-value="claudeCode.overview.value ? formatCurrency(claudeCode.overview.value.estimatedCost) : '$--'"
-            :cursor-value="cursorData.overview.value ? formatCurrency(cursorData.overview.value.estimatedCost) : '$--'"
-            :claude-trend="claudeCode.overview.value?.trends.costTrend"
-            :cursor-trend="cursorData.overview.value?.trends.costTrend"
-            :icon="DollarSign"
-          />
-          <ComparisonCard
-            title="Conversations"
-            :claude-value="claudeCode.overview.value ? claudeCode.overview.value.conversationCount.toString() : '--'"
-            :cursor-value="cursorData.overview.value ? cursorData.overview.value.conversationCount.toString() : '--'"
-            :claude-trend="claudeCode.overview.value?.trends.conversationsTrend"
-            :cursor-trend="cursorData.overview.value?.trends.conversationsTrend"
-            :icon="MessageSquare"
-          />
-          <ComparisonCard
-            title="Active Days"
-            :claude-value="claudeCode.overview.value ? claudeCode.overview.value.activeDays.toString() : '--'"
-            :cursor-value="cursorData.overview.value ? cursorData.overview.value.activeDays.toString() : '--'"
-            :claude-trend="claudeCode.overview.value?.trends.activeDaysTrend"
-            :cursor-trend="cursorData.overview.value?.trends.activeDaysTrend"
-            :icon="CalendarDays"
-          />
-        </div>
-
-        <!-- Overlaid Charts Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <AgentOverlayChart
-            title="Token Usage Comparison"
-            metric="tokens"
-            :claude-data="claudeCode.timeseries.value"
-            :cursor-data="cursorData.timeseries.value"
-          />
-          <AgentOverlayChart
-            title="Cost Comparison"
-            metric="cost"
-            :claude-data="claudeCode.timeseries.value"
-            :cursor-data="cursorData.timeseries.value"
-          />
-          <AgentOverlayChart
-            title="Conversation Comparison"
-            metric="conversations"
-            :claude-data="claudeCode.timeseries.value"
-            :cursor-data="cursorData.timeseries.value"
-          />
-          <AgentActivityChart
-            :claude-data="claudeCode.timeseries.value"
-            :cursor-data="cursorData.timeseries.value"
-          />
-        </div>
-      </template>
+      <!-- Conversation Table -->
+      <ConversationTable agent="claude-code" />
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { Coins, DollarSign, MessageSquare, CalendarDays, Terminal, Mouse, GitCompareArrows } from 'lucide-vue-next';
+import { ref, computed } from 'vue';
+import { Coins, DollarSign, MessageSquare, CalendarDays } from 'lucide-vue-next';
 import KpiCard from '../components/KpiCard.vue';
 import DateRangeFilter from '../components/DateRangeFilter.vue';
 import TokenChart from '../components/TokenChart.vue';
@@ -182,34 +77,13 @@ import CostChart from '../components/CostChart.vue';
 import ConversationsChart from '../components/ConversationsChart.vue';
 import ConversationTable from '../components/ConversationTable.vue';
 import ModelDistributionChart from '../components/ModelDistributionChart.vue';
-import ComparisonCard from '../components/ComparisonCard.vue';
-import AgentOverlayChart from '../components/AgentOverlayChart.vue';
-import AgentActivityChart from '../components/AgentActivityChart.vue';
 import { useDateRange } from '../composables/useDateRange';
 import { useAgentAnalytics } from '../composables/useAgentAnalytics';
-import { useAgentComparison } from '../composables/useAgentComparison';
-import { AGENT_LABELS } from '../utils/agent-constants';
-
-const route = useRoute();
-const router = useRouter();
 
 const { preset, isCustom } = useDateRange();
 
-// Tab state from URL query param, default is 'compare'
-const activeTab = computed(() => (route.query.tab as string) || 'compare');
-
-function setTab(tab: string) {
-  router.replace({ query: { ...route.query, tab } });
-}
-
-const tabs = [
-  { id: 'claude-code', label: 'Claude Code', icon: Terminal },
-  { id: 'cursor', label: 'Cursor', icon: Mouse },
-  { id: 'compare', label: 'Compare', icon: GitCompareArrows },
-];
-
-// Per-agent data (used when a per-agent tab is active)
-const agentRef = computed(() => activeTab.value);
+// Always use claude-code agent
+const agentRef = ref('claude-code');
 const {
   overview: agentOverview,
   timeseries: agentTimeseries,
@@ -217,17 +91,6 @@ const {
   loading: agentLoading,
   error: agentError,
 } = useAgentAnalytics(agentRef);
-
-// Comparison data (used when compare tab is active)
-const {
-  claudeCode,
-  cursor: cursorData,
-  loading: compareLoading,
-  error: compareError,
-} = useAgentComparison();
-
-// Agent label
-const agentLabel = computed(() => AGENT_LABELS[activeTab.value] ?? activeTab.value);
 
 // Formatters
 const numberFormatter = new Intl.NumberFormat('en-US');
@@ -245,17 +108,6 @@ function formatNumber(n: number): string {
 function formatCurrency(n: number): string {
   return currencyFormatter.format(n);
 }
-
-// Cursor data unavailability checks
-const isCursorTokenUnavailable = computed(() =>
-  activeTab.value === 'cursor' && agentOverview.value !== null && agentOverview.value.totalTokens === 0
-);
-const isCursorCostUnavailable = computed(() =>
-  activeTab.value === 'cursor' && agentOverview.value !== null && agentOverview.value.estimatedCost === 0
-);
-const isCursorModelDistributionEmpty = computed(() =>
-  activeTab.value === 'cursor' && (!agentModelDistribution.value || agentModelDistribution.value.length === 0)
-);
 
 // Preset label for KPI descriptions
 const presetLabel = computed(() => {

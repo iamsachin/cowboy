@@ -1,7 +1,7 @@
 /**
  * Content sanitizer utility for stripping raw XML tags from conversation display text.
  *
- * User messages from Claude Code and Cursor often contain XML-structured system prompts,
+ * User messages from Claude Code often contain XML-structured system prompts,
  * planning contexts, and command metadata that render as unreadable walls of tagged text.
  * These functions strip those tags at render time to produce clean, readable content.
  */

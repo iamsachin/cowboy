@@ -109,7 +109,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 42: Ingestion Pipeline Removal** — Remove Cursor parser, normalizer, file discovery, pipeline integration, and data migrations (completed 2026-03-27)
 - [x] **Phase 43: Watcher & Pricing Cleanup** — Remove Cursor from AgentKind enum, vscdb file detection, debounce timer, and model pricing (completed 2026-03-27)
 - [x] **Phase 44: Settings Removal** — Remove Cursor fields from DB schema, settings API, validation logic, and Settings page UI (completed 2026-03-28)
-- [ ] **Phase 45: Frontend Removal** — Remove Cursor from agent constants, AgentsPage, comparison composable, and settings composable
+- [x] **Phase 45: Frontend Removal** — Remove Cursor from agent constants, AgentsPage, comparison composable, and settings composable (completed 2026-03-28)
 - [ ] **Phase 46: Architecture Verification** — Verify generic agent schema survives and analytics queries handle single-agent gracefully
 
 ## Phase Details
@@ -149,7 +149,7 @@ Plans:
   3. MODEL_PRICING contains no Cursor-specific model aliases or OpenAI model entries
 **Plans:** 1/1 plans complete
 Plans:
-- [ ] 43-01-PLAN.md — Remove Cursor from watcher (AgentKind, vscdb, debounce) and pricing table
+- [x] 43-01-PLAN.md — Remove Cursor from watcher (AgentKind, vscdb, debounce) and pricing table
 
 ### Phase 44: Settings Removal
 **Goal**: No Cursor configuration exists in the database schema, settings API, or Settings page
@@ -161,7 +161,7 @@ Plans:
   3. The Settings page UI shows no Cursor path input, enable toggle, or sync checkbox
 **Plans:** 1/1 plans complete
 Plans:
-- [ ] 44-01-PLAN.md — Remove Cursor from DB schema, settings API, and Settings page UI
+- [x] 44-01-PLAN.md — Remove Cursor from DB schema, settings API, and Settings page UI
 
 ### Phase 45: Frontend Removal
 **Goal**: The frontend has zero Cursor references in agent constants, pages, or composables
@@ -173,9 +173,9 @@ Plans:
   3. The useAgentComparison composable has no Cursor-specific computed properties or data fetching
   4. The useSettings composable has no Cursor-related fields or form bindings
   5. The agent filter dropdown in conversation list contains no Cursor option
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 44-01-PLAN.md — Remove Cursor from DB schema, settings API, and Settings page UI
+- [ ] 45-01-PLAN.md — Remove Cursor from agent constants, AgentsPage, comparison composable, pricing, and filter dropdowns
 
 ### Phase 46: Architecture Verification
 **Goal**: The application works correctly as a single-agent (Claude Code only) system with no broken queries or empty states
@@ -188,7 +188,7 @@ Plans:
   4. The application compiles cleanly, starts without errors, and all pages load without console errors
 **Plans:** 1 plan
 Plans:
-- [ ] 44-01-PLAN.md — Remove Cursor from DB schema, settings API, and Settings page UI
+- [ ] 46-01-PLAN.md — Verify single-agent architecture and analytics correctness
 
 ## Progress
 
@@ -239,7 +239,7 @@ Phases execute in numeric order: 41 -> 42 -> 43 -> 44 -> 45 -> 46
 | 40. File Watcher + Desktop Chrome | v3.0 | 3/3 | Complete | 2026-03-11 |
 | 41. Cursor Data Migration | v3.1 | 1/1 | Complete | 2026-03-27 |
 | 42. Ingestion Pipeline Removal | v3.1 | 1/1 | Complete | 2026-03-27 |
-| 43. Watcher & Pricing Cleanup | 1/1 | Complete    | 2026-03-27 | - |
-| 44. Settings Removal | 1/1 | Complete   | 2026-03-28 | - |
-| 45. Frontend Removal | v3.1 | 0/0 | Not started | - |
-| 46. Architecture Verification | v3.1 | 0/0 | Not started | - |
+| 43. Watcher & Pricing Cleanup | v3.1 | 1/1 | Complete | 2026-03-27 |
+| 44. Settings Removal | v3.1 | 1/1 | Complete | 2026-03-28 |
+| 45. Frontend Removal | 1/1 | Complete   | 2026-03-28 | - |
+| 46. Architecture Verification | v3.1 | 0/1 | Not started | - |

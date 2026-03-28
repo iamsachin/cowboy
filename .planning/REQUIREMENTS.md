@@ -28,10 +28,10 @@ Requirements for removing Cursor support. Each maps to roadmap phases.
 
 ### Frontend
 
-- [ ] **UI-01**: Cursor removed from agent constants (colors, labels, theme classes, AGENTS array)
-- [ ] **UI-02**: Cursor tab and comparison data removed from AgentsPage
-- [ ] **UI-03**: Cursor-specific computed properties and data fetching removed from useAgentComparison
-- [ ] **UI-04**: Cursor settings fields removed from useSettings composable
+- [x] **UI-01**: Cursor removed from agent constants (colors, labels, theme classes, AGENTS array)
+- [x] **UI-02**: Cursor tab and comparison data removed from AgentsPage
+- [x] **UI-03**: Cursor-specific computed properties and data fetching removed from useAgentComparison
+- [x] **UI-04**: Cursor settings fields removed from useSettings composable
 
 ### Pricing
 
@@ -76,10 +76,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SET-01 | Phase 44 | Complete |
 | SET-02 | Phase 44 | Complete |
 | SET-03 | Phase 44 | Complete |
-| UI-01 | Phase 45 | Pending |
-| UI-02 | Phase 45 | Pending |
-| UI-03 | Phase 45 | Pending |
-| UI-04 | Phase 45 | Pending |
+| UI-01 | Phase 45 | Complete |
+| UI-02 | Phase 45 | Complete |
+| UI-03 | Phase 45 | Complete |
+| UI-04 | Phase 45 | Complete |
 | ARCH-01 | Phase 46 | Pending |
 | ARCH-02 | Phase 46 | Pending |
 

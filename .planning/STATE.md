@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.1
 milestone_name: Remove Cursor Support
 status: completed
-stopped_at: Completed 44-01-PLAN.md
-last_updated: "2026-03-28T09:12:37.061Z"
-last_activity: 2026-03-28 — Completed Phase 44 Plan 01 (Settings Removal)
+stopped_at: Completed 45-01-PLAN.md
+last_updated: "2026-03-28T09:41:59.283Z"
+last_activity: 2026-03-28 — Completed Phase 45 Plan 01 (Frontend Removal)
 progress:
   total_phases: 6
-  completed_phases: 4
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 5
+  total_plans: 5
+  completed_plans: 5
 ---
 
 # Project State
@@ -20,16 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 44 — Settings Removal (v3.1 Remove Cursor Support)
+**Current focus:** Phase 45 — Frontend Removal (v3.1 Remove Cursor Support)
 
 ## Current Position
 
-Phase: 44 of 46 (Settings Removal) -- COMPLETE
+Phase: 45 of 46 (Frontend Removal) -- COMPLETE
 Plan: 1 of 1 in current phase
-Status: Phase 44 complete, ready for Phase 45
-Last activity: 2026-03-28 — Completed Phase 44 Plan 01 (Settings Removal)
+Status: Phase 45 complete, ready for Phase 46
+Last activity: 2026-03-28 — Completed Phase 45 Plan 01 (Frontend Removal)
 
-Progress (v3.1): [█████████████░░░░░░░] 67% (4/6 phases)
+Progress (v3.1): [████████████████░░░░] 83% (5/6 phases)
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Recent decisions affecting current work:
 - [43-01]: Removed debounce_key/debounce_duration methods; hardcoded 1s duration inline
 - [Phase 44]: Used table-recreate migration pattern for SQLite column removal (cursor columns)
 - [Phase 44]: Removed sync_cursor column alongside cursor_path/cursor_enabled -- unused with confusing name
+- [Phase 45]: AgentsPage uses static ref instead of computed from route tab for single-agent simplicity
 
 ### Pending Todos
 
@@ -96,9 +97,10 @@ None.
 | 26 | Fix tool output showing (none) and token display | 2026-03-14 | ac13de7 | [26-fix-tool-output-showing-none-show-last-a](./quick/26-fix-tool-output-showing-none-show-last-a/) |
 | 27 | Fix token display, conversation title, and timeline scroll | 2026-03-14 | 84b3c5d | [27-fix-output-token-count-conversation-titl](./quick/27-fix-output-token-count-conversation-titl/) |
 | Phase 44 P01 | 3min | 2 tasks | 5 files |
+| Phase 45-frontend-removal P01 | 2min | 2 tasks | 12 files |
 
 ## Session Continuity
 
-Last session: 2026-03-28T09:12:37.058Z
-Stopped at: Completed 44-01-PLAN.md
+Last session: 2026-03-28T09:41:59.280Z
+Stopped at: Completed 45-01-PLAN.md
 Resume file: None

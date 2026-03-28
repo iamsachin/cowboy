@@ -11,7 +11,7 @@
   <!-- Main app once backend is ready -->
   <template v-else>
     <DashboardLayout>
-      <RouterView />
+      <RouterView :key="$route.fullPath" />
     </DashboardLayout>
     <ToastContainer />
   </template>

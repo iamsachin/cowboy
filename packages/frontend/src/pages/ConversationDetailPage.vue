@@ -52,6 +52,16 @@
           <h1 class="text-xl font-bold mb-3 flex items-start gap-2">
             <span class="break-words min-w-0">{{ displayTitle }}</span>
             <span v-if="data.conversation.isActive" class="pulse-dot inline-block"></span>
+            <div class="dropdown dropdown-end">
+              <button tabindex="0" class="btn btn-ghost btn-xs tooltip tooltip-bottom" data-tip="Export conversation">
+                <Download class="w-4 h-4" />
+              </button>
+              <ul tabindex="0" class="dropdown-content menu bg-base-200 rounded-box z-10 w-40 p-2 shadow">
+                <li><a @click="handleExportMarkdown">Markdown</a></li>
+                <li><a @click="handleExportJson">JSON</a></li>
+                <li><a @click="handleExportPlainText">Plain Text</a></li>
+              </ul>
+            </div>
             <button
               class="btn btn-ghost btn-xs tooltip tooltip-bottom"
               data-tip="Toggle timeline"
@@ -163,7 +173,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, watchEffect, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, ArrowUpLeft, AlertTriangle, ClipboardList, PanelRight } from 'lucide-vue-next';
+import { ArrowLeft, ArrowUpLeft, AlertTriangle, ClipboardList, PanelRight, Download } from 'lucide-vue-next';
 import type { ConversationPlanEntry } from '../types';
 import { useConversationDetail } from '../composables/useConversationDetail';
 import { useTimeline, extractTimelineEvents } from '../composables/useTimeline';
@@ -173,6 +183,7 @@ import ConversationTimeline from '../components/ConversationTimeline.vue';
 import PlanStepList from '../components/PlanStepList.vue';
 import { cleanTitle } from '../utils/content-sanitizer';
 import { formatCost } from '../utils/format-tokens';
+import { exportAsMarkdown, exportAsJson, exportAsPlainText, downloadFile, sanitizeFilename } from '../utils/conversation-exporter';
 
 const route = useRoute();
 const router = useRouter();
@@ -415,6 +426,31 @@ function formatDuration(start: string, end: string): string {
   } catch {
     return '--';
   }
+}
+
+// --- Export handlers ---
+function getExportFilename(ext: string): string {
+  const title = data.value?.conversation.title || 'conversation';
+  const date = new Date().toISOString().slice(0, 10);
+  return `${sanitizeFilename(title)}-${date}.${ext}`;
+}
+
+function handleExportMarkdown(): void {
+  if (!data.value) return;
+  const content = exportAsMarkdown(data.value);
+  downloadFile(content, getExportFilename('md'), 'text/markdown');
+}
+
+function handleExportJson(): void {
+  if (!data.value) return;
+  const content = exportAsJson(data.value);
+  downloadFile(content, getExportFilename('json'), 'application/json');
+}
+
+function handleExportPlainText(): void {
+  if (!data.value) return;
+  const content = exportAsPlainText(data.value);
+  downloadFile(content, getExportFilename('txt'), 'text/plain');
 }
 </script>
 

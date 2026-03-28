@@ -64,8 +64,8 @@ describe('Router Configuration', () => {
     expect(rootRoute!.redirect).toBe('/overview');
   });
 
-  it('has exactly 6 named routes plus the redirect', () => {
+  it('has exactly 9 named routes plus the redirect', () => {
     const namedRoutes = router.getRoutes().filter((r) => r.name);
-    expect(namedRoutes).toHaveLength(6);
+    expect(namedRoutes).toHaveLength(9);
   });
 });

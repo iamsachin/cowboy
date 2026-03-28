@@ -40,17 +40,7 @@
         {{ toolBreakdownText }}
       </div>
 
-      <!-- Row 3: Files touched -->
-      <div v-if="summary.filesTouched.length > 0" class="text-xs text-base-content/40 pl-6 truncate">
-        {{ filesTouchedText }}
-      </div>
-
-      <!-- Row 4: Tokens -->
-      <div class="text-xs text-base-content/50 pl-6">
-        in: {{ formatTokenCount(summary.inputTokens) }}, out: {{ formatTokenCount(summary.outputTokens) }}
-      </div>
-
-      <!-- Row 5: Error (conditional) -->
+      <!-- Row 3: Error (conditional) -->
       <div
         v-if="summary.lastError"
         class="text-xs text-error pl-6 truncate"
@@ -59,65 +49,110 @@
         {{ summary.lastError }}
       </div>
 
-      <!-- Row 6: Confidence hint (conditional) -->
+      <!-- Row 4: Confidence hint (conditional) -->
       <div v-if="confidenceHint" class="text-xs text-base-content/30 pl-6 italic">
         {{ confidenceHint }}
       </div>
     </div>
 
-    <!-- Expanded: tool call list -->
-    <div v-if="expanded" class="border-t border-base-300 px-3 pb-3 pt-2">
-      <!-- Loading state -->
-      <div v-if="loadingDetail" class="flex justify-center py-4">
-        <span class="loading loading-spinner loading-sm"></span>
+    <!-- Level 1 Expanded: Dashboard + Execution Trace -->
+    <div v-if="expanded" class="border-t border-base-300 px-3 pb-3 pt-2 space-y-3">
+
+      <!-- Dashboard: metadata grid -->
+      <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs p-3 bg-base-100/50 rounded-lg">
+        <span class="text-base-content/50">Type</span>
+        <span>
+          <span class="badge badge-xs" :class="typeBadgeClass">{{ subagentType }}</span>
+        </span>
+
+        <span class="text-base-content/50">Model</span>
+        <span>{{ subagentModel }}</span>
+
+        <span class="text-base-content/50">Duration</span>
+        <span>{{ formattedDuration }}</span>
+
+        <span class="text-base-content/50">Status</span>
+        <span>
+          <span class="badge badge-xs" :class="statusBadgeClass">{{ summary.status }}</span>
+        </span>
+
+        <span class="text-base-content/50">Input tokens</span>
+        <span>{{ formatTokenCount(summary.inputTokens) }}</span>
+
+        <span class="text-base-content/50">Output tokens</span>
+        <span>{{ formatTokenCount(summary.outputTokens) }}</span>
+
+        <template v-if="summary.filesTouched.length > 0">
+          <span class="text-base-content/50">Files touched</span>
+          <span>
+            <span class="badge badge-xs badge-ghost">{{ summary.filesTouched.length }}</span>
+            <span class="ml-1 text-base-content/40">{{ filesTouchedText }}</span>
+          </span>
+        </template>
       </div>
 
-      <!-- Tool call list -->
-      <div v-else-if="subagentToolCalls.length > 0" class="space-y-1">
-        <div
-          v-for="(tc, idx) in subagentToolCalls"
-          :key="tc.id"
-          class="flex items-center gap-2 text-xs py-0.5 px-1 rounded"
-          :class="{ 'bg-error/10': isLastErroredCall(tc, idx) }"
-        >
-          <component
-            :is="getToolIcon(tc.name).icon"
-            class="w-3 h-3 shrink-0"
-            :class="getToolIcon(tc.name).colorClass"
-          />
-          <span class="font-mono">{{ tc.name }}</span>
-          <span class="text-base-content/40 truncate flex-1">{{ extractTarget(tc) }}</span>
-          <CheckCircle2
-            v-if="tc.status === 'completed'"
-            class="w-3 h-3 shrink-0 text-success"
-          />
-          <XCircle
-            v-else-if="tc.status === 'error'"
-            class="w-3 h-3 shrink-0 text-error"
-          />
-          <span
-            v-else-if="tc.status"
-            class="badge badge-xs badge-ghost"
-          >{{ tc.status }}</span>
-        </div>
-      </div>
+      <!-- Level 2: Execution Trace toggle -->
+      <BaseExpandableItem
+        :expanded="showTrace"
+        :icon="ListIcon"
+        icon-class="text-info"
+        label="Execution Trace"
+        @toggle="showTrace = !showTrace"
+      >
+        <div class="pt-2 pl-2">
+          <!-- Loading state -->
+          <div v-if="loadingDetail" class="flex justify-center py-4">
+            <span class="loading loading-spinner loading-sm"></span>
+          </div>
 
-      <!-- Fallback: show tool breakdown as list -->
-      <div v-else class="space-y-1">
-        <div
-          v-for="[name, count] in toolBreakdownEntries"
-          :key="name"
-          class="flex items-center gap-2 text-xs py-0.5"
-        >
-          <component
-            :is="getToolIcon(name).icon"
-            class="w-3 h-3 shrink-0"
-            :class="getToolIcon(name).colorClass"
-          />
-          <span class="font-mono">{{ name }}</span>
-          <span class="text-base-content/40">x{{ count }}</span>
+          <!-- Tool call list -->
+          <div v-else-if="subagentToolCalls.length > 0" class="space-y-1">
+            <div
+              v-for="(tc, idx) in subagentToolCalls"
+              :key="tc.id"
+              class="flex items-center gap-2 text-xs py-0.5 px-1 rounded"
+              :class="{ 'bg-error/10': isLastErroredCall(tc, idx) }"
+            >
+              <component
+                :is="getToolIcon(tc.name).icon"
+                class="w-3 h-3 shrink-0"
+                :class="getToolIcon(tc.name).colorClass"
+              />
+              <span class="font-mono">{{ tc.name }}</span>
+              <span class="text-base-content/40 truncate flex-1">{{ extractTarget(tc) }}</span>
+              <CheckCircle2
+                v-if="tc.status === 'completed'"
+                class="w-3 h-3 shrink-0 text-success"
+              />
+              <XCircle
+                v-else-if="tc.status === 'error'"
+                class="w-3 h-3 shrink-0 text-error"
+              />
+              <span
+                v-else-if="tc.status"
+                class="badge badge-xs badge-ghost"
+              >{{ tc.status }}</span>
+            </div>
+          </div>
+
+          <!-- Fallback: show tool breakdown as list -->
+          <div v-else class="space-y-1">
+            <div
+              v-for="[name, count] in toolBreakdownEntries"
+              :key="name"
+              class="flex items-center gap-2 text-xs py-0.5"
+            >
+              <component
+                :is="getToolIcon(name).icon"
+                class="w-3 h-3 shrink-0"
+                :class="getToolIcon(name).colorClass"
+              />
+              <span class="font-mono">{{ name }}</span>
+              <span class="text-base-content/40">x{{ count }}</span>
+            </div>
+          </div>
         </div>
-      </div>
+      </BaseExpandableItem>
 
       <!-- Open full conversation link -->
       <router-link
@@ -136,16 +171,19 @@
 import { ref, computed, watch } from 'vue';
 import {
   Bot, ChevronRight, CheckCircle2, XCircle, AlertCircle, ExternalLink,
+  List as ListIcon,
 } from 'lucide-vue-next';
 import type { ToolCallRow, SubagentSummary, ConversationDetailResponse } from '../types';
 import { formatTokenCount } from '../utils/format-tokens';
 import { getToolIcon } from '../utils/tool-icons';
+import BaseExpandableItem from './BaseExpandableItem.vue';
 
 const props = defineProps<{
   toolCall: ToolCallRow;
 }>();
 
 const expanded = ref(false);
+const showTrace = ref(false);
 const loadingDetail = ref(false);
 const subagentToolCalls = ref<ToolCallRow[]>([]);
 let fetched = false;
@@ -167,6 +205,21 @@ const cardClasses = computed(() =>
     ? 'border-l-4 border-l-error bg-error/5'
     : 'border-l-4 border-l-info bg-info/5'
 );
+
+const subagentType = computed(() => {
+  const name = props.toolCall.name;
+  return name === 'Task' ? 'Task' : name === 'Agent' ? 'Agent' : name;
+});
+
+const typeBadgeClass = computed(() =>
+  subagentType.value === 'Task' ? 'badge-info' : 'badge-warning'
+);
+
+const subagentModel = computed(() => {
+  const input = props.toolCall.input as Record<string, unknown> | null;
+  if (input?.model && typeof input.model === 'string') return input.model;
+  return 'default';
+});
 
 const cardTitle = computed(() => {
   const input = props.toolCall.input as Record<string, unknown> | null;
@@ -213,6 +266,13 @@ const confidenceHint = computed(() => {
   return null;
 });
 
+// Collapse trace when card collapses
+watch(expanded, (isExpanded) => {
+  if (!isExpanded) {
+    showTrace.value = false;
+  }
+});
+
 // Lazy-load subagent tool calls on first expand
 watch(expanded, async (isExpanded) => {
   if (!isExpanded || fetched || !props.toolCall.subagentConversationId) return;
@@ -227,7 +287,7 @@ watch(expanded, async (isExpanded) => {
       subagentToolCalls.value = detail.toolCalls;
     }
   } catch {
-    // Silently fail — fall back to breakdown view
+    // Silently fail -- fall back to breakdown view
   } finally {
     loadingDetail.value = false;
   }
@@ -236,7 +296,6 @@ watch(expanded, async (isExpanded) => {
 function extractTarget(tc: ToolCallRow): string {
   const input = tc.input as Record<string, unknown> | null;
   if (!input) return '';
-  // Common patterns: file_path, path, command
   if (typeof input.file_path === 'string') return input.file_path;
   if (typeof input.path === 'string') return input.path;
   if (typeof input.command === 'string') {
@@ -250,7 +309,6 @@ function extractTarget(tc: ToolCallRow): string {
 
 function isLastErroredCall(tc: ToolCallRow, idx: number): boolean {
   if (!isError.value || tc.status !== 'error') return false;
-  // Check if this is the last errored call in the list
   for (let i = idx + 1; i < subagentToolCalls.value.length; i++) {
     if (subagentToolCalls.value[i].status === 'error') return false;
   }

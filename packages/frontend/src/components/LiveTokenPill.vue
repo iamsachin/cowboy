@@ -28,12 +28,7 @@
       @click.stop="expanded = !expanded"
     >
       <template v-if="collapsed">
-        <div
-          class="tooltip tooltip-right"
-          :data-tip="`↑ ${formatTokenCount(currentInput)}/min  ↓ ${formatTokenCount(currentOutput)}/min`"
-        >
-          <Activity class="w-4 h-4 shrink-0 text-base-content/60" />
-        </div>
+        <Activity class="w-4 h-4 shrink-0 text-base-content/60" />
       </template>
       <template v-else>
         <Activity class="w-4 h-4 shrink-0 text-base-content/60" />
@@ -49,13 +44,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { X, Activity } from 'lucide-vue-next';
 import LiveTokenChart from './LiveTokenChart.vue';
 import { useTokenRate } from '../composables/useTokenRate';
 import { formatTokenCount } from '../utils/format-tokens';
 
-defineProps<{
+const props = defineProps<{
   collapsed: boolean;
 }>();
 
@@ -68,6 +63,11 @@ const {
 } = useTokenRate();
 
 const expanded = ref(false);
+
+// Close chart popover when sidebar collapses
+watch(() => props.collapsed, (isCollapsed) => {
+  if (isCollapsed) expanded.value = false;
+});
 
 const isIdle = computed(() => currentInput.value === 0 && currentOutput.value === 0);
 
@@ -86,20 +86,6 @@ const isSpike = computed(() => {
   return currentCombined > avgCombined * 2;
 });
 
-// Click-outside handler
-function onClickOutside(): void {
-  if (expanded.value) {
-    expanded.value = false;
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('click', onClickOutside);
-});
-
-onUnmounted(() => {
-  document.removeEventListener('click', onClickOutside);
-});
 </script>
 
 <style scoped>

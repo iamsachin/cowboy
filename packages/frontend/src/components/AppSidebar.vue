@@ -36,10 +36,9 @@
           :to="item.disabled ? '' : item.path"
           class="flex items-center gap-3"
           :class="[
-            collapsed ? 'tooltip tooltip-right justify-center' : '',
+            collapsed ? 'justify-center' : '',
             item.disabled ? 'opacity-40 pointer-events-none' : '',
           ]"
-          :data-tip="collapsed ? item.label : undefined"
           :aria-disabled="item.disabled"
         >
           <component :is="item.icon" class="w-5 h-5 shrink-0" />
@@ -65,8 +64,7 @@
     </button>
     <button
       v-if="widgetDismissed && collapsed"
-      class="btn btn-ghost btn-sm btn-square tooltip tooltip-right mx-auto mt-1"
-      data-tip="Show live usage"
+      class="btn btn-ghost btn-sm btn-square mx-auto mt-1"
       @click="restoreWidget"
     >
       <Activity class="w-4 h-4" />

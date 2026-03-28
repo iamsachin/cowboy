@@ -31,6 +31,51 @@
   background-color: oklch(0.88 0 0 / 0.5) !important;
 }
 
+/* Light theme contrast fixes */
+[data-theme="emerald"] .bg-base-200 {
+  background-color: oklch(0.94 0 0);
+}
+[data-theme="emerald"] .border-base-300 {
+  border-color: oklch(0.85 0 0);
+}
+
+/* Tool call row backgrounds need more contrast in light mode */
+[data-theme="emerald"] .bg-success\/5 {
+  background-color: oklch(0.92 0.04 145 / 0.4);
+}
+[data-theme="emerald"] .bg-amber-500\/5 {
+  background-color: oklch(0.92 0.04 80 / 0.4);
+}
+
+/* Info banner (context cleared) */
+[data-theme="emerald"] .bg-info\/10 {
+  background-color: oklch(0.90 0.06 230 / 0.3);
+}
+
+/* Markdown code blocks in light mode */
+[data-theme="emerald"] .thinking-content :deep(code) {
+  background: oklch(0.92 0 0);
+  color: oklch(0.30 0 0);
+}
+[data-theme="emerald"] .thinking-content :deep(pre) {
+  background: oklch(0.94 0 0);
+}
+[data-theme="emerald"] .thinking-content :deep(blockquote) {
+  border-left-color: oklch(0.70 0 0);
+}
+[data-theme="emerald"] .thinking-content :deep(th),
+[data-theme="emerald"] .thinking-content :deep(td) {
+  border-color: oklch(0.75 0 0);
+}
+[data-theme="emerald"] .thinking-content :deep(hr) {
+  border-color: oklch(0.80 0 0);
+}
+
+/* Sticky toolbar in light mode */
+[data-theme="emerald"] .bg-base-200\/95 {
+  background-color: oklch(0.94 0 0 / 0.95);
+}
+
 /* Light theme model badges — lighter tints for readability */
 [data-theme="emerald"] .badge-model-opus    { background-color: oklch(0.85 0.08 280); color: oklch(0.35 0.12 280); }
 [data-theme="emerald"] .badge-model-sonnet  { background-color: oklch(0.85 0.08 320); color: oklch(0.35 0.12 320); }
@@ -78,3 +123,23 @@ table.table-zebra tbody tr.hover:not(.sub-row):hover td {
 .hljs {
   background: transparent !important;
 }
+
+/* Light mode: override github-dark hljs token colors */
+[data-theme="emerald"] .hljs {
+  color: oklch(0.25 0 0) !important;
+}
+[data-theme="emerald"] .hljs-keyword,
+[data-theme="emerald"] .hljs-selector-tag { color: oklch(0.45 0.15 300); }
+[data-theme="emerald"] .hljs-string,
+[data-theme="emerald"] .hljs-addition { color: oklch(0.45 0.12 145); }
+[data-theme="emerald"] .hljs-comment,
+[data-theme="emerald"] .hljs-quote { color: oklch(0.55 0 0); }
+[data-theme="emerald"] .hljs-number,
+[data-theme="emerald"] .hljs-literal { color: oklch(0.50 0.12 55); }
+[data-theme="emerald"] .hljs-built_in,
+[data-theme="emerald"] .hljs-type { color: oklch(0.50 0.12 200); }
+[data-theme="emerald"] .hljs-attr,
+[data-theme="emerald"] .hljs-attribute { color: oklch(0.50 0.12 250); }
+[data-theme="emerald"] .hljs-title,
+[data-theme="emerald"] .hljs-section { color: oklch(0.45 0.15 250); }
+[data-theme="emerald"] .hljs-deletion { color: oklch(0.50 0.15 25); }

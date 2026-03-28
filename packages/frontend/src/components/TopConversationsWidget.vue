@@ -48,10 +48,7 @@
             @click="router.push({ name: 'conversation-detail', params: { id: row.id } })"
           >
             <td>
-              <span
-                class="badge badge-sm text-white font-bold"
-                :style="{ backgroundColor: medalColors[index] }"
-              >
+              <span class="badge badge-sm badge-ghost font-bold">
                 {{ index + 1 }}
               </span>
             </td>
@@ -104,7 +101,6 @@ function setSortMode(mode: SortMode) {
   localStorage.setItem(STORAGE_KEY, mode);
 }
 
-const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
 
 const numberFormatter = new Intl.NumberFormat('en-US');
 const currencyFormatter = new Intl.NumberFormat('en-US', {

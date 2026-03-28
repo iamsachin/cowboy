@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-03-28 - Completed quick task 34: Add top 3 most expensive conversations widget
+Last activity: 2026-03-28 - Completed quick task 35: Add light/dark mode toggle to sidebar
 
 ## Performance Metrics
 
@@ -87,9 +87,10 @@ None.
 | 32 | Fix Open full conversation link not working in subagent cards | 2026-03-28 | 2a35d9d | [32-fix-open-full-conversation-link-not-work](./quick/32-fix-open-full-conversation-link-not-work/) |
 | 33 | Move floating live status to bottom of left nav | 2026-03-28 | 12bd37f | [33-move-floating-live-status-to-bottom-of-l](./quick/33-move-floating-live-status-to-bottom-of-l/) |
 | 34 | Add top 3 most expensive conversations widget to Overview | 2026-03-28 | 2eeaf68 | [34-add-top-3-most-expensive-conversations-w](./quick/34-add-top-3-most-expensive-conversations-w/) |
+| 35 | Add light/dark mode toggle to sidebar | 2026-03-28 | e751b3b | [35-add-light-dark-mode-toggle-to-sidebar](./quick/35-add-light-dark-mode-toggle-to-sidebar/) |
 
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Completed quick task 34
+Stopped at: Completed quick task 35
 Resume file: None

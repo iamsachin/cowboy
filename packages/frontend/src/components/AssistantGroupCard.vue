@@ -73,9 +73,21 @@
           <template v-for="(block, idx) in getTurnContent(turn)" :key="idx">
             <div
               v-if="block.type === 'text'"
-              class="thinking-content text-sm text-base-content/70"
-              v-html="renderMarkdown(block.content)"
-            ></div>
+              class="relative group/copy"
+            >
+              <button
+                class="btn btn-xs btn-ghost absolute top-1 right-1 opacity-0 group-hover/copy:opacity-100 transition-opacity z-10"
+                @click.stop="copyContent(block.content, `${turn.message.id}-${idx}`)"
+              >
+                <Check v-if="copiedBlockKey === `${turn.message.id}-${idx}`" class="w-3 h-3 text-success" />
+                <Copy v-else class="w-3 h-3" />
+                <span class="ml-1">{{ copiedBlockKey === `${turn.message.id}-${idx}` ? 'Copied!' : 'Copy' }}</span>
+              </button>
+              <div
+                class="thinking-content text-sm text-base-content/70"
+                v-html="renderMarkdown(block.content)"
+              ></div>
+            </div>
             <CodeBlock
               v-else
               :code="block.content"
@@ -104,8 +116,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { Brain, ChevronRight } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
+import { Brain, ChevronRight, Copy, Check } from 'lucide-vue-next';
 import type { MessageTokenUsage } from '../types';
 import type { AssistantGroup, AssistantTurn } from '../composables/useGroupedTurns';
 import { parseContent, formatTime } from '../utils/content-parser';
@@ -212,6 +224,20 @@ function getTurnContent(turn: AssistantTurn) {
   const cleaned = stripXmlTags(turn.message.content);
   if (!cleaned) return [];
   return parseContent(cleaned);
+}
+
+const copiedBlockKey = ref<string | null>(null);
+
+async function copyContent(content: string, blockKey: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(content);
+    copiedBlockKey.value = blockKey;
+    setTimeout(() => {
+      copiedBlockKey.value = null;
+    }, 2000);
+  } catch {
+    // Clipboard API not available
+  }
 }
 </script>
 

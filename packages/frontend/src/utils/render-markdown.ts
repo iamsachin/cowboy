@@ -1,10 +1,24 @@
-import { marked } from 'marked';
+import { marked, Renderer } from 'marked';
 import DOMPurify from 'dompurify';
+import hljs from 'highlight.js/lib/core';
+
+// Custom renderer with syntax highlighting for code blocks
+const renderer = new Renderer();
+renderer.code = function ({ text, lang }: { text: string; lang?: string }) {
+  let highlighted: string;
+  if (lang && hljs.getLanguage(lang)) {
+    highlighted = hljs.highlight(text, { language: lang }).value;
+  } else {
+    highlighted = hljs.highlightAuto(text).value;
+  }
+  return `<pre><code class="hljs">${highlighted}</code></pre>`;
+};
 
 // Configure marked for thinking content rendering
 marked.setOptions({
   breaks: true,
   gfm: true,
+  renderer,
 });
 
 const ALLOWED_TAGS = [
@@ -16,6 +30,7 @@ const ALLOWED_TAGS = [
   'a', 'br', 'hr',
   'table', 'thead', 'tbody', 'tr', 'th', 'td',
   'img',
+  'span',
 ];
 
 /**
@@ -24,5 +39,5 @@ const ALLOWED_TAGS = [
  */
 export function renderMarkdown(text: string): string {
   const html = marked.parse(text, { async: false }) as string;
-  return DOMPurify.sanitize(html, { ALLOWED_TAGS });
+  return DOMPurify.sanitize(html, { ALLOWED_TAGS, ALLOWED_ATTR: ['class'] });
 }

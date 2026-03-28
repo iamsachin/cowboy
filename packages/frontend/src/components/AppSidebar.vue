@@ -101,8 +101,13 @@
       </div>
     </div>
 
+    <!-- Live Token Rate -->
+    <div class="border-t border-base-300">
+      <LiveTokenPill :collapsed="collapsed" />
+    </div>
+
     <!-- Connection Status Footer -->
-    <div class="border-t border-base-300 mt-auto" :class="collapsed ? 'flex justify-center' : ''">
+    <div class="border-t border-base-300" :class="collapsed ? 'flex justify-center' : ''">
       <ConnectionStatus :collapsed="collapsed" />
     </div>
   </aside>
@@ -111,6 +116,7 @@
 <script setup lang="ts">
 import { ref, watch, onUnmounted } from 'vue';
 import ConnectionStatus from './ConnectionStatus.vue';
+import LiveTokenPill from './LiveTokenPill.vue';
 import { useAnalytics } from '../composables/useAnalytics';
 import { useTokenRate } from '../composables/useTokenRate';
 import {

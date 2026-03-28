@@ -6,7 +6,6 @@
     </main>
     <ShortcutCheatSheet />
     <CommandPalette />
-    <LiveTokenPill />
   </div>
 </template>
 
@@ -16,7 +15,6 @@ import { useRouter } from 'vue-router';
 import AppSidebar from '../components/AppSidebar.vue';
 import ShortcutCheatSheet from '../components/ShortcutCheatSheet.vue';
 import CommandPalette from '../components/CommandPalette.vue';
-import LiveTokenPill from '../components/LiveTokenPill.vue';
 import { useKeyboardShortcuts, showCheatSheet } from '../composables/useKeyboardShortcuts';
 import { useCommandPalette } from '../composables/useCommandPalette';
 

@@ -1,10 +1,11 @@
 <template>
-  <div v-if="!dismissed" class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
-    <!-- Popover Chart Card -->
+  <div v-if="!dismissed" class="relative">
+    <!-- Popover Chart Card — opens above the pill -->
     <Transition name="popover-fade">
       <div
         v-if="expanded"
-        class="card bg-base-200 rounded-box shadow-xl w-96"
+        class="absolute bottom-full mb-2 z-50 card bg-base-200 rounded-box shadow-xl"
+        :class="collapsed ? 'left-0 w-72' : 'left-0 right-0 w-auto'"
         @click.stop
       >
         <div class="card-body p-4">
@@ -16,31 +17,47 @@
       </div>
     </Transition>
 
-    <!-- Pill Button -->
+    <!-- Inline Pill -->
     <button
-      class="btn btn-sm gap-2 shadow-lg group"
+      class="w-full flex items-center gap-2 py-2 group"
       :class="[
+        collapsed ? 'justify-center px-1' : 'px-3',
         isIdle ? 'opacity-50' : '',
         isSpike ? 'animate-token-pulse' : '',
       ]"
       @click.stop="expanded = !expanded"
     >
-      <span class="text-xs">&#8593; {{ formatTokenCount(currentInput) }}/min</span>
-      <span class="text-xs">&#8595; {{ formatTokenCount(currentOutput) }}/min</span>
-      <X
-        class="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-        @click.stop="dismiss()"
-      />
+      <template v-if="collapsed">
+        <div
+          class="tooltip tooltip-right"
+          :data-tip="`↑ ${formatTokenCount(currentInput)}/min  ↓ ${formatTokenCount(currentOutput)}/min`"
+        >
+          <Activity class="w-4 h-4 shrink-0 text-base-content/60" />
+        </div>
+      </template>
+      <template v-else>
+        <Activity class="w-4 h-4 shrink-0 text-base-content/60" />
+        <span class="text-xs text-base-content/60">&#8593; {{ formatTokenCount(currentInput) }}/min</span>
+        <span class="text-xs text-base-content/60">&#8595; {{ formatTokenCount(currentOutput) }}/min</span>
+        <X
+          class="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-base-content/40"
+          @click.stop="dismiss()"
+        />
+      </template>
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { X } from 'lucide-vue-next';
+import { X, Activity } from 'lucide-vue-next';
 import LiveTokenChart from './LiveTokenChart.vue';
 import { useTokenRate } from '../composables/useTokenRate';
 import { formatTokenCount } from '../utils/format-tokens';
+
+defineProps<{
+  collapsed: boolean;
+}>();
 
 const {
   currentInput,

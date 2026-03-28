@@ -22,9 +22,9 @@ Requirements for removing Cursor support. Each maps to roadmap phases.
 
 ### Settings
 
-- [ ] **SET-01**: cursor_path, cursor_enabled, sync_cursor removed from DB schema and settings API
-- [ ] **SET-02**: Cursor path validation and default path logic removed
-- [ ] **SET-03**: Cursor section removed from SettingsPage UI
+- [x] **SET-01**: cursor_path, cursor_enabled, sync_cursor removed from DB schema and settings API
+- [x] **SET-02**: Cursor path validation and default path logic removed
+- [x] **SET-03**: Cursor section removed from SettingsPage UI
 
 ### Frontend
 
@@ -73,9 +73,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WATCH-01 | Phase 43 | Complete |
 | WATCH-02 | Phase 43 | Complete |
 | PRICE-01 | Phase 43 | Complete |
-| SET-01 | Phase 44 | Pending |
-| SET-02 | Phase 44 | Pending |
-| SET-03 | Phase 44 | Pending |
+| SET-01 | Phase 44 | Complete |
+| SET-02 | Phase 44 | Complete |
+| SET-03 | Phase 44 | Complete |
 | UI-01 | Phase 45 | Pending |
 | UI-02 | Phase 45 | Pending |
 | UI-03 | Phase 45 | Pending |

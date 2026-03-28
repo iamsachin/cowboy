@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.1
 milestone_name: Remove Cursor Support
 status: completed
-stopped_at: Completed 42-01-PLAN.md
-last_updated: "2026-03-27T21:06:47.691Z"
-last_activity: 2026-03-28 — Completed Phase 41 Plan 01 (Cursor Data Migration)
+stopped_at: Completed 44-01-PLAN.md
+last_updated: "2026-03-28T09:12:37.061Z"
+last_activity: 2026-03-28 — Completed Phase 44 Plan 01 (Settings Removal)
 progress:
   total_phases: 6
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 4
+  total_plans: 4
+  completed_plans: 4
 ---
 
 # Project State
@@ -20,16 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** Phase 43 — Watcher Pricing Cleanup (v3.1 Remove Cursor Support)
+**Current focus:** Phase 44 — Settings Removal (v3.1 Remove Cursor Support)
 
 ## Current Position
 
-Phase: 43 of 46 (Watcher Pricing Cleanup) -- COMPLETE
+Phase: 44 of 46 (Settings Removal) -- COMPLETE
 Plan: 1 of 1 in current phase
-Status: Phase 43 complete, ready for Phase 44
-Last activity: 2026-03-27 — Completed Phase 43 Plan 01 (Watcher Pricing Cleanup)
+Status: Phase 44 complete, ready for Phase 45
+Last activity: 2026-03-28 — Completed Phase 44 Plan 01 (Settings Removal)
 
-Progress (v3.1): [██████████░░░░░░░░░░] 50% (3/6 phases)
+Progress (v3.1): [█████████████░░░░░░░] 67% (4/6 phases)
 
 ## Performance Metrics
 
@@ -59,6 +59,8 @@ Recent decisions affecting current work:
 - [42-01]: Removed Cursor 'default' model fix from fix_conversation_models since cursor data is purged
 - [43-01]: Removed AgentKind enum entirely; classify_event returns bool for JSONL files
 - [43-01]: Removed debounce_key/debounce_duration methods; hardcoded 1s duration inline
+- [Phase 44]: Used table-recreate migration pattern for SQLite column removal (cursor columns)
+- [Phase 44]: Removed sync_cursor column alongside cursor_path/cursor_enabled -- unused with confusing name
 
 ### Pending Todos
 
@@ -93,9 +95,10 @@ None.
 | 25 | Handle /clear as first message - title fix and banner | 2026-03-11 | 450e304 | [25-handle-clear-clear-as-first-message-show](./quick/25-handle-clear-clear-as-first-message-show/) |
 | 26 | Fix tool output showing (none) and token display | 2026-03-14 | ac13de7 | [26-fix-tool-output-showing-none-show-last-a](./quick/26-fix-tool-output-showing-none-show-last-a/) |
 | 27 | Fix token display, conversation title, and timeline scroll | 2026-03-14 | 84b3c5d | [27-fix-output-token-count-conversation-titl](./quick/27-fix-output-token-count-conversation-titl/) |
+| Phase 44 P01 | 3min | 2 tasks | 5 files |
 
 ## Session Continuity
 
-Last session: 2026-03-27T21:17:27Z
-Stopped at: Completed 43-01-PLAN.md
-Resume file: .planning/phases/43-watcher-pricing-cleanup/43-01-SUMMARY.md
+Last session: 2026-03-28T09:12:37.058Z
+Stopped at: Completed 44-01-PLAN.md
+Resume file: None

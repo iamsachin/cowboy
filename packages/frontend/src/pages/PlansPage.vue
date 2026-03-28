@@ -7,7 +7,6 @@
         <select class="select select-sm select-bordered" v-model="selectedAgent">
           <option value="">All Agents</option>
           <option value="claude-code">Claude Code</option>
-          <option value="cursor">Cursor</option>
         </select>
         <select class="select select-sm select-bordered" v-model="selectedProject">
           <option value="">All Projects</option>

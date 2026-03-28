@@ -9,10 +9,10 @@ vi.mock('vue-router', () => ({
 
 const mockConversations = [
   { id: 'c1', date: new Date(Date.now() - 5 * 60_000).toISOString(), agent: 'claude', title: 'Fix login bug', project: 'myapp', model: 'claude-3', inputTokens: 100, outputTokens: 200, cacheReadTokens: 0, cacheCreationTokens: 0, cost: 0.01, savings: 0 },
-  { id: 'c2', date: new Date(Date.now() - 2 * 3600_000).toISOString(), agent: 'cursor', title: 'Overview refactor', project: 'webapp', model: 'gpt-4', inputTokens: 50, outputTokens: 100, cacheReadTokens: 0, cacheCreationTokens: 0, cost: 0.005, savings: 0 },
+  { id: 'c2', date: new Date(Date.now() - 2 * 3600_000).toISOString(), agent: 'claude-code', title: 'Overview refactor', project: 'webapp', model: 'claude-3', inputTokens: 50, outputTokens: 100, cacheReadTokens: 0, cacheCreationTokens: 0, cost: 0.005, savings: 0 },
   { id: 'c3', date: new Date(Date.now() - 3 * 86_400_000).toISOString(), agent: 'claude', title: 'Add search feature', project: 'myapp', model: 'claude-3', inputTokens: 150, outputTokens: 300, cacheReadTokens: 0, cacheCreationTokens: 0, cost: 0.02, savings: 0 },
   { id: 'c4', date: new Date(Date.now() - 10 * 86_400_000).toISOString(), agent: 'claude', title: 'Setup project', project: 'other', model: 'claude-3', inputTokens: 80, outputTokens: 160, cacheReadTokens: 0, cacheCreationTokens: 0, cost: 0.008, savings: 0 },
-  { id: 'c5', date: new Date(Date.now() - 60_000).toISOString(), agent: 'cursor', title: 'Debug API endpoint', project: 'myapp', model: 'gpt-4', inputTokens: 200, outputTokens: 400, cacheReadTokens: 0, cacheCreationTokens: 0, cost: 0.03, savings: 0 },
+  { id: 'c5', date: new Date(Date.now() - 60_000).toISOString(), agent: 'claude-code', title: 'Debug API endpoint', project: 'myapp', model: 'claude-3', inputTokens: 200, outputTokens: 400, cacheReadTokens: 0, cacheCreationTokens: 0, cost: 0.03, savings: 0 },
 ];
 
 function createFetchMock() {

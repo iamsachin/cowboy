@@ -22,7 +22,7 @@
         <div class="card-body items-center text-center">
           <MessageSquare class="w-12 h-12 opacity-30 mb-2" />
           <h2 class="card-title">No conversations yet</h2>
-          <p class="opacity-60">Start a coding session with Claude Code or Cursor to see your analytics here.</p>
+          <p class="opacity-60">Start a coding session with Claude Code to see your analytics here.</p>
         </div>
       </div>
     </div>

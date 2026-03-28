@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-03-28 - Completed quick task 31: Conversation display improvements (token popover, expandable item, subagent dashboard)
+Last activity: 2026-03-28 - Completed quick task 32: Fix Open full conversation link not working in subagent cards
 
 ## Performance Metrics
 
@@ -84,9 +84,10 @@ None.
 | 29 | Implement conversation display improvements from claude-devtools | 2026-03-28 | 6a3864e | [29-implement-conversation-display-improveme](./quick/29-implement-conversation-display-improveme/) |
 | 30 | Deep source-level analysis of claude-devtools conversation display | 2026-03-28 | 3945556 | [30-research-claude-devtools-conversation-di](./quick/30-research-claude-devtools-conversation-di/) |
 | 31 | Conversation display improvements (token popover, expandable item, subagent dashboard) | 2026-03-28 | a4bf8da | [31-implement-conversation-display-improveme](./quick/31-implement-conversation-display-improveme/) |
+| 32 | Fix Open full conversation link not working in subagent cards | 2026-03-28 | 2a35d9d | [32-fix-open-full-conversation-link-not-work](./quick/32-fix-open-full-conversation-link-not-work/) |
 
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Completed quick task 31
+Stopped at: Completed quick task 32
 Resume file: None

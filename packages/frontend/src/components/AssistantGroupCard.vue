@@ -25,9 +25,19 @@
           v-if="duration"
           class="text-base-content/50"
         >{{ duration }}</span>
-        <span v-if="groupTokens" class="text-base-content/50 tooltip tooltip-bottom" :data-tip="tokenTooltip">
-          {{ formatTokenCount(groupTokens.contextTokens) }} ctx / {{ formatTokenCount(groupTokens.outputTokens) }} out
-        </span>
+        <TokenBreakdownPopover
+          v-if="groupTokens"
+          :input-tokens="groupTokens.inputTokens"
+          :output-tokens="groupTokens.outputTokens"
+          :cache-read-tokens="groupTokens.cacheReadTokens"
+          :cache-creation-tokens="groupTokens.cacheCreationTokens"
+          :cost="groupTokens.cost"
+          :context-tokens="groupTokens.contextTokens"
+        >
+          <span class="text-base-content/50">
+            {{ formatTokenCount(groupTokens.contextTokens) }} ctx / {{ formatTokenCount(groupTokens.outputTokens) }} out
+          </span>
+        </TokenBreakdownPopover>
         <span v-if="groupTokens?.cost != null" class="text-success/70">
           {{ formatCost(groupTokens.cost) }}
         </span>
@@ -48,24 +58,16 @@
         class="pl-3"
       >
         <!-- Thinking section (animated toggle) -->
-        <div v-if="turn.message.thinking" class="bg-purple-500/5 border-l-2 border-purple-400 rounded-r mb-2">
-          <button
-            class="flex items-center gap-2 text-sm font-medium cursor-pointer select-none pl-3 py-1 w-full text-left"
-            @click.stop="toggleThinking(turn.message.id)"
+        <div v-if="turn.message.thinking" class="bg-purple-500/5 border-l-2 border-purple-400 rounded-r mb-2 pl-3 py-1">
+          <BaseExpandableItem
+            :expanded="expandedThinking.has(turn.message.id)"
+            :icon="Brain"
+            icon-class="text-purple-400"
+            label="Thinking"
+            @toggle="toggleThinking(turn.message.id)"
           >
-            <ChevronRight
-              class="w-3.5 h-3.5 text-purple-400 shrink-0 transition-transform duration-200"
-              :class="{ 'rotate-90': expandedThinking.has(turn.message.id) }"
-            />
-            <Brain class="w-4 h-4 text-purple-400 shrink-0" />
-            <span>Thinking</span>
-          </button>
-          <div
-            class="thinking-body"
-            :class="expandedThinking.has(turn.message.id) ? 'thinking-body--expanded' : 'thinking-body--collapsed'"
-          >
-            <div class="thinking-content text-xs pl-9 pb-2 pr-3 text-base-content/70" v-html="renderMarkdown(turn.message.thinking!)"></div>
-          </div>
+            <div class="text-xs pl-2 pb-2 pr-3 text-base-content/70 thinking-content" v-html="renderMarkdown(turn.message.thinking!)"></div>
+          </BaseExpandableItem>
         </div>
 
         <!-- Turn text content -->
@@ -133,6 +135,8 @@ import { getModelBadge } from '../utils/model-labels';
 import { renderMarkdown } from '../utils/render-markdown';
 import CodeBlock from './CodeBlock.vue';
 import ToolCallRowComponent from './ToolCallRow.vue';
+import TokenBreakdownPopover from './TokenBreakdownPopover.vue';
+import BaseExpandableItem from './BaseExpandableItem.vue';
 
 const props = defineProps<{
   group: AssistantGroup;
@@ -209,15 +213,6 @@ const groupTokens = computed(() => {
   }
 
   return found ? { inputTokens, outputTokens, cacheReadTokens, cacheCreationTokens, cost, contextTokens } : null;
-});
-
-const tokenTooltip = computed(() => {
-  if (!groupTokens.value) return '';
-  const ctx = formatTokenCount(groupTokens.value.contextTokens);
-  const cache = formatTokenCount(groupTokens.value.cacheReadTokens);
-  const newInput = formatTokenCount(groupTokens.value.inputTokens);
-  const output = formatTokenCount(groupTokens.value.outputTokens);
-  return `Context: ${ctx} | Cache reads: ${cache} | New input: ${newInput} | Output: ${output}`;
 });
 
 function getTurnContent(turn: AssistantTurn) {

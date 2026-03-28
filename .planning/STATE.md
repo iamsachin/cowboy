@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-03-28 - Completed quick task 28: Research claude-devtools conversation display improvements
+Last activity: 2026-03-28 - Completed quick task 29: Implement conversation display improvements
 
 ## Performance Metrics
 
@@ -80,7 +80,8 @@ None.
 | 25 | Handle /clear as first message - title fix and banner | 2026-03-11 | 450e304 | [25-handle-clear-clear-as-first-message-show](./quick/25-handle-clear-clear-as-first-message-show/) |
 | 26 | Fix tool output showing (none) and token display | 2026-03-14 | ac13de7 | [26-fix-tool-output-showing-none-show-last-a](./quick/26-fix-tool-output-showing-none-show-last-a/) |
 | 27 | Fix token display, conversation title, and timeline scroll | 2026-03-14 | 84b3c5d | [27-fix-output-token-count-conversation-titl](./quick/27-fix-output-token-count-conversation-titl/) |
-| 28 | Research claude-devtools conversation display improvements | 2026-03-28 | pending | [28-research-claude-devtools-conversation-di](./quick/28-research-claude-devtools-conversation-di/) |
+| 28 | Research claude-devtools conversation display improvements | 2026-03-28 | 404954d | [28-research-claude-devtools-conversation-di](./quick/28-research-claude-devtools-conversation-di/) |
+| 29 | Implement conversation display improvements from claude-devtools | 2026-03-28 | 6a3864e | [29-implement-conversation-display-improveme](./quick/29-implement-conversation-display-improveme/) |
 
 ## Session Continuity
 

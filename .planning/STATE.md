@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v3.1
 milestone_name: Remove Cursor Support
-status: completed
-stopped_at: Completed 46-01-PLAN.md
-last_updated: "2026-03-28T09:55:18.583Z"
-last_activity: 2026-03-28 — Completed Phase 46 Plan 01 (Architecture Verification) - v3.1 COMPLETE
+status: shipped
+stopped_at: Milestone v3.1 archived and tagged
+last_updated: "2026-03-28T16:00:00.000Z"
+last_activity: 2026-03-28 — Milestone v3.1 archived and tagged
 progress:
   total_phases: 6
   completed_phases: 6
@@ -20,16 +20,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Give developers a single, unified view of how their coding agents are performing
-**Current focus:** v3.1 Remove Cursor Support -- COMPLETE
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 46 of 46 (Architecture Verification) -- COMPLETE
-Plan: 1 of 1 in current phase
-Status: v3.1 milestone complete. All 6 phases executed successfully.
-Last activity: 2026-03-28 — Completed Phase 46 Plan 01 (Architecture Verification)
-
-Progress (v3.1): [██████████████████████] 100% (6/6 phases)
+Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
+Last activity: 2026-03-28 - Completed quick task 28: Research claude-devtools conversation display improvements
 
 ## Performance Metrics
 
@@ -41,28 +37,15 @@ Progress (v3.1): [████████████████████�
 - v2.0: 13 plans, 6 phases
 - v2.1: 10 plans, 5 phases
 - v3.0: 15 plans, 5 phases
-- v3.1: 3 plans, 3 phases (in progress)
-- Total plans completed: 100
+- v3.1: 6 plans, 6 phases, 12 tasks, 18 commits
+- Total plans completed: 103
 
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- [v3.1]: Removal order is data-first (purge DB), then backend leaf modules, then watcher/pricing, then settings, then frontend, then verification
-- [v3.1]: Agent column in conversations table stays generic for future agent additions
-- [41-01]: Purge runs as FIRST operation in run_data_quality_migration to avoid wasting time on cursor data
-- [41-01]: Transaction wraps all deletes for atomicity
-- [42-01]: Preserved purge_cursor_data() in migration.rs as the Phase 41 data cleanup migration
-- [42-01]: Removed Cursor 'default' model fix from fix_conversation_models since cursor data is purged
-- [43-01]: Removed AgentKind enum entirely; classify_event returns bool for JSONL files
-- [43-01]: Removed debounce_key/debounce_duration methods; hardcoded 1s duration inline
-- [Phase 44]: Used table-recreate migration pattern for SQLite column removal (cursor columns)
-- [Phase 44]: Removed sync_cursor column alongside cursor_path/cursor_enabled -- unused with confusing name
-- [Phase 45]: AgentsPage uses static ref instead of computed from route tab for single-agent simplicity
-- [Phase 46]: Agent architecture confirmed generic - no schema-level constraints on agent values
+(Full decision log in PROJECT.md Key Decisions table)
 
 ### Pending Todos
 
@@ -70,7 +53,7 @@ None.
 
 ### Blockers/Concerns
 
-- v3.0 tech debt: 14 compiler warnings (unused imports/dead code) — some may be resolved by Cursor removal
+- 10 pre-existing Rust compiler warnings (dead code/unused imports)
 
 ### Quick Tasks Completed
 
@@ -97,12 +80,10 @@ None.
 | 25 | Handle /clear as first message - title fix and banner | 2026-03-11 | 450e304 | [25-handle-clear-clear-as-first-message-show](./quick/25-handle-clear-clear-as-first-message-show/) |
 | 26 | Fix tool output showing (none) and token display | 2026-03-14 | ac13de7 | [26-fix-tool-output-showing-none-show-last-a](./quick/26-fix-tool-output-showing-none-show-last-a/) |
 | 27 | Fix token display, conversation title, and timeline scroll | 2026-03-14 | 84b3c5d | [27-fix-output-token-count-conversation-titl](./quick/27-fix-output-token-count-conversation-titl/) |
-| Phase 44 P01 | 3min | 2 tasks | 5 files |
-| Phase 45-frontend-removal P01 | 2min | 2 tasks | 12 files |
-| Phase 46 P01 | 2min | 2 tasks | 1 files |
+| 28 | Research claude-devtools conversation display improvements | 2026-03-28 | pending | [28-research-claude-devtools-conversation-di](./quick/28-research-claude-devtools-conversation-di/) |
 
 ## Session Continuity
 
-Last session: 2026-03-28T09:55:18.580Z
-Stopped at: Completed 46-01-PLAN.md
+Last session: 2026-03-28
+Stopped at: Milestone v3.1 complete
 Resume file: None

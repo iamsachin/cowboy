@@ -1,8 +1,19 @@
 <template>
   <div class="bg-base-200 rounded-lg p-4">
-    <div class="flex items-center gap-2 mb-3">
-      <Trophy class="w-5 h-5 text-warning" />
-      <h2 class="text-lg font-semibold">Top Conversations by Cost</h2>
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-lg font-semibold">Top Conversations by {{ sortMode === 'cost' ? 'Cost' : 'Tokens' }}</h2>
+      <div class="join">
+        <button
+          class="join-item btn btn-xs"
+          :class="sortMode === 'cost' ? 'btn-primary' : 'btn-ghost'"
+          @click="setSortMode('cost')"
+        >Cost</button>
+        <button
+          class="join-item btn btn-xs"
+          :class="sortMode === 'tokens' ? 'btn-primary' : 'btn-ghost'"
+          @click="setSortMode('tokens')"
+        >Tokens</button>
+      </div>
     </div>
 
     <!-- Loading state -->
@@ -73,17 +84,25 @@
 <script setup lang="ts">
 import { ref, watch, onScopeDispose } from 'vue';
 import { useRouter } from 'vue-router';
-import { Trophy } from 'lucide-vue-next';
 import AgentBadge from './AgentBadge.vue';
 import { useDateRange } from '../composables/useDateRange';
 import { useWebSocket } from '../composables/useWebSocket';
 import type { ConversationRow } from '../types';
+
+type SortMode = 'cost' | 'tokens';
+const STORAGE_KEY = 'topConversations:sortMode';
 
 const router = useRouter();
 const { dateRange } = useDateRange();
 
 const rows = ref<ConversationRow[]>([]);
 const loading = ref(false);
+const sortMode = ref<SortMode>((localStorage.getItem(STORAGE_KEY) as SortMode) || 'cost');
+
+function setSortMode(mode: SortMode) {
+  sortMode.value = mode;
+  localStorage.setItem(STORAGE_KEY, mode);
+}
 
 const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
 
@@ -107,8 +126,9 @@ async function fetchTop(isLive = false) {
   if (!isLive) loading.value = true;
   try {
     const { from, to } = dateRange.value;
+    const sort = sortMode.value === 'tokens' ? 'inputTokens' : 'cost';
     const res = await fetch(
-      `/api/analytics/conversations?sort=cost&order=desc&limit=3&from=${from}&to=${to}`
+      `/api/analytics/conversations?sort=${sort}&order=desc&limit=3&from=${from}&to=${to}`
     );
     if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
     const data = await res.json();
@@ -121,7 +141,7 @@ async function fetchTop(isLive = false) {
 }
 
 watch(
-  () => dateRange.value,
+  () => [dateRange.value, sortMode.value],
   () => fetchTop(),
   { deep: true, immediate: true }
 );

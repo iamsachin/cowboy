@@ -75,9 +75,6 @@
         />
       </div>
 
-      <!-- Top Conversations by Cost -->
-      <TopConversationsWidget />
-
       <!-- Charts Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <TokenChart :data="timeseries" :loading="loading" />
@@ -85,6 +82,9 @@
         <ConversationsChart :data="timeseries" :loading="loading" />
         <ModelDistributionChart :data="modelDistribution" />
       </div>
+
+      <!-- Top Conversations Widget -->
+      <TopConversationsWidget />
 
       <!-- Conversation Table -->
       <ConversationTable />

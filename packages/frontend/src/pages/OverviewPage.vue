@@ -75,6 +75,9 @@
         />
       </div>
 
+      <!-- Top Conversations by Cost -->
+      <TopConversationsWidget />
+
       <!-- Charts Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <TokenChart :data="timeseries" :loading="loading" />
@@ -99,6 +102,7 @@ import CostChart from '../components/CostChart.vue';
 import ConversationsChart from '../components/ConversationsChart.vue';
 import ModelDistributionChart from '../components/ModelDistributionChart.vue';
 import ConversationTable from '../components/ConversationTable.vue';
+import TopConversationsWidget from '../components/TopConversationsWidget.vue';
 import { useDateRange } from '../composables/useDateRange';
 import { useAnalytics } from '../composables/useAnalytics';
 

@@ -38,34 +38,34 @@
       <div v-if="displayedFilenames" class="text-xs text-base-content/40 pl-6 truncate">
         {{ displayedFilenames }}
       </div>
-
-      <!-- Rendered markdown preview (text groups) -->
-      <div v-if="previewHtml" class="preview-clamp pl-6">
-        <div class="thinking-content text-xs text-base-content/60" v-html="previewHtml"></div>
-      </div>
-
-      <!-- Tool summary (tool-only groups) -->
-      <div v-if="toolSummaryText" class="text-xs text-base-content/50 pl-6">
-        {{ toolSummaryText }}
-      </div>
     </div>
 
-    <!-- Expanded: show all individual turns -->
-    <div v-if="expanded" class="max-h-[80vh] overflow-y-auto px-4 pb-4 pt-2 space-y-3">
+    <!-- Expanded: show process (thinking + tools) for each turn -->
+    <div v-if="expanded" class="max-h-[80vh] overflow-y-auto px-4 pb-2 pt-1 space-y-3">
       <div
         v-for="turn in group.turns"
         :key="turn.message.id"
         class="pl-3"
       >
-        <!-- Thinking section -->
+        <!-- Thinking section (animated toggle) -->
         <div v-if="turn.message.thinking" class="bg-purple-500/5 border-l-2 border-purple-400 rounded-r mb-2">
-          <details class="pl-3 py-1">
-            <summary class="flex items-center gap-2 text-sm font-medium cursor-pointer select-none">
-              <Brain class="w-4 h-4 text-purple-400 shrink-0" />
-              <span>Thinking</span>
-            </summary>
-            <div class="thinking-content text-xs mt-1 pl-6 text-base-content/70" v-html="renderMarkdown(turn.message.thinking!)"></div>
-          </details>
+          <button
+            class="flex items-center gap-2 text-sm font-medium cursor-pointer select-none pl-3 py-1 w-full text-left"
+            @click.stop="toggleThinking(turn.message.id)"
+          >
+            <ChevronRight
+              class="w-3.5 h-3.5 text-purple-400 shrink-0 transition-transform duration-200"
+              :class="{ 'rotate-90': expandedThinking.has(turn.message.id) }"
+            />
+            <Brain class="w-4 h-4 text-purple-400 shrink-0" />
+            <span>Thinking</span>
+          </button>
+          <div
+            class="thinking-body"
+            :class="expandedThinking.has(turn.message.id) ? 'thinking-body--expanded' : 'thinking-body--collapsed'"
+          >
+            <div class="thinking-content text-xs pl-9 pb-2 pr-3 text-base-content/70" v-html="renderMarkdown(turn.message.thinking!)"></div>
+          </div>
         </div>
 
         <!-- Turn text content -->
@@ -112,17 +112,22 @@
         </div>
       </div>
     </div>
+
+    <!-- Last text output: always visible (full rendered markdown, no clamp) -->
+    <div v-if="lastOutputHtml" class="px-4 pb-3 pl-10">
+      <div class="thinking-content text-sm text-base-content/70" v-html="lastOutputHtml"></div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { Brain, ChevronRight, Copy, Check } from 'lucide-vue-next';
 import type { MessageTokenUsage } from '../types';
 import type { AssistantGroup, AssistantTurn } from '../composables/useGroupedTurns';
 import { parseContent, formatTime } from '../utils/content-parser';
 import { stripXmlTags } from '../utils/content-sanitizer';
-import { getLastTextContent, getToolSummary, extractFilenames, formatMs } from '../utils/turn-helpers';
+import { getLastTextContent, extractFilenames, formatMs } from '../utils/turn-helpers';
 import { formatTokenCount, formatCost } from '../utils/format-tokens';
 import { getModelBadge } from '../utils/model-labels';
 import { renderMarkdown } from '../utils/render-markdown';
@@ -143,16 +148,12 @@ const modelBadge = computed(() => getModelBadge(props.group.model));
 
 const lastTextContent = computed(() => getLastTextContent(props.group));
 
-const previewHtml = computed(() => {
+/** Full rendered last text output -- always visible below header */
+const lastOutputHtml = computed(() => {
   if (lastTextContent.value) {
     return renderMarkdown(lastTextContent.value);
   }
   return null;
-});
-
-const toolSummaryText = computed(() => {
-  if (lastTextContent.value) return null; // only show for tool-only groups
-  return getToolSummary(props.group);
 });
 
 const displayedFilenames = computed(() => {
@@ -197,7 +198,7 @@ const groupTokens = computed(() => {
     }
   }
 
-  // Context tokens = last turn's (inputTokens + cacheReadTokens) — actual context window size
+  // Context tokens = last turn's (inputTokens + cacheReadTokens) -- actual context window size
   let contextTokens = 0;
   for (const turn of [...props.group.turns].reverse()) {
     const lastUsage = props.tokenUsageByMessage[turn.message.id];
@@ -226,6 +227,7 @@ function getTurnContent(turn: AssistantTurn) {
   return parseContent(cleaned);
 }
 
+// -- Copy button state (from Task 1) --
 const copiedBlockKey = ref<string | null>(null);
 
 async function copyContent(content: string, blockKey: string): Promise<void> {
@@ -239,24 +241,33 @@ async function copyContent(content: string, blockKey: string): Promise<void> {
     // Clipboard API not available
   }
 }
+
+// -- Animated thinking blocks (Part B) --
+const expandedThinking = reactive(new Set<string>());
+
+function toggleThinking(messageId: string): void {
+  if (expandedThinking.has(messageId)) {
+    expandedThinking.delete(messageId);
+  } else {
+    expandedThinking.add(messageId);
+  }
+}
 </script>
 
 <style>
 @import '../styles/markdown-content.css';
 
-.preview-clamp {
-  max-height: 3.6em;
+/* Animated thinking block expand/collapse */
+.thinking-body {
   overflow: hidden;
-  position: relative;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
 }
-.preview-clamp::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1.2em;
-  background: linear-gradient(to bottom, transparent, oklch(var(--b2)));
-  pointer-events: none;
+.thinking-body--collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+.thinking-body--expanded {
+  max-height: 2000px;
+  opacity: 1;
 }
 </style>

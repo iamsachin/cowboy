@@ -91,8 +91,6 @@ CREATE TABLE IF NOT EXISTS settings (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     claude_code_path TEXT NOT NULL DEFAULT '',
     claude_code_enabled INTEGER NOT NULL DEFAULT 1,
-    cursor_path TEXT NOT NULL DEFAULT '',
-    cursor_enabled INTEGER NOT NULL DEFAULT 1,
     sync_enabled INTEGER NOT NULL DEFAULT 0,
     sync_url TEXT NOT NULL DEFAULT '',
     sync_frequency INTEGER NOT NULL DEFAULT 900,
@@ -100,7 +98,6 @@ CREATE TABLE IF NOT EXISTS settings (
     last_sync_at TEXT,
     last_sync_error TEXT,
     last_sync_success INTEGER,
-    sync_cursor TEXT,
     server_port INTEGER NOT NULL DEFAULT 8123
 );
 

@@ -33,8 +33,6 @@ pub struct SettingsResponse {
     pub id: i64,
     pub claude_code_path: String,
     pub claude_code_enabled: bool,
-    pub cursor_path: String,
-    pub cursor_enabled: bool,
     pub sync_enabled: bool,
     pub sync_url: String,
     pub sync_frequency: i64,
@@ -42,7 +40,6 @@ pub struct SettingsResponse {
     pub last_sync_at: Option<String>,
     pub last_sync_error: Option<String>,
     pub last_sync_success: Option<bool>,
-    pub sync_cursor: Option<String>,
     pub server_port: i64,
 }
 
@@ -51,8 +48,6 @@ pub struct SettingsResponse {
 struct AgentSettingsBody {
     claude_code_path: String,
     claude_code_enabled: bool,
-    cursor_path: String,
-    cursor_enabled: bool,
 }
 
 #[derive(Deserialize)]
@@ -118,33 +113,30 @@ fn expand_tilde(path: &str) -> String {
 }
 
 const SETTINGS_COLUMNS: &str =
-    "id, claude_code_path, claude_code_enabled, cursor_path, cursor_enabled, \
+    "id, claude_code_path, claude_code_enabled, \
      sync_enabled, sync_url, sync_frequency, sync_categories, \
-     last_sync_at, last_sync_error, last_sync_success, sync_cursor, server_port";
+     last_sync_at, last_sync_error, last_sync_success, server_port";
 
 fn map_settings_row(row: &tokio_rusqlite::rusqlite::Row) -> tokio_rusqlite::rusqlite::Result<SettingsResponse> {
-    let sync_categories_str: String = row.get(8)?;
+    let sync_categories_str: String = row.get(6)?;
     let sync_categories: Vec<String> =
         serde_json::from_str(&sync_categories_str).unwrap_or_default();
 
-    let last_sync_success_int: Option<i32> = row.get(11)?;
+    let last_sync_success_int: Option<i32> = row.get(9)?;
     let last_sync_success = last_sync_success_int.map(|v| v != 0);
 
     Ok(SettingsResponse {
         id: row.get(0)?,
         claude_code_path: row.get(1)?,
         claude_code_enabled: row.get::<_, i32>(2)? != 0,
-        cursor_path: row.get(3)?,
-        cursor_enabled: row.get::<_, i32>(4)? != 0,
-        sync_enabled: row.get::<_, i32>(5)? != 0,
-        sync_url: row.get(6)?,
-        sync_frequency: row.get(7)?,
+        sync_enabled: row.get::<_, i32>(3)? != 0,
+        sync_url: row.get(4)?,
+        sync_frequency: row.get(5)?,
         sync_categories,
-        last_sync_at: row.get(9)?,
-        last_sync_error: row.get(10)?,
+        last_sync_at: row.get(7)?,
+        last_sync_error: row.get(8)?,
         last_sync_success,
-        sync_cursor: row.get(12)?,
-        server_port: row.get(13)?,
+        server_port: row.get(10)?,
     })
 }
 
@@ -161,18 +153,13 @@ fn get_or_seed_settings(
             // Seed defaults
             let home = std::env::var("HOME").unwrap_or_default();
             let default_claude_path = format!("{}/.claude/projects", home);
-            let default_cursor_path = format!(
-                "{}/Library/Application Support/Cursor/User/globalStorage",
-                home
-            );
 
             conn.execute(
-                "INSERT INTO settings (id, claude_code_path, claude_code_enabled, cursor_path, cursor_enabled,
+                "INSERT INTO settings (id, claude_code_path, claude_code_enabled,
                     sync_enabled, sync_url, sync_frequency, sync_categories, server_port)
-                 VALUES (1, ?1, 1, ?2, 1, 0, '', 900, ?3, 8123)",
+                 VALUES (1, ?1, 1, 0, '', 900, ?2, 8123)",
                 tokio_rusqlite::rusqlite::params![
                     default_claude_path,
-                    default_cursor_path,
                     r#"["conversations","messages","toolCalls","tokenUsage","plans"]"#,
                 ],
             )?;
@@ -203,9 +190,7 @@ async fn update_agent(
     Json(body): Json<AgentSettingsBody>,
 ) -> Result<Json<SettingsResponse>, AppError> {
     let claude_path = expand_tilde(&body.claude_code_path);
-    let cursor_path = expand_tilde(&body.cursor_path);
     let claude_enabled = body.claude_code_enabled;
-    let cursor_enabled = body.cursor_enabled;
 
     let settings = state
         .db
@@ -214,13 +199,10 @@ async fn update_agent(
             get_or_seed_settings(conn)?;
 
             conn.execute(
-                "UPDATE settings SET claude_code_path = ?1, claude_code_enabled = ?2,
-                    cursor_path = ?3, cursor_enabled = ?4 WHERE id = 1",
+                "UPDATE settings SET claude_code_path = ?1, claude_code_enabled = ?2 WHERE id = 1",
                 tokio_rusqlite::rusqlite::params![
                     claude_path,
                     claude_enabled as i32,
-                    cursor_path,
-                    cursor_enabled as i32,
                 ],
             )?;
 
@@ -354,16 +336,10 @@ async fn validate_path(
                 message: format!("Path exists: {} JSONL files found", count),
             }
         } else {
-            // Cursor: check for state.vscdb
-            let has_db = path.join("state.vscdb").exists();
             ValidatePathResponse {
-                valid: true,
-                file_count: if has_db { 1 } else { 0 },
-                message: if has_db {
-                    "Path exists: state.vscdb found".to_string()
-                } else {
-                    "Path exists but no state.vscdb found".to_string()
-                },
+                valid: false,
+                file_count: 0,
+                message: "Unknown agent".to_string(),
             }
         }
     })

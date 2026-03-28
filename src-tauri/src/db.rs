@@ -43,6 +43,36 @@ pub async fn init_database(
     })
     .await?;
 
+    // Migration: remove cursor columns from settings (v3.1 Phase 44)
+    conn.call(|conn| {
+        let has_column: bool = conn
+            .prepare("SELECT cursor_path FROM settings LIMIT 0")
+            .is_ok();
+        if has_column {
+            conn.execute_batch(
+                "CREATE TABLE settings_new (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    claude_code_path TEXT NOT NULL DEFAULT '',
+                    claude_code_enabled INTEGER NOT NULL DEFAULT 1,
+                    sync_enabled INTEGER NOT NULL DEFAULT 0,
+                    sync_url TEXT NOT NULL DEFAULT '',
+                    sync_frequency INTEGER NOT NULL DEFAULT 900,
+                    sync_categories TEXT NOT NULL DEFAULT '[\"conversations\",\"messages\",\"toolCalls\",\"tokenUsage\",\"plans\"]',
+                    last_sync_at TEXT,
+                    last_sync_error TEXT,
+                    last_sync_success INTEGER,
+                    server_port INTEGER NOT NULL DEFAULT 8123
+                );
+                INSERT INTO settings_new (id, claude_code_path, claude_code_enabled, sync_enabled, sync_url, sync_frequency, sync_categories, last_sync_at, last_sync_error, last_sync_success, server_port)
+                    SELECT id, claude_code_path, claude_code_enabled, sync_enabled, sync_url, sync_frequency, sync_categories, last_sync_at, last_sync_error, last_sync_success, server_port FROM settings;
+                DROP TABLE settings;
+                ALTER TABLE settings_new RENAME TO settings;",
+            )?;
+        }
+        Ok::<(), rusqlite::Error>(())
+    })
+    .await?;
+
     Ok(conn)
 }
 

@@ -1,8 +1,8 @@
 <template>
-  <!-- Draggable title bar region — z-10 so page content buttons stay clickable above it -->
+  <!-- Draggable title bar region — z-50 so it sits above all page content to receive pointer events -->
   <div
     data-tauri-drag-region
-    class="fixed top-0 left-0 right-0 h-[38px] z-10"
+    class="fixed top-0 left-0 right-0 h-[38px] z-50"
     style="-webkit-app-region: drag;"
   ></div>
 

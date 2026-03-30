@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.1.10
+
+- Fix token rate speed display to show current minute value instead of stale data
+- Make chart legend indicators rounded (circles) instead of squares across all charts
+
 ## v3.1.9
 
 - Move skill indicator pill into metadata row (alongside Agent, Model, Project)

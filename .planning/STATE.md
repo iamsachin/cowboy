@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-03-31 - Completed quick task 43: Fix skill pill placement and timeline layout
+Last activity: 2026-03-31 - Completed quick task 44: Fix token rate speed and rounded legend indicators
 
 ## Performance Metrics
 
@@ -96,9 +96,10 @@ None.
 | 41 | Skill-aware conversation UI - show skill invocation badge and fix titles | 2026-03-31 | 63c6036 | [41-skill-aware-conversation-ui-show-skill-i](./quick/41-skill-aware-conversation-ui-show-skill-i/) |
 | 42 | Fix activity heatmap colors for both themes | 2026-03-31 | 4c22aac | [42-the-activity-github-like-dot-graph-has-c](./quick/42-the-activity-github-like-dot-graph-has-c/) |
 | 43 | Fix skill pill placement and timeline layout | 2026-03-31 | b00c025 | [43-fix-skill-pill-placement-in-conversation](./quick/43-fix-skill-pill-placement-in-conversation/) |
+| 44 | Fix token rate speed and rounded legend indicators | 2026-03-30 | cbe3454 | [44-fix-token-rate-speed-to-show-current-val](./quick/44-fix-token-rate-speed-to-show-current-val/) |
 
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Completed quick task 43
+Stopped at: Completed quick task 44
 Resume file: None

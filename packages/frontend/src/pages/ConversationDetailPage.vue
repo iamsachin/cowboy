@@ -1,6 +1,6 @@
 <template>
   <div class="flex">
-    <div ref="pageRef" class="flex-1 min-w-0 p-4" :class="{ 'max-w-5xl mx-auto': !isOpen }">
+    <div ref="pageRef" class="flex-1 min-w-0 p-4 max-w-5xl mx-auto">
       <!-- Loading state -->
       <div v-if="loading" class="flex justify-center items-center min-h-[60vh]">
         <span class="loading loading-spinner loading-lg"></span>
@@ -70,18 +70,17 @@
               <PanelRight class="w-4 h-4" :class="{ 'text-primary': isOpen }" />
             </button>
           </h1>
-          <!-- Skill invocation indicator -->
-          <div v-if="skillInvocation" class="flex items-center gap-1.5 mb-2">
-            <span class="badge badge-sm badge-primary gap-1">
-              <Sparkles class="w-3 h-3" />
-              Skill: {{ skillInvocation }}
-            </span>
-          </div>
           <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
             <!-- Agent badge -->
             <div class="flex items-center gap-1">
               <span class="text-base-content/60">Agent:</span>
               <span class="badge badge-outline badge-sm">{{ data.conversation.agent }}</span>
+            </div>
+
+            <!-- Skill -->
+            <div v-if="skillInvocation" class="flex items-center gap-1">
+              <span class="text-base-content/60">Skill:</span>
+              <span>{{ skillInvocation }}</span>
             </div>
 
             <!-- Model -->
@@ -165,7 +164,7 @@
     <div
       v-if="isOpen && data"
       ref="timelinePanelRef"
-      class="w-[220px] shrink-0 sticky top-0 h-[calc(100vh-64px)] overflow-y-auto"
+      class="fixed right-0 top-[64px] w-[220px] h-[calc(100vh-64px)] overflow-y-auto border-l border-base-300 bg-base-100 z-10"
     >
       <ConversationTimeline
         :events="timelineEvents"
@@ -180,7 +179,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, watchEffect, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, ArrowUpLeft, AlertTriangle, ClipboardList, PanelRight, Download, Sparkles } from 'lucide-vue-next';
+import { ArrowLeft, ArrowUpLeft, AlertTriangle, ClipboardList, PanelRight, Download } from 'lucide-vue-next';
 import type { ConversationPlanEntry } from '../types';
 import { useConversationDetail } from '../composables/useConversationDetail';
 import { useTimeline, extractTimelineEvents } from '../composables/useTimeline';

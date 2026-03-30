@@ -27,7 +27,7 @@ use self::file_discovery::discover_jsonl_files;
 use self::id_generator::generate_id;
 use self::migration::run_data_quality_migration;
 use self::normalizer::normalize_conversation;
-use self::plan_extractor::{extract_plans, infer_step_completion, CompletionContext, LaterMessage, ToolCallRef};
+use self::plan_extractor::{extract_plans_from_tool_calls, infer_step_completion, CompletionContext, LaterMessage, ToolCallRef};
 use self::snapshot::{snapshot_conversation, track_changes};
 use self::subagent_linker::{link_subagents, ToolCallInfo};
 use self::subagent_summarizer::summarize_subagent;
@@ -744,19 +744,19 @@ fn insert_extracted_plans_sql(
         )?;
     }
 
-    for msg in &normalized.messages {
-        if msg.role != "assistant" || msg.content.is_none() {
-            continue;
-        }
+    // Extract plans from ExitPlanMode tool calls only
+    let extracted = extract_plans_from_tool_calls(&normalized.tool_calls, normalized.conversation.title.as_deref());
 
-        let content = msg.content.as_ref().unwrap();
-        let extracted = extract_plans(content, &msg.id, None);
+    for plan in &extracted {
+        // Find the source message's created_at for completion context
+        let source_msg = normalized.messages.iter().find(|m| m.id == plan.source_message_id);
+        let source_created_at = source_msg.map(|m| m.created_at.as_str()).unwrap_or("");
 
-        // Build completion context
+        // Build completion context from messages after the plan source
         let later_messages: Vec<LaterMessage> = normalized
             .messages
             .iter()
-            .filter(|m| m.created_at > msg.created_at)
+            .filter(|m| m.created_at.as_str() > source_created_at)
             .map(|m| LaterMessage {
                 role: m.role.clone(),
                 content: m.content.clone(),
@@ -776,69 +776,69 @@ fn insert_extracted_plans_sql(
             tool_calls: tool_call_refs,
         };
 
-        for plan in &extracted {
-            let steps_with_status: Vec<_> = plan
-                .steps
-                .iter()
-                .map(|s| {
-                    let status = infer_step_completion(s, &context);
-                    (s, status)
-                })
-                .collect();
+        let steps_with_status: Vec<_> = plan
+            .steps
+            .iter()
+            .map(|s| {
+                let status = infer_step_completion(s, &context);
+                (s, status)
+            })
+            .collect();
 
-            let completed_count = steps_with_status
-                .iter()
-                .filter(|(_, s)| *s == "complete")
-                .count();
-            let plan_status = if completed_count == plan.steps.len() {
-                "complete"
-            } else if completed_count == 0 {
-                if steps_with_status.iter().any(|(_, s)| *s == "incomplete") {
-                    "not-started"
-                } else {
-                    "unknown"
-                }
+        let completed_count = steps_with_status
+            .iter()
+            .filter(|(_, s)| *s == "complete")
+            .count();
+        let plan_status = if completed_count == plan.steps.len() {
+            "complete"
+        } else if completed_count == 0 {
+            if steps_with_status.iter().any(|(_, s)| *s == "incomplete") {
+                "not-started"
             } else {
-                "partial"
-            };
+                "unknown"
+            }
+        } else {
+            "partial"
+        };
 
-            let plan_id = generate_id(&[
-                &normalized.conversation.id,
-                "plan",
-                &msg.id,
-                &plan.title,
-            ]);
+        let plan_id = generate_id(&[
+            &normalized.conversation.id,
+            "plan",
+            &plan.source_message_id,
+            &plan.title,
+        ]);
 
+        let plan_created_at = source_msg.map(|m| m.created_at.as_str()).unwrap_or(&normalized.conversation.created_at);
+
+        tx.execute(
+            "INSERT OR IGNORE INTO plans (id, conversation_id, source_message_id, title, total_steps, completed_steps, status, created_at) \
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+            rusqlite::params![
+                plan_id,
+                normalized.conversation.id,
+                plan.source_message_id,
+                plan.title,
+                plan.steps.len() as i64,
+                completed_count as i64,
+                plan_status,
+                plan_created_at,
+            ],
+        )?;
+
+        for (step, status) in &steps_with_status {
+            let step_id = generate_id(&[&plan_id, &step.step_number.to_string()]);
             tx.execute(
-                "INSERT OR IGNORE INTO plans (id, conversation_id, source_message_id, title, total_steps, completed_steps, status, created_at) \
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+                "INSERT OR IGNORE INTO plan_steps (id, plan_id, step_number, content, status, created_at) \
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
                 rusqlite::params![
+                    step_id,
                     plan_id,
-                    normalized.conversation.id,
-                    msg.id,
-                    plan.title,
-                    plan.steps.len() as i64,
-                    completed_count as i64,
-                    plan_status,
-                    msg.created_at,
+                    step.step_number as i64,
+                    step.content,
+                    status,
+                    plan_created_at,
                 ],
             )?;
-
-            for (step, status) in &steps_with_status {
-                let step_id = generate_id(&[&plan_id, &step.step_number.to_string()]);
-                tx.execute(
-                    "INSERT OR IGNORE INTO plan_steps (id, plan_id, step_number, content, status, created_at) \
-                     VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-                    rusqlite::params![
-                        step_id,
-                        plan_id,
-                        step.step_number as i64,
-                        step.content,
-                        status,
-                        msg.created_at,
-                    ],
-                )?;
-            }
         }
     }
 

@@ -4,7 +4,27 @@ A desktop app for monitoring and analyzing AI coding agent conversations. Track 
 
 Built with [Tauri](https://tauri.app/) + [Vue 3](https://vuejs.org/) + [Chart.js](https://www.chartjs.org/).
 
-## Prerequisites
+## Install
+
+### Homebrew
+
+```bash
+brew install --cask iamsachin/cowboy/cowboy
+```
+
+### Manual download
+
+1. Download the `.dmg` from the [latest release](https://github.com/iamsachin/cowboy/releases/latest).
+2. Open the DMG and drag **Cowboy.app** to `/Applications`.
+3. Remove the macOS quarantine flag (required because the app is not notarized):
+
+```bash
+xattr -cr /Applications/Cowboy.app
+```
+
+4. Launch Cowboy from Applications.
+
+## Prerequisites (development)
 
 - [Rust](https://rustup.rs/) (latest stable)
 - [Node.js](https://nodejs.org/) (v18+)

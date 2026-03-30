@@ -70,6 +70,13 @@
               <PanelRight class="w-4 h-4" :class="{ 'text-primary': isOpen }" />
             </button>
           </h1>
+          <!-- Skill invocation indicator -->
+          <div v-if="skillInvocation" class="flex items-center gap-1.5 mb-2">
+            <span class="badge badge-sm badge-primary gap-1">
+              <Sparkles class="w-3 h-3" />
+              Skill: {{ skillInvocation }}
+            </span>
+          </div>
           <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
             <!-- Agent badge -->
             <div class="flex items-center gap-1">
@@ -173,7 +180,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, watchEffect, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, ArrowUpLeft, AlertTriangle, ClipboardList, PanelRight, Download } from 'lucide-vue-next';
+import { ArrowLeft, ArrowUpLeft, AlertTriangle, ClipboardList, PanelRight, Download, Sparkles } from 'lucide-vue-next';
 import type { ConversationPlanEntry } from '../types';
 import { useConversationDetail } from '../composables/useConversationDetail';
 import { useTimeline, extractTimelineEvents } from '../composables/useTimeline';
@@ -387,6 +394,23 @@ const messageDuration = computed(() => {
 });
 
 const displayTitle = computed(() => cleanTitle(data.value?.conversation.title || ''));
+
+const skillInvocation = computed(() => {
+  if (!data.value) return null;
+  for (const msg of data.value.messages) {
+    if (msg.role !== 'user' || !msg.content) continue;
+    // Check for "Base directory for this skill:" pattern
+    const skillMatch = msg.content.match(/^Base directory for this skill:\s*\S+\/skills\/([^\/\s#]+)/);
+    if (skillMatch) return skillMatch[1];
+    // Check for structured skill prompts with known patterns
+    if (/<objective>/.test(msg.content) && /<execution_context>/.test(msg.content)) {
+      const refMatch = msg.content.match(/skills\/([^\/\s]+)\//);
+      if (refMatch) return refMatch[1];
+      return 'skill';
+    }
+  }
+  return null;
+});
 
 // Set document title
 watchEffect(() => {

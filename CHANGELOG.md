@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.1.8
+
+- Fix activity heatmap colors invisible/broken on both dark (forest) and light (emerald) themes
+- Replace broken DaisyUI v4 CSS variable references with explicit theme-aware color definitions
+
 ## v3.1.7
 
 - Fix conversation titles showing raw skill definition text when conversation starts with a skill invocation

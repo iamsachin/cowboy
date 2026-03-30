@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.1.3
+
+- Add progress bar and error display for "Refresh All Data" on Settings page
+- Show file ingestion progress with real-time count updates
+- Display error alerts when data refresh fails
+- Fix window drag z-index conflict
+
 ## v3.1.2
 
 - Extract plans only from Claude Code plan mode (EnterPlanMode/ExitPlanMode) instead of heuristic pattern matching

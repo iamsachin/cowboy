@@ -1,4 +1,4 @@
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { API_BASE } from '../utils/api-base';
 
 export interface SettingsResponse {
@@ -47,6 +47,13 @@ export interface DataActionResult {
   message: string;
 }
 
+export interface IngestionStatus {
+  running: boolean;
+  progress: { files_processed: number; total_files: number } | null;
+  last_run: { completed_at: string; stats: Record<string, number> } | null;
+  error: string | null;
+}
+
 export function useSettings() {
   const settings = ref<SettingsResponse | null>(null);
   const loading = ref(false);
@@ -59,6 +66,37 @@ export function useSettings() {
   const dbStats = ref<DbStats | null>(null);
   const clearing = ref(false);
   const dataActionResult = ref<DataActionResult | null>(null);
+
+  // Ingestion status polling
+  const ingestionStatus = ref<IngestionStatus | null>(null);
+  let pollTimer: ReturnType<typeof setInterval> | null = null;
+
+  function startPollingIngestionStatus() {
+    stopPollingIngestionStatus();
+    fetchIngestionStatus();
+    pollTimer = setInterval(fetchIngestionStatus, 500);
+  }
+
+  function stopPollingIngestionStatus() {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  }
+
+  async function fetchIngestionStatus() {
+    try {
+      const res = await fetch(`${API_BASE}/api/ingest/status`);
+      if (res.ok) {
+        ingestionStatus.value = await res.json();
+        if (ingestionStatus.value && !ingestionStatus.value.running) {
+          stopPollingIngestionStatus();
+          await fetchDbStats();
+        }
+      }
+    } catch { /* ignore fetch errors during polling */ }
+  }
+
+  onBeforeUnmount(() => {
+    stopPollingIngestionStatus();
+  });
 
   async function fetchDbStats(): Promise<void> {
     try {
@@ -117,11 +155,8 @@ export function useSettings() {
       const url = agent ? `${API_BASE}/api/settings/refresh-db?agent=${encodeURIComponent(agent)}` : `${API_BASE}/api/settings/refresh-db`;
       const res = await fetch(url, { method: 'POST' });
       if (!res.ok) throw new Error(`Refresh database failed: ${res.status}`);
-      dataActionResult.value = {
-        success: true,
-        message: agent ? `Refreshing ${agent} data...` : 'Refreshing all data...',
-      };
-      await fetchDbStats();
+      // Start polling for progress
+      startPollingIngestionStatus();
       return true;
     } catch (e) {
       console.error('Failed to refresh database:', e);
@@ -260,6 +295,7 @@ export function useSettings() {
     dbStats,
     clearing,
     dataActionResult,
+    ingestionStatus,
     fetchSettings,
     saveAgentSettings,
     saveSyncSettings,
@@ -270,5 +306,6 @@ export function useSettings() {
     fetchDbStats,
     clearDatabase,
     refreshDatabase,
+    stopPollingIngestionStatus,
   };
 }

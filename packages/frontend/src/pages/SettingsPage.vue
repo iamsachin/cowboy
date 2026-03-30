@@ -175,7 +175,7 @@
               <!-- Refresh All Data with modal -->
               <button
                 class="btn btn-sm btn-warning btn-outline"
-                :disabled="clearing"
+                :disabled="clearing || ingestionStatus?.running"
                 @click="openRefreshModal()"
               >
                 <span v-if="clearing && refreshingAll" class="loading loading-spinner loading-xs"></span>
@@ -200,7 +200,7 @@
               <div class="flex gap-1">
                 <button
                   class="btn btn-ghost btn-xs"
-                  :disabled="clearing"
+                  :disabled="clearing || ingestionStatus?.running"
                   @click="handleRefreshAgent(agent as string)"
                 >
                   <RotateCcw class="w-3 h-3" />
@@ -226,6 +226,36 @@
                 </button>
               </div>
             </div>
+          </div>
+
+          <!-- Ingestion Progress -->
+          <div v-if="ingestionStatus?.running" class="mt-4 space-y-2">
+            <div class="flex items-center justify-between text-sm">
+              <span class="flex items-center gap-2">
+                <span class="loading loading-spinner loading-xs"></span>
+                Refreshing data...
+              </span>
+              <span v-if="ingestionStatus.progress" class="opacity-60">
+                {{ ingestionStatus.progress.files_processed }} / {{ ingestionStatus.progress.total_files }} files
+              </span>
+            </div>
+            <progress
+              class="progress progress-warning w-full"
+              :value="ingestionStatus.progress?.files_processed ?? 0"
+              :max="ingestionStatus.progress?.total_files || 100"
+            ></progress>
+          </div>
+
+          <!-- Ingestion Error -->
+          <div v-if="ingestionStatus?.error && !ingestionStatus?.running" class="alert alert-error mt-4 text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span>Ingestion failed: {{ ingestionStatus.error }}</span>
+          </div>
+
+          <!-- Ingestion Complete -->
+          <div v-if="ingestionStatus?.last_run && !ingestionStatus?.running && !ingestionStatus?.error" class="alert alert-success mt-4 text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span>Data refreshed successfully ({{ ingestionStatus.last_run.stats.conversations_found }} conversations, {{ ingestionStatus.last_run.stats.files_scanned }} files in {{ Math.round(ingestionStatus.last_run.stats.duration) }}ms)</span>
           </div>
         </div>
       </div>
@@ -412,6 +442,7 @@ const {
   syncNowResult,
   dbStats,
   clearing,
+  ingestionStatus,
   saveAgentSettings,
   saveSyncSettings,
   savePortSettings,
@@ -420,6 +451,7 @@ const {
   triggerSyncNow,
   clearDatabase,
   refreshDatabase,
+  stopPollingIngestionStatus,
 } = useSettings();
 
 const { success: toastSuccess, error: toastError } = useToast();
@@ -472,6 +504,7 @@ function handleCountdownAction(actionKey: string, action: () => void) {
 
 onBeforeUnmount(() => {
   clearCountdownTimers();
+  stopPollingIngestionStatus();
 });
 
 // Refresh modal state
@@ -491,9 +524,7 @@ async function confirmRefreshAll() {
   refreshingAll.value = true;
   const ok = await refreshDatabase();
   refreshingAll.value = false;
-  if (ok) {
-    toastSuccess('Refreshing all data...');
-  } else {
+  if (!ok) {
     toastError('Failed to refresh database');
   }
 }

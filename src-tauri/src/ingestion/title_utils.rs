@@ -28,6 +28,16 @@ pub fn should_skip_for_title(content: &str) -> bool {
         return true;
     }
 
+    // Skill definition messages injected by Claude Code
+    if trimmed.starts_with("Base directory for this skill:") {
+        return true;
+    }
+
+    // Skill/command expanded prompts with structured XML sections
+    if trimmed.contains("<objective>") || trimmed.contains("<execution_context>") || trimmed.contains("<files_to_read>") {
+        return true;
+    }
+
     false
 }
 
@@ -258,6 +268,38 @@ mod tests {
         assert_eq!(
             derive_conversation_title(&msgs, Some(&snippets)),
             Some("Context has been cleared".to_string())
+        );
+    }
+
+    #[test]
+    fn skip_skill_definition() {
+        assert!(should_skip_for_title("Base directory for this skill: /Users/sin-ce/.claude/skills/research # Parallel Research"));
+    }
+
+    #[test]
+    fn skip_skill_prompt_with_objective() {
+        assert!(should_skip_for_title("Some text\n<objective>Do something</objective>"));
+    }
+
+    #[test]
+    fn skip_skill_prompt_with_execution_context() {
+        assert!(should_skip_for_title("Run this task\n<execution_context>@some-file</execution_context>"));
+    }
+
+    #[test]
+    fn skip_skill_prompt_with_files_to_read() {
+        assert!(should_skip_for_title("Please read\n<files_to_read>\n- file.txt\n</files_to_read>"));
+    }
+
+    #[test]
+    fn derive_title_skips_skill_definition() {
+        let msgs: Vec<Option<&str>> = vec![
+            Some("Base directory for this skill: /Users/foo/.claude/skills/research # Research"),
+            Some("Help me understand Rust lifetimes"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("Help me understand Rust lifetimes".to_string())
         );
     }
 }

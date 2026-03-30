@@ -119,6 +119,11 @@ export function cleanTitle(title: string): string {
     return 'Untitled Conversation';
   }
 
+  // Skill definition text should not be used as title
+  if (/^Base directory for this skill:/i.test(normalized)) {
+    return 'Untitled Conversation';
+  }
+
   if (cleaned.length > 200) {
     return cleaned.slice(0, 200) + '...';
   }

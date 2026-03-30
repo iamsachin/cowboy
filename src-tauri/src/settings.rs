@@ -235,10 +235,13 @@ async fn update_agent(
 
     // Trigger re-ingestion with new paths
     let state_for_ingest = state.clone();
+    let status = state.ingestion_status.clone();
     tokio::spawn(async move {
-        let status = crate::ingestion::new_shared_status();
-        if let Err(e) = crate::ingestion::run_ingestion(&state_for_ingest, status).await {
+        if let Err(e) = crate::ingestion::run_ingestion(&state_for_ingest, status.clone()).await {
             eprintln!("Re-ingestion after agent settings change error: {}", e);
+            let mut s = status.lock().await;
+            s.error = Some(e.to_string());
+            s.running = false;
         }
     });
 
@@ -511,11 +514,22 @@ async fn db_stats(
 async fn refresh_db(
     State(state): State<AppState>,
 ) -> Result<Json<serde_json::Value>, AppError> {
+    let status = state.ingestion_status.clone();
+    {
+        let s = status.lock().await;
+        if s.running {
+            return Err(AppError::BadRequest("Ingestion already in progress".into()));
+        }
+    }
+
     let state_for_ingest = state.clone();
+    let status_clone = status.clone();
     tokio::spawn(async move {
-        let status = crate::ingestion::new_shared_status();
-        if let Err(e) = crate::ingestion::run_ingestion(&state_for_ingest, status).await {
+        if let Err(e) = crate::ingestion::run_ingestion(&state_for_ingest, status_clone.clone()).await {
             eprintln!("Refresh-db ingestion error: {}", e);
+            let mut s = status_clone.lock().await;
+            s.error = Some(e.to_string());
+            s.running = false;
         }
     });
 

@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-03-30 - Completed quick task 37: Extract plans only from ExitPlanMode tool calls
+Last activity: 2026-03-30 - Completed quick task 38: Fix window drag z-index conflict
 
 ## Performance Metrics
 
@@ -90,9 +90,10 @@ None.
 | 35 | Add light/dark mode toggle to sidebar | 2026-03-28 | e751b3b | [35-add-light-dark-mode-toggle-to-sidebar](./quick/35-add-light-dark-mode-toggle-to-sidebar/) |
 | 36 | Add release skill for app and Homebrew distribution | 2026-03-30 | 01c9d2d | [36-add-release-skill-for-app-and-homebrew-d](./quick/36-add-release-skill-for-app-and-homebrew-d/) |
 | 37 | Extract plans only from ExitPlanMode tool calls | 2026-03-30 | 603dd4a | [37-extract-plans-only-from-claude-code-plan](./quick/37-extract-plans-only-from-claude-code-plan/) |
+| 38 | Fix window drag z-index conflict | 2026-03-30 | aec81ab | [38-i-am-unable-to-hold-and-drag-the-window](./quick/38-i-am-unable-to-hold-and-drag-the-window/) |
 
 ## Session Continuity
 
 Last session: 2026-03-30
-Stopped at: Completed quick task 37
+Stopped at: Completed quick task 38
 Resume file: None

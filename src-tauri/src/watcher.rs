@@ -29,7 +29,7 @@ impl Drop for FileWatcherHandle {
 
 /// Triggers an ingestion run, logging errors without panicking.
 async fn trigger_ingestion(state: &AppState) {
-    let status = ingestion::new_shared_status();
+    let status = state.ingestion_status.clone();
     if let Err(e) = ingestion::run_ingestion(state, status).await {
         eprintln!("Watcher-triggered ingestion error: {}", e);
     }

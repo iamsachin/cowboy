@@ -199,4 +199,5 @@ pub struct IngestionStatus {
     pub running: bool,
     pub progress: Option<IngestionProgress>,
     pub last_run: Option<IngestionLastRun>,
+    pub error: Option<String>,
 }

@@ -11,6 +11,7 @@ use crate::conversations;
 use crate::ingestion;
 use crate::plans;
 use crate::settings;
+use crate::ingestion::SharedStatus;
 use crate::watcher::{self, FileWatcherHandle};
 use crate::websocket;
 
@@ -18,6 +19,7 @@ pub struct AppStateInner {
     pub db: Connection,
     pub tx: broadcast::Sender<String>,
     pub watcher: tokio::sync::Mutex<Option<FileWatcherHandle>>,
+    pub ingestion_status: SharedStatus,
 }
 
 pub type AppState = Arc<AppStateInner>;
@@ -29,6 +31,7 @@ pub async fn start(db: Connection) {
         db,
         tx,
         watcher: tokio::sync::Mutex::new(None),
+        ingestion_status: crate::ingestion::new_shared_status(),
     });
 
     // Allow requests from Tauri webview (tauri://localhost) and dev server

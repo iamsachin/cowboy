@@ -42,29 +42,22 @@ pub fn new_shared_status() -> SharedStatus {
         running: false,
         progress: None,
         last_run: None,
+        error: None,
     }))
 }
 
 // ── HTTP routes ─────────────────────────────────────────────────────────
 
 pub fn routes() -> Router<AppState> {
-    let status = new_shared_status();
-
     Router::new()
-        .route("/api/ingest", post({
-            let status = status.clone();
-            move |state: State<AppState>| post_ingest(state, status)
-        }))
-        .route("/api/ingest/status", get({
-            let status = status.clone();
-            move || get_ingest_status(status)
-        }))
+        .route("/api/ingest", post(post_ingest))
+        .route("/api/ingest/status", get(get_ingest_status))
 }
 
 async fn post_ingest(
     State(state): State<AppState>,
-    status: SharedStatus,
 ) -> Json<Value> {
+    let status = state.ingestion_status.clone();
     {
         let s = status.lock().await;
         if s.running {
@@ -75,22 +68,24 @@ async fn post_ingest(
     {
         let mut s = status.lock().await;
         s.running = true;
+        s.error = None;
     }
 
     let status_clone = status.clone();
     tokio::spawn(async move {
         if let Err(e) = run_ingestion(&state, status_clone.clone()).await {
             eprintln!("Ingestion error: {}", e);
+            let mut s = status_clone.lock().await;
+            s.error = Some(e.to_string());
+            s.running = false;
         }
-        let mut s = status_clone.lock().await;
-        s.running = false;
     });
 
     Json(json!({"message": "Ingestion started"}))
 }
 
-async fn get_ingest_status(status: SharedStatus) -> Json<IngestionStatus> {
-    let s = status.lock().await;
+async fn get_ingest_status(State(state): State<AppState>) -> Json<IngestionStatus> {
+    let s = state.ingestion_status.lock().await;
     Json(s.clone())
 }
 
@@ -98,7 +93,7 @@ async fn get_ingest_status(status: SharedStatus) -> Json<IngestionStatus> {
 
 /// Spawn auto-ingest after a brief delay to let the server bind.
 pub fn spawn_auto_ingest(state: AppState) {
-    let status = new_shared_status();
+    let status = state.ingestion_status.clone();
     tokio::spawn(async move {
         tokio::time::sleep(std::time::Duration::from_millis(500)).await;
         if let Err(e) = run_ingestion(&state, status).await {
@@ -118,6 +113,7 @@ pub async fn run_ingestion(
     {
         let mut s = status.lock().await;
         s.running = true;
+        s.error = None;
         s.progress = Some(IngestionProgress {
             files_processed: 0,
             total_files: 0,
@@ -233,6 +229,7 @@ pub async fn run_ingestion(
         let mut s = status.lock().await;
         s.running = false;
         s.progress = None;
+        s.error = None;
         s.last_run = Some(IngestionLastRun {
             completed_at: chrono::Utc::now().to_rfc3339(),
             stats: stats.clone(),

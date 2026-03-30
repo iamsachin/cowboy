@@ -141,13 +141,3 @@ function intensityColor(count: number, max: number): string {
   return 'var(--heatmap-4)';
 }
 </script>
-
-<style scoped>
-div {
-  --heatmap-0: oklch(var(--b3));
-  --heatmap-1: oklch(var(--su) / 0.25);
-  --heatmap-2: oklch(var(--su) / 0.50);
-  --heatmap-3: oklch(var(--su) / 0.75);
-  --heatmap-4: oklch(var(--su) / 1.0);
-}
-</style>

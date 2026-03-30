@@ -10,6 +10,13 @@
   --color-success: oklch(0.60 0.18 145);
   --color-success-content: oklch(0.98 0 0);
 
+  /* Heatmap color levels (GitHub-style green progression on dark) */
+  --heatmap-0: oklch(0.30 0 0);
+  --heatmap-1: oklch(0.35 0.10 145);
+  --heatmap-2: oklch(0.45 0.14 145);
+  --heatmap-3: oklch(0.55 0.18 145);
+  --heatmap-4: oklch(0.65 0.20 145);
+
   /* Chart theming: neutral tones that adapt with theme */
   --chart-grid: oklch(0.40 0 0 / 0.3);
   --chart-text: oklch(0.75 0 0);
@@ -18,6 +25,12 @@
 
 /* Light theme (emerald) overrides */
 [data-theme="emerald"] {
+  /* Heatmap color levels (GitHub-style green progression on light) */
+  --heatmap-0: oklch(0.90 0 0);
+  --heatmap-1: oklch(0.82 0.06 145);
+  --heatmap-2: oklch(0.70 0.12 145);
+  --heatmap-3: oklch(0.58 0.16 145);
+  --heatmap-4: oklch(0.46 0.18 145);
   --chart-grid: oklch(0.40 0 0 / 0.15);
   --chart-text: oklch(0.35 0 0);
   --chart-legend: oklch(0.35 0 0);

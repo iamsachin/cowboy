@@ -55,7 +55,7 @@ const chartOptions = computed(() => {
   const themeColors = getChartThemeColors();
   return {
   responsive: true,
-  animation: false,
+  animation: false as const,
   maintainAspectRatio: false,
   cutout: '55%',
   plugins: {

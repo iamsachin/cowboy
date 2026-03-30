@@ -136,7 +136,7 @@
                     <div
                       v-if="searchQuery && 'snippet' in row && row.snippet"
                       class="text-xs text-base-content/60 truncate mt-0.5"
-                      v-html="sanitizeSnippet(row.snippet)"
+                      v-html="sanitizeSnippet(row.snippet as string)"
                     ></div>
                   </div>
                 </div>

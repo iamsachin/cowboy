@@ -163,7 +163,7 @@
       <ConversationTimeline
         :events="timelineEvents"
         :active-key="activeKey"
-        :is-active="data.conversation.isActive"
+        :is-active="data.conversation.isActive ?? false"
         @navigate="handleTimelineNavigate"
       />
     </div>

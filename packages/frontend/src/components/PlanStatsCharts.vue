@@ -75,7 +75,7 @@ const barChartOptions = computed(() => {
   const themeColors = getChartThemeColors();
   return {
   responsive: true,
-  animation: false,
+  animation: false as const,
   maintainAspectRatio: false,
   scales: {
     x: {
@@ -124,7 +124,7 @@ const lineChartOptions = computed(() => {
   const themeColors = getChartThemeColors();
   return {
   responsive: true,
-  animation: false,
+  animation: false as const,
   maintainAspectRatio: false,
   scales: {
     x: {

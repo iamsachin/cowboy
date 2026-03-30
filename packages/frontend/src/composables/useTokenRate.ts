@@ -28,17 +28,6 @@ function debouncedWsRefetch(): void {
   }, 500);
 }
 
-// Current minute rates from the last element
-const currentInput = computed(() => {
-  const arr = tokenRate.value;
-  return arr.length > 0 ? arr[arr.length - 1].inputTokens : 0;
-});
-
-const currentOutput = computed(() => {
-  const arr = tokenRate.value;
-  return arr.length > 0 ? arr[arr.length - 1].outputTokens : 0;
-});
-
 // Fill missing minutes: generate all 60 minute slots with zeros for gaps
 const filledTokenRate = computed<TokenRatePoint[]>(() => {
   const now = new Date();
@@ -60,6 +49,17 @@ const filledTokenRate = computed<TokenRatePoint[]>(() => {
   }
 
   return slots;
+});
+
+// Current minute rates from the filled array (last slot = current minute)
+const currentInput = computed(() => {
+  const arr = filledTokenRate.value;
+  return arr.length > 0 ? arr[arr.length - 1].inputTokens : 0;
+});
+
+const currentOutput = computed(() => {
+  const arr = filledTokenRate.value;
+  return arr.length > 0 ? arr[arr.length - 1].outputTokens : 0;
 });
 
 function dismiss(): void {

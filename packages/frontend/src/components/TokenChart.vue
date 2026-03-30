@@ -115,7 +115,7 @@ const chartOptions = computed(() => {
   },
   plugins: {
     legend: {
-      labels: { color: themeColors.legendText, boxWidth: 12, font: { size: 11 } },
+      labels: { color: themeColors.legendText, boxWidth: 12, font: { size: 11 }, usePointStyle: true, pointStyle: 'circle' },
     },
     tooltip: {
       callbacks: {

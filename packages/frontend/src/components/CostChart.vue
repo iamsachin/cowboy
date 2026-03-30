@@ -268,6 +268,8 @@ const chartOptions = computed(() => {
         filter: (item: { text: string }) =>
           !['Upper bound', 'Lower bound'].includes(item.text),
         color: themeColors.legendText,
+        usePointStyle: true,
+        pointStyle: 'circle',
       },
     },
     tooltip: {

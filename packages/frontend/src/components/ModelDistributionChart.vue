@@ -66,6 +66,8 @@ const chartOptions = computed(() => {
         boxWidth: 12,
         font: { size: 11 },
         padding: 8,
+        usePointStyle: true,
+        pointStyle: 'circle',
       },
     },
     tooltip: {

@@ -448,7 +448,8 @@ async fn clear_db(
                      DELETE FROM token_usage;
                      DELETE FROM compaction_events;
                      DELETE FROM messages;
-                     DELETE FROM conversations;",
+                     DELETE FROM conversations;
+                     DELETE FROM ingested_files;",
                 )?;
             }
 
@@ -521,6 +522,16 @@ async fn refresh_db(
             return Err(AppError::BadRequest("Ingestion already in progress".into()));
         }
     }
+
+    // Clear ingestion cache so all files are re-processed
+    state
+        .db
+        .call(|conn| {
+            conn.execute("DELETE FROM ingested_files", [])?;
+            Ok::<_, tokio_rusqlite::rusqlite::Error>(())
+        })
+        .await
+        .map_err(|e| AppError::BadRequest(format!("Failed to clear ingestion cache: {}", e)))?;
 
     let state_for_ingest = state.clone();
     let status_clone = status.clone();

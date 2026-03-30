@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 max-w-3xl mx-auto space-y-8">
+  <div class="px-4 pt-2 pb-4 max-w-3xl mx-auto space-y-8">
     <h1 class="text-2xl font-bold">Settings</h1>
 
     <!-- Loading state -->

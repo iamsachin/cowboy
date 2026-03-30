@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.1.6
+
+- Switch to native macOS title bar for reliable window dragging
+- Remove custom overlay drag region and reduce top padding on all pages
+
 ## v3.1.5
 
 - Fix window dragging: add missing `core:window:allow-start-dragging` Tauri capability permission

@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 space-y-6">
+  <div class="px-4 pt-2 pb-4 space-y-6">
     <!-- Page header with title + agent filter dropdown -->
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold">Analytics</h1>

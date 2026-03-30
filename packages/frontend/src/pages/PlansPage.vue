@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 space-y-6">
+  <div class="px-4 pt-2 pb-4 space-y-6">
     <!-- Page header with title + filters -->
     <div class="flex items-center justify-between flex-wrap gap-3">
       <h1 class="text-2xl font-bold">Plans</h1>

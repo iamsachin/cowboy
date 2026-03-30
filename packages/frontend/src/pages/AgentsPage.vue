@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 space-y-4">
+  <div class="px-4 pt-2 pb-4 space-y-4">
     <!-- Error alert -->
     <div v-if="agentError" class="alert alert-error">
       <span>{{ agentError }}</span>

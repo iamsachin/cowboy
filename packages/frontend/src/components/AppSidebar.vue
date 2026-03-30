@@ -1,13 +1,6 @@
 <template>
-  <!-- Draggable title bar region — z-50 so it sits above all page content to receive pointer events -->
-  <div
-    data-tauri-drag-region
-    class="fixed top-0 left-0 right-0 h-[38px] z-50"
-    style="-webkit-app-region: drag;"
-  ></div>
-
   <aside
-    class="bg-base-200 h-screen flex flex-col transition-all duration-200 shrink-0 pt-[38px]"
+    class="bg-base-200 h-screen flex flex-col transition-all duration-200 shrink-0"
     :class="collapsed ? 'w-16' : 'w-60'"
   >
     <!-- Header (below traffic light padding) -->

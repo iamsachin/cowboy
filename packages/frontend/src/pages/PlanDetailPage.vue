@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 max-w-4xl mx-auto">
+  <div class="px-4 pt-2 pb-4 max-w-4xl mx-auto">
     <!-- Loading state -->
     <div v-if="loading" class="flex justify-center items-center min-h-[60vh]">
       <span class="loading loading-spinner loading-lg"></span>

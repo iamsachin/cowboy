@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 space-y-4">
+  <div class="px-4 pt-2 pb-4 space-y-4">
     <!-- Header row: title left, date filter right -->
     <div class="flex items-center justify-between flex-wrap gap-2">
       <h1 class="text-2xl font-bold">Conversations</h1>

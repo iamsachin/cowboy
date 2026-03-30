@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-03-30 - Completed quick task 39: Add loading progress bar and error display
+Last activity: 2026-03-31 - Completed quick task 41: Skill-aware conversation UI - show skill invocation badge and fix titles
 
 ## Performance Metrics
 
@@ -92,9 +92,11 @@ None.
 | 37 | Extract plans only from ExitPlanMode tool calls | 2026-03-30 | 603dd4a | [37-extract-plans-only-from-claude-code-plan](./quick/37-extract-plans-only-from-claude-code-plan/) |
 | 38 | Fix window drag z-index conflict | 2026-03-30 | aec81ab | [38-i-am-unable-to-hold-and-drag-the-window](./quick/38-i-am-unable-to-hold-and-drag-the-window/) |
 | 39 | Add loading progress bar and error display | 2026-03-30 | a9eabcc | [39-add-loading-progress-bar-and-error-displ](./quick/39-add-loading-progress-bar-and-error-displ/) |
+| 40 | Fix window dragging - top of window not draggable | 2026-03-30 | 8cd75e4 | [40-fix-window-dragging-top-of-window-not-dr](./quick/40-fix-window-dragging-top-of-window-not-dr/) |
+| 41 | Skill-aware conversation UI - show skill invocation badge and fix titles | 2026-03-31 | 63c6036 | [41-skill-aware-conversation-ui-show-skill-i](./quick/41-skill-aware-conversation-ui-show-skill-i/) |
 
 ## Session Continuity
 
-Last session: 2026-03-30
-Stopped at: Completed quick task 39
+Last session: 2026-03-31
+Stopped at: Completed quick task 41
 Resume file: None

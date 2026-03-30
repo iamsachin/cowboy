@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.1.7
+
+- Fix conversation titles showing raw skill definition text when conversation starts with a skill invocation
+- Add skill invocation badge (with skill name) to conversation detail header
+
 ## v3.1.6
 
 - Switch to native macOS title bar for reliable window dragging

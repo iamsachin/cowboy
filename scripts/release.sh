@@ -125,7 +125,7 @@ DMG_PATH="$REPO_ROOT/src-tauri/target/release/bundle/dmg/$DMG_NAME"
 # --- Step 3: Build the app ---
 log "Building Cowboy v${VERSION}..."
 cd "$REPO_ROOT"
-pnpm build
+npx tauri build --bundles app,dmg
 
 # --- Step 4: Verify build output ---
 if [[ ! -f "$DMG_PATH" ]]; then

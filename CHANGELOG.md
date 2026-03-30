@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.1.4
+
+- Fix "Refresh All Data" not re-ingesting files (ingestion cache wasn't cleared)
+- Fix "Clear All Data" not clearing ingestion cache, causing subsequent refreshes to skip all files
+
 ## v3.1.3
 
 - Add progress bar and error display for "Refresh All Data" on Settings page

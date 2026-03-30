@@ -9,7 +9,7 @@ Built with [Tauri](https://tauri.app/) + [Vue 3](https://vuejs.org/) + [Chart.js
 ### Homebrew
 
 ```bash
-brew install --cask iamsachin/cowboy/cowboy
+brew install iamsachin/cowboy/cowboy
 ```
 
 ### Manual download

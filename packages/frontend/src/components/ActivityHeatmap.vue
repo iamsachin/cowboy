@@ -6,7 +6,7 @@
     <div v-else-if="!data || data.length === 0" class="flex justify-center items-center h-32">
       <span class="text-base-content/50 text-sm">No data</span>
     </div>
-    <div v-else class="overflow-x-auto">
+    <div v-else>
       <div class="flex gap-1">
         <!-- Day-of-week labels -->
         <div class="flex flex-col shrink-0" :style="{ gap: '2px' }">

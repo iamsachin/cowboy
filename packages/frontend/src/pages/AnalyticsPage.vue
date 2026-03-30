@@ -15,8 +15,8 @@
     </div>
 
     <!-- Section 1: Activity Heatmap -->
-    <div class="card bg-base-200 rounded-box">
-      <div class="card-body">
+    <div class="card bg-base-200 rounded-box overflow-visible">
+      <div class="card-body overflow-visible">
         <h2 class="card-title text-sm flex items-center gap-2">
           <Activity class="w-4 h-4" /> Activity
         </h2>

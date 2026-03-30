@@ -31,8 +31,11 @@ export function getReconnectDelay(attempt: number): number {
 }
 
 function getWsUrl(): string {
-  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  return `${protocol}//${location.host}/api/ws`;
+  if (import.meta.env.DEV) {
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${protocol}//${location.host}/api/ws`;
+  }
+  return 'ws://127.0.0.1:8123/api/ws';
 }
 
 function fireFullRefresh(): void {

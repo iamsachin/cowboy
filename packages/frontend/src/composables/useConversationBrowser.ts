@@ -3,6 +3,7 @@ import { useRoute, useRouter } from 'vue-router';
 import type { ConversationListResponse, SearchConversationListResponse } from '../types';
 import { useDateRange } from './useDateRange';
 import { useWebSocket } from './useWebSocket';
+import { API_BASE } from '../utils/api-base';
 
 export type BrowserResponse = ConversationListResponse | SearchConversationListResponse;
 
@@ -91,7 +92,7 @@ export function useConversationBrowser() {
       if (searchQuery.value) {
         params.set('search', searchQuery.value);
       }
-      const res = await fetch(`/api/analytics/conversations?${params}`);
+      const res = await fetch(`${API_BASE}/api/analytics/conversations?${params}`);
       if (!res.ok) throw new Error(`Conversations fetch failed: ${res.status}`);
       const result: BrowserResponse = await res.json();
       data.value = result;
@@ -202,7 +203,7 @@ export function useConversationBrowser() {
     try {
       const { from, to } = dateRange.value;
       const params = new URLSearchParams({ from, to });
-      const res = await fetch(`/api/analytics/filters?${params}`);
+      const res = await fetch(`${API_BASE}/api/analytics/filters?${params}`);
       if (!res.ok) return;
       filterOptions.value = await res.json();
     } catch {

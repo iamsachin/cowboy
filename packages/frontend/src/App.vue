@@ -22,6 +22,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { RouterView } from 'vue-router';
 import DashboardLayout from './layouts/DashboardLayout.vue';
 import ToastContainer from './components/ToastContainer.vue';
+import { API_BASE } from './utils/api-base';
 
 const loadingQuips = [
   'Saddling up the AI agents...',
@@ -44,7 +45,7 @@ let pollTimer: ReturnType<typeof setInterval> | null = null;
 let timeoutTimer: ReturnType<typeof setTimeout> | null = null;
 
 function checkHealth() {
-  fetch('/api/health')
+  fetch(`${API_BASE}/api/health`)
     .then((res) => {
       if (res.ok) return res.json();
       throw new Error('not ready');

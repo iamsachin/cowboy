@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue';
 import type { TokenRatePoint } from '../types';
 import { useWebSocket } from './useWebSocket';
+import { API_BASE } from '../utils/api-base';
 
 // Module-level singleton state
 const tokenRate = ref<TokenRatePoint[]>([]);
@@ -11,7 +12,7 @@ let wsDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 async function fetchTokenRate(): Promise<void> {
   try {
-    const res = await fetch('/api/analytics/token-rate');
+    const res = await fetch(`${API_BASE}/api/analytics/token-rate`);
     if (!res.ok) throw new Error(`Token rate fetch failed: ${res.status}`);
     tokenRate.value = await res.json();
   } catch (e) {

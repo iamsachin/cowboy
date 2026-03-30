@@ -1,8 +1,10 @@
 use axum::{extract::State, routing::{any, get}, Json, Router};
+use axum::http::HeaderValue;
 use serde_json::{json, Value};
 use std::sync::Arc;
 use tokio::sync::broadcast;
 use tokio_rusqlite::Connection;
+use tower_http::cors::CorsLayer;
 
 use crate::analytics;
 use crate::conversations;
@@ -29,6 +31,16 @@ pub async fn start(db: Connection) {
         watcher: tokio::sync::Mutex::new(None),
     });
 
+    // Allow requests from Tauri webview (tauri://localhost) and dev server
+    let cors = CorsLayer::new()
+        .allow_origin([
+            "tauri://localhost".parse::<HeaderValue>().unwrap(),
+            "http://localhost:5173".parse::<HeaderValue>().unwrap(),
+            "http://127.0.0.1:5173".parse::<HeaderValue>().unwrap(),
+        ])
+        .allow_methods(tower_http::cors::Any)
+        .allow_headers(tower_http::cors::Any);
+
     let app = Router::new()
         .route("/api/health", get(health))
         .merge(conversations::routes())
@@ -37,6 +49,7 @@ pub async fn start(db: Connection) {
         .merge(settings::routes())
         .merge(ingestion::routes())
         .route("/api/ws", any(websocket::ws_handler))
+        .layer(cors)
         .with_state(shared_state.clone());
 
     // Read port from settings table (default 8123)

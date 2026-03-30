@@ -85,6 +85,7 @@ import AgentBadge from './AgentBadge.vue';
 import { useDateRange } from '../composables/useDateRange';
 import { useWebSocket } from '../composables/useWebSocket';
 import type { ConversationRow } from '../types';
+import { API_BASE } from '../utils/api-base';
 
 type SortMode = 'cost' | 'tokens';
 const STORAGE_KEY = 'topConversations:sortMode';
@@ -124,7 +125,7 @@ async function fetchTop(isLive = false) {
     const { from, to } = dateRange.value;
     const sort = sortMode.value === 'tokens' ? 'inputTokens' : 'cost';
     const res = await fetch(
-      `/api/analytics/conversations?sort=${sort}&order=desc&limit=3&from=${from}&to=${to}`
+      `${API_BASE}/api/analytics/conversations?sort=${sort}&order=desc&limit=3&from=${from}&to=${to}`
     );
     if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
     const data = await res.json();

@@ -2,6 +2,7 @@ import { ref } from 'vue';
 import type { ConversationDetailResponse } from '../types';
 import { useWebSocket } from './useWebSocket';
 import { groupTurns, type GroupedTurn } from './useGroupedTurns';
+import { API_BASE } from '../utils/api-base';
 
 /**
  * Compute group keys from a ConversationDetailResponse.
@@ -63,7 +64,7 @@ export function useConversationDetail(conversationId: string) {
 
     fetchInFlight = true;
     try {
-      const res = await fetch(`/api/analytics/conversations/${conversationId}`);
+      const res = await fetch(`${API_BASE}/api/analytics/conversations/${conversationId}`);
       if (res.status === 404) {
         notFound.value = true;
         return;

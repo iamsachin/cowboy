@@ -88,6 +88,7 @@ import { ref, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 import { ArrowLeft, AlertTriangle, ExternalLink } from 'lucide-vue-next';
 import type { PlanDetailResponse } from '../types';
+import { API_BASE } from '../utils/api-base';
 import AgentBadge from '../components/AgentBadge.vue';
 import PlanStepList from '../components/PlanStepList.vue';
 
@@ -104,7 +105,7 @@ async function fetchDetail(): Promise<void> {
   error.value = null;
   notFound.value = false;
   try {
-    const res = await fetch(`/api/plans/${encodeURIComponent(id)}`);
+    const res = await fetch(`${API_BASE}/api/plans/${encodeURIComponent(id)}`);
     if (res.status === 404) {
       notFound.value = true;
       return;

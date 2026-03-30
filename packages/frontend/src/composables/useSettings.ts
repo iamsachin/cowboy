@@ -1,4 +1,5 @@
 import { ref, onMounted } from 'vue';
+import { API_BASE } from '../utils/api-base';
 
 export interface SettingsResponse {
   id: number;
@@ -61,7 +62,7 @@ export function useSettings() {
 
   async function fetchDbStats(): Promise<void> {
     try {
-      const res = await fetch('/api/settings/db-stats');
+      const res = await fetch(`${API_BASE}/api/settings/db-stats`);
       if (!res.ok) throw new Error(`DB stats fetch failed: ${res.status}`);
       dbStats.value = await res.json();
     } catch (e) {
@@ -72,7 +73,7 @@ export function useSettings() {
   async function fetchSettings(): Promise<void> {
     loading.value = true;
     try {
-      const res = await fetch('/api/settings');
+      const res = await fetch(`${API_BASE}/api/settings`);
       if (!res.ok) throw new Error(`Settings fetch failed: ${res.status}`);
       settings.value = await res.json();
       // Load db stats after settings
@@ -88,7 +89,7 @@ export function useSettings() {
     clearing.value = true;
     dataActionResult.value = null;
     try {
-      const url = agent ? `/api/settings/clear-db?agent=${encodeURIComponent(agent)}` : '/api/settings/clear-db';
+      const url = agent ? `${API_BASE}/api/settings/clear-db?agent=${encodeURIComponent(agent)}` : `${API_BASE}/api/settings/clear-db`;
       const res = await fetch(url, { method: 'DELETE' });
       if (!res.ok) throw new Error(`Clear database failed: ${res.status}`);
       dataActionResult.value = {
@@ -113,7 +114,7 @@ export function useSettings() {
     clearing.value = true;
     dataActionResult.value = null;
     try {
-      const url = agent ? `/api/settings/refresh-db?agent=${encodeURIComponent(agent)}` : '/api/settings/refresh-db';
+      const url = agent ? `${API_BASE}/api/settings/refresh-db?agent=${encodeURIComponent(agent)}` : `${API_BASE}/api/settings/refresh-db`;
       const res = await fetch(url, { method: 'POST' });
       if (!res.ok) throw new Error(`Refresh database failed: ${res.status}`);
       dataActionResult.value = {
@@ -140,7 +141,7 @@ export function useSettings() {
   }): Promise<boolean> {
     saving.value = true;
     try {
-      const res = await fetch('/api/settings/agent', {
+      const res = await fetch(`${API_BASE}/api/settings/agent`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -164,7 +165,7 @@ export function useSettings() {
   }): Promise<boolean> {
     saving.value = true;
     try {
-      const res = await fetch('/api/settings/sync', {
+      const res = await fetch(`${API_BASE}/api/settings/sync`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -183,7 +184,7 @@ export function useSettings() {
   async function savePortSettings(data: { serverPort: number }): Promise<boolean> {
     saving.value = true;
     try {
-      const res = await fetch('/api/settings/port', {
+      const res = await fetch(`${API_BASE}/api/settings/port`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -201,7 +202,7 @@ export function useSettings() {
 
   async function validatePath(path: string, agent: string): Promise<void> {
     try {
-      const res = await fetch('/api/settings/validate-path', {
+      const res = await fetch(`${API_BASE}/api/settings/validate-path`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path, agent }),
@@ -217,7 +218,7 @@ export function useSettings() {
   async function testConnection(url: string): Promise<void> {
     testResult.value = null;
     try {
-      const res = await fetch('/api/settings/test-sync', {
+      const res = await fetch(`${API_BASE}/api/settings/test-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
@@ -233,7 +234,7 @@ export function useSettings() {
   async function triggerSyncNow(): Promise<void> {
     syncNowResult.value = null;
     try {
-      const res = await fetch('/api/settings/sync-now', {
+      const res = await fetch(`${API_BASE}/api/settings/sync-now`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });

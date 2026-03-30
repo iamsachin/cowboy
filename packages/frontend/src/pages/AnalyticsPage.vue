@@ -54,6 +54,7 @@ import { ref, onMounted } from 'vue';
 import { Activity, Wrench, FolderOpen } from 'lucide-vue-next';
 import DateRangeFilter from '../components/DateRangeFilter.vue';
 import ActivityHeatmap from '../components/ActivityHeatmap.vue';
+import { API_BASE } from '../utils/api-base';
 import ToolStatsChart from '../components/ToolStatsChart.vue';
 import ToolStatsTable from '../components/ToolStatsTable.vue';
 import ProjectTable from '../components/ProjectTable.vue';
@@ -69,7 +70,7 @@ const agentOptions = ref<string[]>(Object.keys(AGENT_LABELS));
 
 onMounted(async () => {
   try {
-    const res = await fetch('/api/analytics/filters');
+    const res = await fetch(`${API_BASE}/api/analytics/filters`);
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data.agents) && data.agents.length > 0) {

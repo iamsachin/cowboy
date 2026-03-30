@@ -3,6 +3,7 @@ import { autoGranularity } from '../types';
 import type { OverviewStats, TimeSeriesPoint, ModelDistributionEntry } from '../types';
 import { useDateRange } from './useDateRange';
 import { useWebSocket } from './useWebSocket';
+import { API_BASE } from '../utils/api-base';
 
 export function useAnalytics() {
   const { dateRange } = useDateRange();
@@ -16,7 +17,7 @@ export function useAnalytics() {
 
   async function fetchOverview(): Promise<void> {
     const { from, to } = dateRange.value;
-    const res = await fetch(`/api/analytics/overview?from=${from}&to=${to}`);
+    const res = await fetch(`${API_BASE}/api/analytics/overview?from=${from}&to=${to}`);
     if (!res.ok) throw new Error(`Overview fetch failed: ${res.status}`);
     overview.value = await res.json();
   }
@@ -25,7 +26,7 @@ export function useAnalytics() {
     const { from, to } = dateRange.value;
     const granularity = autoGranularity(from, to);
     const res = await fetch(
-      `/api/analytics/timeseries?from=${from}&to=${to}&granularity=${granularity}`
+      `${API_BASE}/api/analytics/timeseries?from=${from}&to=${to}&granularity=${granularity}`
     );
     if (!res.ok) throw new Error(`Timeseries fetch failed: ${res.status}`);
     timeseries.value = await res.json();
@@ -33,7 +34,7 @@ export function useAnalytics() {
 
   async function fetchModelDistribution(): Promise<void> {
     const { from, to } = dateRange.value;
-    const res = await fetch(`/api/analytics/model-distribution?from=${from}&to=${to}`);
+    const res = await fetch(`${API_BASE}/api/analytics/model-distribution?from=${from}&to=${to}`);
     if (!res.ok) throw new Error(`Model distribution fetch failed: ${res.status}`);
     modelDistribution.value = await res.json();
   }

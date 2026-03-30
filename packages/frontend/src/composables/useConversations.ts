@@ -3,6 +3,7 @@ import { useRoute, useRouter } from 'vue-router';
 import type { ConversationListResponse } from '../types';
 import { useDateRange } from './useDateRange';
 import { useWebSocket } from './useWebSocket';
+import { API_BASE } from '../utils/api-base';
 
 export function useConversations(agentFilter?: Ref<string | undefined>) {
   const route = useRoute();
@@ -74,7 +75,7 @@ export function useConversations(agentFilter?: Ref<string | undefined>) {
       if (agentFilter?.value) {
         params.set('agent', agentFilter.value);
       }
-      const res = await fetch(`/api/analytics/conversations?${params}`);
+      const res = await fetch(`${API_BASE}/api/analytics/conversations?${params}`);
       if (!res.ok) throw new Error(`Conversations fetch failed: ${res.status}`);
       const result: ConversationListResponse = await res.json();
       data.value = result;

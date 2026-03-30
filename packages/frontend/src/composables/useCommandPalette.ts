@@ -1,6 +1,7 @@
 import { ref, computed, watch } from 'vue';
 import Fuse from 'fuse.js';
 import type { Router } from 'vue-router';
+import { API_BASE } from '../utils/api-base';
 
 export interface ConversationItem {
   id: string;
@@ -111,7 +112,7 @@ export function useCommandPalette(router?: Router) {
     if (!conversationsLoaded) {
       loading.value = true;
       try {
-        const res = await fetch('/api/analytics/conversations?limit=100&sort=date&order=desc');
+        const res = await fetch(`${API_BASE}/api/analytics/conversations?limit=100&sort=date&order=desc`);
         if (res.ok) {
           const data = await res.json();
           conversations.value = (data.rows || []).map((r: any) => ({

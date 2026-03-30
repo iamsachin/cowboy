@@ -177,6 +177,7 @@ import type { ToolCallRow, SubagentSummary, ConversationDetailResponse } from '.
 import { formatTokenCount } from '../utils/format-tokens';
 import { getToolIcon } from '../utils/tool-icons';
 import BaseExpandableItem from './BaseExpandableItem.vue';
+import { API_BASE } from '../utils/api-base';
 
 const props = defineProps<{
   toolCall: ToolCallRow;
@@ -280,7 +281,7 @@ watch(expanded, async (isExpanded) => {
   loadingDetail.value = true;
   try {
     const res = await fetch(
-      `/api/analytics/conversations/${props.toolCall.subagentConversationId}`
+      `${API_BASE}/api/analytics/conversations/${props.toolCall.subagentConversationId}`
     );
     if (res.ok) {
       const detail: ConversationDetailResponse = await res.json();

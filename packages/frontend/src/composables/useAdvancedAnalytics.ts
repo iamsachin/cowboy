@@ -2,6 +2,7 @@ import { ref, watch } from 'vue';
 import type { ToolStatsRow, HeatmapDay, ProjectStatsRow } from '../types';
 import { useDateRange } from './useDateRange';
 import { useWebSocket } from './useWebSocket';
+import { API_BASE } from '../utils/api-base';
 
 export function useAdvancedAnalytics() {
   const { dateRange } = useDateRange();
@@ -14,7 +15,7 @@ export function useAdvancedAnalytics() {
 
   async function fetchToolStats(): Promise<void> {
     const { from, to } = dateRange.value;
-    let url = `/api/analytics/tool-stats?from=${from}&to=${to}`;
+    let url = `${API_BASE}/api/analytics/tool-stats?from=${from}&to=${to}`;
     if (selectedAgent.value) url += `&agent=${selectedAgent.value}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Tool stats fetch failed: ${res.status}`);
@@ -23,7 +24,7 @@ export function useAdvancedAnalytics() {
 
   async function fetchHeatmap(): Promise<void> {
     const { from, to } = dateRange.value;
-    let url = `/api/analytics/heatmap?from=${from}&to=${to}`;
+    let url = `${API_BASE}/api/analytics/heatmap?from=${from}&to=${to}`;
     if (selectedAgent.value) url += `&agent=${selectedAgent.value}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Heatmap fetch failed: ${res.status}`);
@@ -32,7 +33,7 @@ export function useAdvancedAnalytics() {
 
   async function fetchProjectStats(): Promise<void> {
     const { from, to } = dateRange.value;
-    let url = `/api/analytics/project-stats?from=${from}&to=${to}`;
+    let url = `${API_BASE}/api/analytics/project-stats?from=${from}&to=${to}`;
     if (selectedAgent.value) url += `&agent=${selectedAgent.value}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Project stats fetch failed: ${res.status}`);

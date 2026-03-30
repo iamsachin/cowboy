@@ -2,6 +2,7 @@ import { ref, watch } from 'vue';
 import type { PlanListResponse, PlanStatsResponse, PlanTimeSeriesPoint } from '../types';
 import { useDateRange } from './useDateRange';
 import { useWebSocket } from './useWebSocket';
+import { API_BASE } from '../utils/api-base';
 
 export function usePlans() {
   const { dateRange } = useDateRange();
@@ -21,7 +22,7 @@ export function usePlans() {
 
   async function fetchPlans(): Promise<void> {
     const { from, to } = dateRange.value;
-    let url = `/api/plans?from=${from}&to=${to}&page=${page.value}&limit=20&sort=${sort.value}&order=${order.value}`;
+    let url = `${API_BASE}/api/plans?from=${from}&to=${to}&page=${page.value}&limit=20&sort=${sort.value}&order=${order.value}`;
     if (selectedAgent.value) url += `&agent=${encodeURIComponent(selectedAgent.value)}`;
     if (selectedProject.value) url += `&project=${encodeURIComponent(selectedProject.value)}`;
     if (completionFilter.value) url += `&status=${encodeURIComponent(completionFilter.value)}`;
@@ -32,7 +33,7 @@ export function usePlans() {
 
   async function fetchStats(): Promise<void> {
     const { from, to } = dateRange.value;
-    let url = `/api/plans/stats?from=${from}&to=${to}`;
+    let url = `${API_BASE}/api/plans/stats?from=${from}&to=${to}`;
     if (selectedAgent.value) url += `&agent=${encodeURIComponent(selectedAgent.value)}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Plan stats fetch failed: ${res.status}`);
@@ -41,7 +42,7 @@ export function usePlans() {
 
   async function fetchTimeSeries(): Promise<void> {
     const { from, to } = dateRange.value;
-    let url = `/api/plans/timeseries?from=${from}&to=${to}&granularity=daily`;
+    let url = `${API_BASE}/api/plans/timeseries?from=${from}&to=${to}&granularity=daily`;
     if (selectedAgent.value) url += `&agent=${encodeURIComponent(selectedAgent.value)}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Plan timeseries fetch failed: ${res.status}`);

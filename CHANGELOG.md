@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.1.2
+
+- Extract plans only from Claude Code plan mode (EnterPlanMode/ExitPlanMode) instead of heuristic pattern matching
+- Remove hover tooltip on live connection status indicator
+- Fix token rate chart showing negative Y axis values
+
 ## v3.1.1
 
 - Fix production bundle: app now works when launched from /Applications

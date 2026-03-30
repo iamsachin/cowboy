@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.1.9
+
+- Move skill indicator pill into metadata row (alongside Agent, Model, Project)
+- Fix timeline sidebar compressing main content width — now overlays instead
+- Fix activity heatmap tooltip clipped by card overflow
+
 ## v3.1.8
 
 - Fix activity heatmap colors invisible/broken on both dark (forest) and light (emerald) themes

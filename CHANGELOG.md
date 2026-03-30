@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.1.5
+
+- Fix window dragging: add missing `core:window:allow-start-dragging` Tauri capability permission
+
 ## v3.1.4
 
 - Fix "Refresh All Data" not re-ingesting files (ingestion cache wasn't cleared)

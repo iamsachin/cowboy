@@ -81,6 +81,7 @@ const chartOptions = computed(() => {
         },
       },
       y: {
+        min: 0,
         grid: { color: themeColors.grid },
         ticks: {
           color: themeColors.text,

@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-03-30 - Completed quick task 36: Add release skill for app and Homebrew distribution
+Last activity: 2026-03-30 - Completed quick task 37: Extract plans only from ExitPlanMode tool calls
 
 ## Performance Metrics
 
@@ -89,9 +89,10 @@ None.
 | 34 | Add top 3 most expensive conversations widget to Overview | 2026-03-28 | 2eeaf68 | [34-add-top-3-most-expensive-conversations-w](./quick/34-add-top-3-most-expensive-conversations-w/) |
 | 35 | Add light/dark mode toggle to sidebar | 2026-03-28 | e751b3b | [35-add-light-dark-mode-toggle-to-sidebar](./quick/35-add-light-dark-mode-toggle-to-sidebar/) |
 | 36 | Add release skill for app and Homebrew distribution | 2026-03-30 | 01c9d2d | [36-add-release-skill-for-app-and-homebrew-d](./quick/36-add-release-skill-for-app-and-homebrew-d/) |
+| 37 | Extract plans only from ExitPlanMode tool calls | 2026-03-30 | 603dd4a | [37-extract-plans-only-from-claude-code-plan](./quick/37-extract-plans-only-from-claude-code-plan/) |
 
 ## Session Continuity
 
 Last session: 2026-03-30
-Stopped at: Completed quick task 36
+Stopped at: Completed quick task 37
 Resume file: None

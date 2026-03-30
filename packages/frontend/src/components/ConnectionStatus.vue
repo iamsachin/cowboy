@@ -1,21 +1,16 @@
 <template>
-  <div
-    class="tooltip tooltip-right"
-    :data-tip="tooltipText"
-  >
-    <div class="flex items-center gap-2 py-2" :class="collapsed ? 'justify-center' : 'px-3'">
-      <span
-        class="w-2 h-2 rounded-full shrink-0"
-        :class="dotClass"
-      />
-      <span
-        v-if="!collapsed"
-        class="text-xs"
-        :class="labelClass"
-      >
-        {{ labelText }}
-      </span>
-    </div>
+  <div class="flex items-center gap-2 py-2" :class="collapsed ? 'justify-center' : 'px-3'">
+    <span
+      class="w-2 h-2 rounded-full shrink-0"
+      :class="dotClass"
+    />
+    <span
+      v-if="!collapsed"
+      class="text-xs"
+      :class="labelClass"
+    >
+      {{ labelText }}
+    </span>
   </div>
 </template>
 
@@ -62,14 +57,4 @@ const labelClass = computed(() => {
   }
 });
 
-const tooltipText = computed(() => {
-  switch (state.value) {
-    case 'connected':
-      return 'Live feed connected';
-    case 'reconnecting':
-      return `Reconnecting... attempt ${reconnectAttempt.value}`;
-    case 'disconnected':
-      return 'Disconnected -- retrying when tab is visible';
-  }
-});
 </script>

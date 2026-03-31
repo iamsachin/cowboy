@@ -139,8 +139,11 @@ export function highlightSlashCommands(text: string): string {
 export function cleanTitle(title: string): string {
   if (!title) return 'Untitled Conversation';
 
-  // Strip image references before cleaning
-  const withoutImages = title.replace(/\[Image: source: [^\]]+\]/g, '').trim();
+  // Strip image references before cleaning (both [Image: source: ...] and [Image #N])
+  const withoutImages = title
+    .replace(/\[Image: source: [^\]]+\]/g, '')
+    .replace(/\[Image #\d+\]/g, '')
+    .trim();
   const cleaned = stripXmlTags(withoutImages || title);
 
   if (!cleaned || !cleaned.trim()) {

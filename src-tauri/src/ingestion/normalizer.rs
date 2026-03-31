@@ -226,7 +226,7 @@ fn derive_title(parse_result: &ParseResult) -> Option<String> {
             if !trimmed.is_empty() {
                 if should_skip_for_title(content) {
                     // If message has image refs, strip them and check remaining text
-                    if trimmed.contains("[Image:") {
+                    if trimmed.contains("[Image:") || trimmed.contains("[Image #") {
                         let cleaned = strip_image_refs(trimmed);
                         if !cleaned.is_empty() && !should_skip_for_title(&cleaned) {
                             return Some(truncate(&cleaned, 100));
@@ -250,8 +250,10 @@ fn derive_title(parse_result: &ParseResult) -> Option<String> {
             if content.trim().starts_with('<') {
                 // Try extracting slash command args from raw XML first
                 if let Some(args) = extract_slash_command_args(content) {
-                    if !should_skip_for_title(&args) {
-                        return Some(truncate(&args, 100));
+                    let cleaned_args = strip_image_refs(&args);
+                    let title_candidate = if cleaned_args.is_empty() { &args } else { &cleaned_args };
+                    if !should_skip_for_title(title_candidate) {
+                        return Some(truncate(title_candidate, 100));
                     }
                     continue;
                 }

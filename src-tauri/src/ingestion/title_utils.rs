@@ -54,8 +54,8 @@ pub fn should_skip_for_title(content: &str) -> bool {
         return true;
     }
 
-    // Image-only messages (e.g. "[Image: source: /path/to/file.png]")
-    if trimmed.starts_with("[Image:") {
+    // Image-only messages (e.g. "[Image: source: /path/to/file.png]" or "[Image #5]")
+    if trimmed.starts_with("[Image:") || trimmed.starts_with("[Image #") {
         let stripped = strip_image_refs(trimmed);
         if stripped.is_empty() {
             return true;
@@ -173,8 +173,10 @@ pub fn derive_conversation_title(
             if text.trim().starts_with('<') {
                 // Try extracting slash command args from raw XML first
                 if let Some(args) = extract_slash_command_args(text) {
-                    if !should_skip_for_title(&args) {
-                        return Some(truncate(&args, 100));
+                    let cleaned_args = strip_image_refs(&args);
+                    let title_candidate = if cleaned_args.is_empty() { &args } else { &cleaned_args };
+                    if !should_skip_for_title(title_candidate) {
+                        return Some(truncate(title_candidate, 100));
                     }
                     continue;
                 }
@@ -569,5 +571,33 @@ mod tests {
             derive_conversation_title(&msgs, None),
             Some("Final topic".to_string())
         );
+    }
+
+    #[test]
+    fn derive_title_strips_image_ref_from_xml_args() {
+        // Slash command args starting with [Image #N] should have them stripped
+        let msgs: Vec<Option<&str>> = vec![
+            Some("<command-name>/gsd:quick</command-name><command-args>[Image #10] Couple of things to fix</command-args>"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("Couple of things to fix".to_string())
+        );
+    }
+
+    #[test]
+    fn derive_title_strips_multiple_image_refs_from_xml_args() {
+        let msgs: Vec<Option<&str>> = vec![
+            Some("<command-name>/gsd:quick</command-name><command-args>[Image #10] Fix this [Image #11] and that</command-args>"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("Fix this  and that".to_string())
+        );
+    }
+
+    #[test]
+    fn skip_image_numbered_only() {
+        assert!(should_skip_for_title("[Image #5]"));
     }
 }

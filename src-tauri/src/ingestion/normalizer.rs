@@ -6,7 +6,7 @@ use regex::Regex;
 use super::compaction_utils::{compute_token_delta, strip_compaction_preamble};
 use super::file_discovery::derive_project_name;
 use super::id_generator::generate_id;
-use super::title_utils::{extract_slash_command_args, should_skip_for_title, strip_image_refs};
+use super::title_utils::{extract_slash_command_args, is_clear_command, should_skip_for_title, strip_image_refs};
 use super::types::{
     AssistantMessageData, CompactionEventRecord, ContentBlock, ConversationRecord, MessageRecord,
     NormalizedData, ParseResult, ToolCallRecord, ToolResultData, TokenUsageRecord,
@@ -210,8 +210,17 @@ fn truncate(text: &str, max_len: usize) -> String {
 }
 
 fn derive_title(parse_result: &ParseResult) -> Option<String> {
+    // Find last /clear command and only consider messages after it
+    let clear_idx = parse_result.user_messages.iter().rposition(|u| {
+        u.content.as_deref().map_or(false, is_clear_command)
+    });
+    let user_slice = match clear_idx {
+        Some(idx) => &parse_result.user_messages[(idx + 1)..],
+        None => &parse_result.user_messages[..],
+    };
+
     // First pass: skip any user message matching skip patterns
-    for user in &parse_result.user_messages {
+    for user in user_slice {
         if let Some(ref content) = user.content {
             let trimmed = content.trim();
             if !trimmed.is_empty() {
@@ -236,7 +245,7 @@ fn derive_title(parse_result: &ParseResult) -> Option<String> {
     }
 
     // Second pass: strip XML tags from XML messages and use first with >10 chars of cleaned text
-    for user in &parse_result.user_messages {
+    for user in user_slice {
         if let Some(ref content) = user.content {
             if content.trim().starts_with('<') {
                 // Try extracting slash command args from raw XML first
@@ -259,7 +268,7 @@ fn derive_title(parse_result: &ParseResult) -> Option<String> {
     }
 
     // Third pass: slash command fallback -- use first slash command as title
-    for user in &parse_result.user_messages {
+    for user in user_slice {
         if let Some(ref content) = user.content {
             let trimmed = content.trim();
             if trimmed.starts_with('/') {

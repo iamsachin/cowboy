@@ -115,8 +115,8 @@
       </div>
     </div>
 
-    <!-- Last text output: always visible (full rendered markdown, no clamp) -->
-    <div v-if="lastOutputHtml" class="px-4 pb-3 pl-10">
+    <!-- Last text output: visible only when collapsed (when expanded, content is shown inline) -->
+    <div v-if="!expanded && lastOutputHtml" class="px-4 pb-3 pl-10">
       <div class="thinking-content text-sm text-base-content/70" v-html="lastOutputHtml"></div>
     </div>
   </div>

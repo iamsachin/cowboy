@@ -1,6 +1,6 @@
 <template>
   <div class="flex">
-    <div ref="pageRef" class="flex-1 min-w-0 p-4 max-w-5xl mx-auto">
+    <div ref="pageRef" class="flex-1 min-w-0 p-4 max-w-5xl mx-auto transition-[margin] duration-200" :class="{ 'mr-[220px]': isOpen && data }">
       <!-- Loading state -->
       <div v-if="loading" class="flex justify-center items-center min-h-[60vh]">
         <span class="loading loading-spinner loading-lg"></span>

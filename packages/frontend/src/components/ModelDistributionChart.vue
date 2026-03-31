@@ -71,6 +71,7 @@ const chartOptions = computed(() => {
       },
     },
     tooltip: {
+      usePointStyle: true,
       callbacks: {
         label: (ctx: { label?: string; parsed: number }) => {
           const total = props.data.reduce((sum, d) => sum + d.totalTokens, 0);

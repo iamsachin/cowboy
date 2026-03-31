@@ -97,6 +97,7 @@ const chartOptions = computed(() => {
         labels: { color: themeColors.legendText, boxWidth: 10, font: { size: 10 }, usePointStyle: true, pointStyle: 'circle' },
       },
       tooltip: {
+        usePointStyle: true,
         callbacks: {
           title: (items: { label?: string }[]) => {
             return items[0]?.label ?? '';

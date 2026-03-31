@@ -93,6 +93,7 @@ const barChartOptions = computed(() => {
   plugins: {
     legend: { display: false },
     tooltip: {
+      usePointStyle: true,
       callbacks: {
         label: (ctx: { parsed: { y: number | null } }) => {
           const val = ctx.parsed.y ?? 0;
@@ -144,6 +145,7 @@ const lineChartOptions = computed(() => {
   plugins: {
     legend: { display: false },
     tooltip: {
+      usePointStyle: true,
       callbacks: {
         label: (ctx: { parsed: { y: number | null } }) => {
           const val = ctx.parsed.y ?? 0;

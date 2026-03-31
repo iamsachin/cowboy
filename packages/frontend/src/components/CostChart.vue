@@ -273,6 +273,7 @@ const chartOptions = computed(() => {
       },
     },
     tooltip: {
+      usePointStyle: true,
       filter: (tooltipItem: { dataset: { label?: string } }) =>
         !['Upper bound', 'Lower bound'].includes(tooltipItem.dataset.label ?? ''),
       callbacks: {

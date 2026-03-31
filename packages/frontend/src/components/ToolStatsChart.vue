@@ -80,6 +80,7 @@ const chartOptions = computed(() => {
       labels: { color: themeColors.legendText, usePointStyle: true, pointStyle: 'circle' },
     },
     tooltip: {
+      usePointStyle: true,
       callbacks: {
         label: (ctx: { dataset: { label?: string }; parsed: { x: number | null } }) => {
           const val = ctx.parsed.x ?? 0;

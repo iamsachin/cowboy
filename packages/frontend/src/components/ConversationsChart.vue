@@ -72,6 +72,7 @@ const chartOptions = computed(() => {
   plugins: {
     legend: { display: false },
     tooltip: {
+      usePointStyle: true,
       callbacks: {
         label: (ctx: { parsed: { y: number | null } }) => {
           const val = ctx.parsed.y ?? 0;

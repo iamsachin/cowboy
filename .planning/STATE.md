@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-03-31 - Completed quick task 45: Make tooltip legends round to match top legend style
+Last activity: 2026-03-31 - Completed quick task 46: Narrow conversation content when timeline sidebar is open
 
 ## Performance Metrics
 
@@ -97,10 +97,12 @@ None.
 | 42 | Fix activity heatmap colors for both themes | 2026-03-31 | 4c22aac | [42-the-activity-github-like-dot-graph-has-c](./quick/42-the-activity-github-like-dot-graph-has-c/) |
 | 43 | Fix skill pill placement and timeline layout | 2026-03-31 | b00c025 | [43-fix-skill-pill-placement-in-conversation](./quick/43-fix-skill-pill-placement-in-conversation/) |
 | 44 | Fix token rate speed and rounded legend indicators | 2026-03-30 | cbe3454 | [44-fix-token-rate-speed-to-show-current-val](./quick/44-fix-token-rate-speed-to-show-current-val/) |
+| 45 | Make tooltip legends roundish like the top legends | 2026-03-31 | 910555a | [45-make-tooltip-legends-roundish-like-the-t](./quick/45-make-tooltip-legends-roundish-like-the-t/) |
 | 45 | Make tooltip legends round to match top legend style | 2026-03-31 | 910555a | [45-make-tooltip-legends-roundish-like-the-t](./quick/45-make-tooltip-legends-roundish-like-the-t/) |
+| 46 | Narrow conversation content when timeline sidebar is open | 2026-03-31 | 043bf55 | [46-narrow-conversation-content-when-timelin](./quick/46-narrow-conversation-content-when-timelin/) |
 
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Completed quick task 45
+Stopped at: Completed quick task 46
 Resume file: None

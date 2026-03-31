@@ -19,8 +19,12 @@ const MODEL_MATCHERS: Array<{ pattern: string; info: ModelBadgeInfo }> = [
 
 const FALLBACK: ModelBadgeInfo = { label: '', cssClass: 'badge-ghost' };
 
+/** Internal marker strings that should never render as a model badge. */
+const BLOCKED_VALUES: Set<string> = new Set(['<synthetic>', 'unknown']);
+
 export function getModelBadge(modelString: string | null): ModelBadgeInfo {
   if (!modelString) return FALLBACK;
+  if (BLOCKED_VALUES.has(modelString.toLowerCase())) return FALLBACK;
   const lower = modelString.toLowerCase();
   for (const { pattern, info } of MODEL_MATCHERS) {
     const regex = new RegExp(`(?:^|[-_./\\s])${pattern}(?:$|[-_./\\s])`, 'i');

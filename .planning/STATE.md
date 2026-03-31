@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-03-31 - Completed quick task 46: Narrow conversation content when timeline sidebar is open
+Last activity: 2026-03-31 - Completed quick task 47: Hide last message preview when card is expanded
 
 ## Performance Metrics
 
@@ -100,9 +100,10 @@ None.
 | 45 | Make tooltip legends roundish like the top legends | 2026-03-31 | 910555a | [45-make-tooltip-legends-roundish-like-the-t](./quick/45-make-tooltip-legends-roundish-like-the-t/) |
 | 45 | Make tooltip legends round to match top legend style | 2026-03-31 | 910555a | [45-make-tooltip-legends-roundish-like-the-t](./quick/45-make-tooltip-legends-roundish-like-the-t/) |
 | 46 | Narrow conversation content when timeline sidebar is open | 2026-03-31 | 043bf55 | [46-narrow-conversation-content-when-timelin](./quick/46-narrow-conversation-content-when-timelin/) |
+| 47 | Hide last message preview when card is expanded | 2026-03-31 | 9b657e4 | [47-hide-last-message-on-outside-when-card-i](./quick/47-hide-last-message-on-outside-when-card-i/) |
 
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Completed quick task 46
+Stopped at: Completed quick task 47
 Resume file: None

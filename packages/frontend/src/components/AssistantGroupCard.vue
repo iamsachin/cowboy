@@ -11,7 +11,7 @@
           :class="{ 'rotate-90': expanded }"
         />
         <span
-          v-if="group.model"
+          v-if="modelBadge.label"
           class="badge badge-sm"
           :class="modelBadge.cssClass"
         >{{ modelBadge.label }}</span>

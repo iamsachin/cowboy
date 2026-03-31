@@ -6,7 +6,7 @@ use regex::Regex;
 use super::compaction_utils::{compute_token_delta, strip_compaction_preamble};
 use super::file_discovery::derive_project_name;
 use super::id_generator::generate_id;
-use super::title_utils::should_skip_for_title;
+use super::title_utils::{extract_slash_command_args, should_skip_for_title};
 use super::types::{
     AssistantMessageData, CompactionEventRecord, ContentBlock, ConversationRecord, MessageRecord,
     NormalizedData, ParseResult, ToolCallRecord, ToolResultData, TokenUsageRecord,
@@ -227,7 +227,18 @@ fn derive_title(parse_result: &ParseResult) -> Option<String> {
     for user in &parse_result.user_messages {
         if let Some(ref content) = user.content {
             if content.trim().starts_with('<') {
+                // Try extracting slash command args from raw XML first
+                if let Some(args) = extract_slash_command_args(content) {
+                    if !should_skip_for_title(&args) {
+                        return Some(truncate(&args, 100));
+                    }
+                    continue;
+                }
                 let stripped = strip_xml_tags(content);
+                // If stripped text is a slash command without useful args, skip it
+                if stripped.starts_with('/') {
+                    continue;
+                }
                 if stripped.len() > 10 && !should_skip_for_title(&stripped) {
                     return Some(truncate(&stripped, 100));
                 }

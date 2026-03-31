@@ -41,6 +41,39 @@ pub fn should_skip_for_title(content: &str) -> bool {
     false
 }
 
+/// Extract the arguments portion from a slash command string or XML command message.
+///
+/// Supports two formats:
+/// - Plain: `/gsd:quick How are plans extracted?` -> `Some("How are plans extracted?")`
+/// - XML: `<command-name>/gsd:quick</command-name><command-args>How are plans?</command-args>` -> `Some("How are plans?")`
+///
+/// Returns `None` if the command has no args or args are too short (<=10 chars).
+pub fn extract_slash_command_args(text: &str) -> Option<String> {
+    let trimmed = text.trim();
+
+    // Try XML format first: <command-args>...</command-args>
+    let args_re = regex::Regex::new(r"<command-args>([\s\S]*?)</command-args>").unwrap();
+    if let Some(caps) = args_re.captures(trimmed) {
+        let args = caps[1].trim().to_string();
+        if args.is_empty() || args.len() <= 10 {
+            return None;
+        }
+        return Some(args);
+    }
+
+    // Plain slash command format: /command args...
+    if !trimmed.starts_with('/') {
+        return None;
+    }
+    let re = regex::Regex::new(r"^/[a-zA-Z][a-zA-Z0-9_:-]*\s*").unwrap();
+    let remaining = re.replace(trimmed, "").to_string();
+    let remaining = remaining.trim().to_string();
+    if remaining.is_empty() || remaining.len() <= 10 {
+        return None;
+    }
+    Some(remaining)
+}
+
 fn strip_xml_tags(text: &str) -> String {
     // Remove all XML tags
     let re = regex::Regex::new(r"<[^>]*>").unwrap();
@@ -83,7 +116,18 @@ pub fn derive_conversation_title(
     for content in user_messages {
         if let Some(text) = content {
             if text.trim().starts_with('<') {
+                // Try extracting slash command args from raw XML first
+                if let Some(args) = extract_slash_command_args(text) {
+                    if !should_skip_for_title(&args) {
+                        return Some(truncate(&args, 100));
+                    }
+                    continue;
+                }
                 let stripped = strip_xml_tags(text);
+                // If stripped text is a slash command without useful args, skip it
+                if stripped.starts_with('/') {
+                    continue;
+                }
                 if stripped.len() > 10 && !should_skip_for_title(&stripped) {
                     return Some(truncate(&stripped, 100));
                 }
@@ -301,5 +345,34 @@ mod tests {
             derive_conversation_title(&msgs, None),
             Some("Help me understand Rust lifetimes".to_string())
         );
+    }
+
+    #[test]
+    fn derive_title_xml_slash_command_with_args() {
+        let msgs: Vec<Option<&str>> = vec![
+            Some("<command-name>/gsd:quick</command-name><command-args>How are plans extracted from conversations?</command-args>"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("How are plans extracted from conversations?".to_string())
+        );
+    }
+
+    #[test]
+    fn extract_args_from_slash_command() {
+        assert_eq!(
+            extract_slash_command_args("/gsd:quick How are plans extracted?"),
+            Some("How are plans extracted?".to_string())
+        );
+    }
+
+    #[test]
+    fn extract_args_short_returns_none() {
+        assert_eq!(extract_slash_command_args("/clear clear"), None);
+    }
+
+    #[test]
+    fn extract_args_no_args_returns_none() {
+        assert_eq!(extract_slash_command_args("/gsd:discuss-phase"), None);
     }
 }

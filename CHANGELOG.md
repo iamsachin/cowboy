@@ -1,5 +1,18 @@
 # Changelog
 
+## v3.1.11
+
+- Derive conversation titles from slash command arguments instead of raw skill text
+- Highlight slash command names in chat messages
+- Make title derivation /clear-aware (use first user message after last /clear)
+- Strip image file paths and `[Image #N]` references from conversation titles
+- Add animated number transitions to KPI cards on overview page
+- Hide model badge for synthetic and unknown marker strings
+- Hide last message preview when assistant group card is expanded
+- Fix content centering when timeline sidebar is open
+- Add dynamic right margin to prevent timeline sidebar overlap
+- Use round legend indicators in chart tooltips
+
 ## v3.1.10
 
 - Fix token rate speed display to show current minute value instead of stale data

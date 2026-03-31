@@ -566,4 +566,56 @@ mod tests {
         assert_eq!(normalized.compaction_events[0].tokens_before, Some(1200)); // 1000 + 200
         assert_eq!(normalized.compaction_events[0].tokens_after, Some(500)); // 500 + 0
     }
+
+    #[test]
+    fn title_skips_messages_before_clear() {
+        let lines = vec![
+            r#"{"type":"user","uuid":"u1","sessionId":"s1","timestamp":"2024-01-01T10:00:00Z","message":{"role":"user","content":"Old topic question"}}"#,
+            r#"{"type":"user","uuid":"u2","sessionId":"s1","timestamp":"2024-01-01T10:00:01Z","message":{"role":"user","content":"/clear"}}"#,
+            r#"{"type":"user","uuid":"u3","sessionId":"s1","timestamp":"2024-01-01T10:00:02Z","message":{"role":"user","content":"New topic after clear"}}"#,
+            r#"{"type":"assistant","uuid":"a1","sessionId":"s1","timestamp":"2024-01-01T10:00:03Z","message":{"role":"assistant","id":"m1","model":"claude-3","content":[{"type":"text","text":"Sure!"}],"stop_reason":"end_turn","usage":{"input_tokens":10,"output_tokens":5}}}"#,
+        ];
+        let content = lines.join("\n");
+        let parse_result = parse_jsonl_content(&content).unwrap();
+        let normalized = normalize_conversation(&parse_result, "test", None).unwrap();
+
+        assert_eq!(
+            normalized.conversation.title,
+            Some("New topic after clear".to_string())
+        );
+    }
+
+    #[test]
+    fn title_skips_messages_before_xml_clear() {
+        let lines = vec![
+            r#"{"type":"user","uuid":"u1","sessionId":"s1","timestamp":"2024-01-01T10:00:00Z","message":{"role":"user","content":"Old topic"}}"#,
+            r#"{"type":"user","uuid":"u2","sessionId":"s1","timestamp":"2024-01-01T10:00:01Z","message":{"role":"user","content":"<command-name>/clear</command-name><command-args>clear</command-args>"}}"#,
+            r#"{"type":"user","uuid":"u3","sessionId":"s1","timestamp":"2024-01-01T10:00:02Z","message":{"role":"user","content":"New topic"}}"#,
+            r#"{"type":"assistant","uuid":"a1","sessionId":"s1","timestamp":"2024-01-01T10:00:03Z","message":{"role":"assistant","id":"m1","model":"claude-3","content":[{"type":"text","text":"Ok"}],"stop_reason":"end_turn","usage":{"input_tokens":10,"output_tokens":5}}}"#,
+        ];
+        let content = lines.join("\n");
+        let parse_result = parse_jsonl_content(&content).unwrap();
+        let normalized = normalize_conversation(&parse_result, "test", None).unwrap();
+
+        assert_eq!(
+            normalized.conversation.title,
+            Some("New topic".to_string())
+        );
+    }
+
+    #[test]
+    fn title_clear_only_falls_to_assistant() {
+        let lines = vec![
+            r#"{"type":"user","uuid":"u1","sessionId":"s1","timestamp":"2024-01-01T10:00:00Z","message":{"role":"user","content":"/clear"}}"#,
+            r#"{"type":"assistant","uuid":"a1","sessionId":"s1","timestamp":"2024-01-01T10:00:01Z","message":{"role":"assistant","id":"m1","model":"claude-3","content":[{"type":"text","text":"Context cleared"}],"stop_reason":"end_turn","usage":{"input_tokens":10,"output_tokens":5}}}"#,
+        ];
+        let content = lines.join("\n");
+        let parse_result = parse_jsonl_content(&content).unwrap();
+        let normalized = normalize_conversation(&parse_result, "test", None).unwrap();
+
+        assert_eq!(
+            normalized.conversation.title,
+            Some("Context cleared".to_string())
+        );
+    }
 }

@@ -447,4 +447,100 @@ mod tests {
             ""
         );
     }
+
+    // ── is_clear_command tests ──────────────────────────────────────────
+
+    #[test]
+    fn clear_command_plain() {
+        assert!(is_clear_command("/clear"));
+    }
+
+    #[test]
+    fn clear_command_with_newline() {
+        assert!(is_clear_command("/clear\n"));
+    }
+
+    #[test]
+    fn clear_command_with_whitespace() {
+        assert!(is_clear_command("  /clear  "));
+    }
+
+    #[test]
+    fn clear_command_with_args_is_not_clear() {
+        assert!(!is_clear_command("/clear with args"));
+    }
+
+    #[test]
+    fn clear_command_not_a_clear() {
+        assert!(!is_clear_command("not a clear"));
+    }
+
+    #[test]
+    fn clear_command_xml_format() {
+        assert!(is_clear_command("<command-name>/clear</command-name>"));
+    }
+
+    #[test]
+    fn clear_command_xml_with_args() {
+        assert!(is_clear_command("<command-name>/clear</command-name><command-args>clear</command-args>"));
+    }
+
+    // ── strip_image_refs [Image #N] tests ───────────────────────────────
+
+    #[test]
+    fn strip_image_refs_numbered() {
+        assert_eq!(strip_image_refs("[Image #1] Fix the bug"), "Fix the bug");
+    }
+
+    #[test]
+    fn strip_image_refs_multiple_numbered() {
+        assert_eq!(strip_image_refs("[Image #12] [Image #3] text"), "text");
+    }
+
+    #[test]
+    fn strip_image_refs_source_still_works() {
+        assert_eq!(
+            strip_image_refs("[Image: source: /path.png] text"),
+            "text"
+        );
+    }
+
+    // ── derive_conversation_title /clear-aware tests ────────────────────
+
+    #[test]
+    fn derive_title_after_clear() {
+        let msgs: Vec<Option<&str>> = vec![Some("/clear"), Some("Fix bug")];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("Fix bug".to_string())
+        );
+    }
+
+    #[test]
+    fn derive_title_after_clear_with_preceding() {
+        let msgs: Vec<Option<&str>> = vec![Some("Hello"), Some("/clear"), Some("New topic")];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("New topic".to_string())
+        );
+    }
+
+    #[test]
+    fn derive_title_clear_only_returns_none() {
+        let msgs: Vec<Option<&str>> = vec![Some("/clear")];
+        assert_eq!(derive_conversation_title(&msgs, None), None);
+    }
+
+    #[test]
+    fn derive_title_multiple_clears_uses_last() {
+        let msgs: Vec<Option<&str>> = vec![
+            Some("/clear"),
+            Some("/clear"),
+            Some("Final topic"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("Final topic".to_string())
+        );
+    }
 }

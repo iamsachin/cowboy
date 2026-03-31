@@ -6,7 +6,7 @@ use regex::Regex;
 use super::compaction_utils::{compute_token_delta, strip_compaction_preamble};
 use super::file_discovery::derive_project_name;
 use super::id_generator::generate_id;
-use super::title_utils::{extract_slash_command_args, should_skip_for_title};
+use super::title_utils::{extract_slash_command_args, should_skip_for_title, strip_image_refs};
 use super::types::{
     AssistantMessageData, CompactionEventRecord, ContentBlock, ConversationRecord, MessageRecord,
     NormalizedData, ParseResult, ToolCallRecord, ToolResultData, TokenUsageRecord,
@@ -216,7 +216,19 @@ fn derive_title(parse_result: &ParseResult) -> Option<String> {
             let trimmed = content.trim();
             if !trimmed.is_empty() {
                 if should_skip_for_title(content) {
+                    // If message has image refs, strip them and check remaining text
+                    if trimmed.contains("[Image:") {
+                        let cleaned = strip_image_refs(trimmed);
+                        if !cleaned.is_empty() && !should_skip_for_title(&cleaned) {
+                            return Some(truncate(&cleaned, 100));
+                        }
+                    }
                     continue;
+                }
+                // Also strip image refs from messages that have text + images
+                let cleaned = strip_image_refs(content);
+                if !cleaned.is_empty() {
+                    return Some(truncate(&cleaned, 100));
                 }
                 return Some(truncate(content, 100));
             }

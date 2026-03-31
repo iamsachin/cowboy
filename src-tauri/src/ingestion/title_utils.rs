@@ -1,3 +1,10 @@
+/// Strip `[Image: source: /path/to/file.png]` references from text.
+/// These are injected by Claude Code when the user attaches images.
+pub fn strip_image_refs(text: &str) -> String {
+    let re = regex::Regex::new(r"\[Image: source: [^\]]+\]").unwrap();
+    re.replace_all(text, "").trim().to_string()
+}
+
 /// Determine whether a user message should be skipped when deriving a title.
 ///
 /// Skip order (first match wins):
@@ -6,6 +13,7 @@
 /// 3. System caveats (starts with "Caveat:")
 /// 4. Interrupted requests (starts with "[Request interrupted")
 /// 5. XML/system messages (starts with "<")
+/// 6. Image-only messages
 pub fn should_skip_for_title(content: &str) -> bool {
     let trimmed = content.trim();
 
@@ -26,6 +34,14 @@ pub fn should_skip_for_title(content: &str) -> bool {
     }
     if trimmed.starts_with('<') {
         return true;
+    }
+
+    // Image-only messages (e.g. "[Image: source: /path/to/file.png]")
+    if trimmed.starts_with("[Image:") {
+        let stripped = strip_image_refs(trimmed);
+        if stripped.is_empty() {
+            return true;
+        }
     }
 
     // Skill definition messages injected by Claude Code
@@ -105,7 +121,19 @@ pub fn derive_conversation_title(
             let trimmed = text.trim();
             if !trimmed.is_empty() {
                 if should_skip_for_title(text) {
+                    // If message has image refs, strip them and check remaining text
+                    if trimmed.contains("[Image:") {
+                        let cleaned = strip_image_refs(trimmed);
+                        if !cleaned.is_empty() && !should_skip_for_title(&cleaned) {
+                            return Some(truncate(&cleaned, 100));
+                        }
+                    }
                     continue;
+                }
+                // Also strip image refs from messages that have text + images
+                let cleaned = strip_image_refs(text);
+                if !cleaned.is_empty() {
+                    return Some(truncate(&cleaned, 100));
                 }
                 return Some(truncate(text, 100));
             }
@@ -374,5 +402,49 @@ mod tests {
     #[test]
     fn extract_args_no_args_returns_none() {
         assert_eq!(extract_slash_command_args("/gsd:discuss-phase"), None);
+    }
+
+    #[test]
+    fn skip_image_only_message() {
+        assert!(should_skip_for_title("[Image: source: /Users/sachin/.claude/image-cache/abc123/5.png]"));
+    }
+
+    #[test]
+    fn derive_title_strips_image_ref() {
+        let msgs: Vec<Option<&str>> = vec![
+            Some("[Image: source: /path/to/file.png] Fix the login bug please"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("Fix the login bug please".to_string())
+        );
+    }
+
+    #[test]
+    fn derive_title_image_only_falls_through() {
+        let msgs: Vec<Option<&str>> = vec![
+            Some("[Image: source: /path/to/file.png]"),
+            Some("Fix the login bug"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("Fix the login bug".to_string())
+        );
+    }
+
+    #[test]
+    fn strip_image_refs_preserves_text() {
+        assert_eq!(
+            strip_image_refs("[Image: source: /path/file.png] Hello world"),
+            "Hello world"
+        );
+    }
+
+    #[test]
+    fn strip_image_refs_empty_when_image_only() {
+        assert_eq!(
+            strip_image_refs("[Image: source: /path/file.png]"),
+            ""
+        );
     }
 }

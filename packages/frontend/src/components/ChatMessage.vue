@@ -14,8 +14,11 @@
       <time class="ml-1">{{ formatTime(message.createdAt) }}</time>
     </div>
     <div class="bg-primary/20 text-base-content border border-primary/40 rounded-lg px-3 py-2 text-sm whitespace-normal break-words">
-      <template v-if="commandText">
-        <p class="whitespace-pre-wrap font-mono">{{ commandText }}</p>
+      <template v-if="commandParts">
+        <p class="whitespace-pre-wrap">
+          <span class="text-info font-mono font-semibold">{{ commandParts.command }}</span>
+          <span v-if="commandParts.args"> {{ commandParts.args }}</span>
+        </p>
       </template>
       <template v-else-if="message.content != null">
         <template v-for="(block, idx) in parsedContent" :key="idx">
@@ -49,7 +52,7 @@ import DOMPurify from 'dompurify';
 import type { MessageRow } from '../types';
 import CodeBlock from './CodeBlock.vue';
 import { parseContent, formatTime } from '../utils/content-parser';
-import { isSlashCommand, extractCommandText } from '../utils/content-sanitizer';
+import { extractCommandParts, highlightSlashCommands } from '../utils/content-sanitizer';
 import { truncateAtWordBoundary } from '../utils/turn-helpers';
 
 const IMAGE_RE = /\[Image: source: [^\]]+\]/g;
@@ -57,8 +60,9 @@ const URL_RE = /(https?:\/\/[^\s<>"')\]]+)/g;
 
 function linkify(text: string): string {
   const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const linked = escaped.replace(URL_RE, '<a href="$1" target="_blank" rel="noopener noreferrer" class="link link-info break-all">$1</a>');
-  return DOMPurify.sanitize(linked, { ALLOWED_TAGS: ['a'], ALLOWED_ATTR: ['href', 'target', 'rel', 'class'] });
+  const highlighted = highlightSlashCommands(escaped);
+  const linked = highlighted.replace(URL_RE, '<a href="$1" target="_blank" rel="noopener noreferrer" class="link link-info break-all">$1</a>');
+  return DOMPurify.sanitize(linked, { ALLOWED_TAGS: ['a', 'span'], ALLOWED_ATTR: ['href', 'target', 'rel', 'class'] });
 }
 
 const props = defineProps<{
@@ -78,9 +82,9 @@ const displayContent = computed(() => {
   return truncateAtWordBoundary(props.message.content, TRUNCATE_LIMIT);
 });
 
-const commandText = computed(() => {
-  if (!props.message.content || !isSlashCommand(props.message.content)) return null;
-  return extractCommandText(props.message.content);
+const commandParts = computed(() => {
+  if (!props.message.content) return null;
+  return extractCommandParts(props.message.content);
 });
 
 const imageCount = computed(() => {
@@ -97,6 +101,6 @@ const parsedContent = computed(() => {
 });
 
 const isImageOnly = computed(() => {
-  return imageCount.value > 0 && parsedContent.value.length === 0 && !commandText.value;
+  return imageCount.value > 0 && parsedContent.value.length === 0 && !commandParts.value;
 });
 </script>

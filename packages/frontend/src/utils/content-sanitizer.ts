@@ -100,6 +100,38 @@ export function isClearCommand(content: string | null): boolean {
 }
 
 /**
+ * Extract command name and args from a slash command message.
+ *
+ * Raw: `<command-name>/gsd:quick</command-name><command-args>How are plans extracted?</command-args>`
+ * Returns: `{ command: '/gsd:quick', args: 'How are plans extracted?' }`
+ *
+ * Returns null if content is not a slash command.
+ */
+export function extractCommandParts(content: string): { command: string; args: string } | null {
+  if (!isSlashCommand(content)) return null;
+
+  const text = extractCommandText(content);
+  const spaceIdx = text.indexOf(' ');
+  if (spaceIdx === -1) {
+    return { command: text, args: '' };
+  }
+  return { command: text.slice(0, spaceIdx), args: text.slice(spaceIdx + 1) };
+}
+
+/**
+ * Highlight inline /command patterns in plain text with styled spans.
+ *
+ * Detects `/command` patterns preceded by start-of-string or whitespace.
+ * Does NOT match paths in URLs (e.g. https://example.com/path).
+ * Returns HTML string with commands wrapped in styled spans.
+ */
+export function highlightSlashCommands(text: string): string {
+  return text.replace(/(^|\s)(\/[a-zA-Z][a-zA-Z0-9_:-]*)/g, (_match, prefix, cmd) => {
+    return `${prefix}<span class="text-info font-mono font-semibold">${cmd}</span>`;
+  });
+}
+
+/**
  * Clean a conversation title for display.
  *
  * Applies XML tag stripping, handles empty results, and truncates long titles.

@@ -1,8 +1,26 @@
-/// Strip `[Image: source: /path/to/file.png]` references from text.
+/// Strip `[Image: source: /path/to/file.png]` and `[Image #N]` references from text.
 /// These are injected by Claude Code when the user attaches images.
 pub fn strip_image_refs(text: &str) -> String {
-    let re = regex::Regex::new(r"\[Image: source: [^\]]+\]").unwrap();
+    let re = regex::Regex::new(r"\[Image:[ ][^\]]+\]|\[Image #\d+\]").unwrap();
     re.replace_all(text, "").trim().to_string()
+}
+
+/// Check whether a message is a `/clear` command (plain or XML-wrapped).
+///
+/// Matches:
+/// - `/clear` (with optional surrounding whitespace/newlines)
+/// - `<command-name>/clear</command-name>` (with optional `<command-args>`)
+pub fn is_clear_command(content: &str) -> bool {
+    let trimmed = content.trim();
+    // Plain format: exactly "/clear" with no additional args
+    if trimmed == "/clear" {
+        return true;
+    }
+    // XML format: <command-name>/clear</command-name>
+    if trimmed.contains("<command-name>/clear</command-name>") {
+        return true;
+    }
+    false
 }
 
 /// Determine whether a user message should be skipped when deriving a title.
@@ -115,8 +133,17 @@ pub fn derive_conversation_title(
     user_messages: &[Option<&str>],
     assistant_text_snippets: Option<&[Option<&str>]>,
 ) -> Option<String> {
+    // Find the last /clear command and only consider messages after it
+    let clear_idx = user_messages.iter().rposition(|opt| {
+        opt.map_or(false, |text| is_clear_command(text))
+    });
+    let user_slice = match clear_idx {
+        Some(idx) => &user_messages[(idx + 1)..],
+        None => &user_messages[..],
+    };
+
     // First pass: find first non-skippable user message
-    for content in user_messages {
+    for content in user_slice {
         if let Some(text) = content {
             let trimmed = text.trim();
             if !trimmed.is_empty() {
@@ -141,7 +168,7 @@ pub fn derive_conversation_title(
     }
 
     // Second pass: XML fallback
-    for content in user_messages {
+    for content in user_slice {
         if let Some(text) = content {
             if text.trim().starts_with('<') {
                 // Try extracting slash command args from raw XML first
@@ -164,7 +191,7 @@ pub fn derive_conversation_title(
     }
 
     // Third pass: slash command fallback -- use first slash command as title
-    for content in user_messages {
+    for content in user_slice {
         if let Some(text) = content {
             let trimmed = text.trim();
             if trimmed.starts_with('/') {
@@ -451,7 +478,7 @@ mod tests {
     // ── is_clear_command tests ──────────────────────────────────────────
 
     #[test]
-    fn clear_command_plain() {
+    fn is_clear_plain() {
         assert!(is_clear_command("/clear"));
     }
 

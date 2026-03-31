@@ -1,7 +1,7 @@
 <template>
   <div class="stat bg-base-200 rounded-box">
     <div class="stat-title text-xs uppercase tracking-wide">{{ title }}</div>
-    <div class="stat-value text-base-content">{{ value }}</div>
+    <div class="stat-value text-base-content">{{ displayValue }}</div>
     <div v-if="trend !== undefined || description" class="stat-desc">
       <template v-if="trend !== undefined && trend !== null">
         <span :class="trendColorClass">
@@ -18,9 +18,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, toRef } from 'vue';
 import type { Component } from 'vue';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-vue-next';
+import { useAnimatedNumber } from '../composables/useAnimatedNumber';
 
 const props = defineProps<{
   title: string;
@@ -29,7 +30,19 @@ const props = defineProps<{
   icon: Component;
   trend?: number | null;
   trendLabel?: string;
+  rawValue?: number;
+  formatter?: (n: number) => string;
 }>();
+
+const numericSource = toRef(() => props.rawValue ?? 0);
+const animatedNumber = useAnimatedNumber(numericSource);
+
+const displayValue = computed(() => {
+  if (props.rawValue !== undefined && props.formatter) {
+    return props.formatter(animatedNumber.value);
+  }
+  return props.value;
+});
 
 const trendText = computed(() => {
   if (props.trend === null || props.trend === undefined) return '';

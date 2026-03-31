@@ -44,6 +44,8 @@
         <KpiCard
           title="Total Tokens"
           :value="overview ? formatNumber(overview.totalTokens) : '--'"
+          :raw-value="overview?.totalTokens"
+          :formatter="formatNumber"
           :description="dateRangeLabel"
           :icon="Coins"
           :trend="overview?.trends.tokensTrend"
@@ -52,6 +54,8 @@
         <KpiCard
           title="Estimated Cost"
           :value="overview ? formatCurrency(overview.estimatedCost) : '$--'"
+          :raw-value="overview?.estimatedCost"
+          :formatter="formatCurrency"
           :description="dateRangeLabel"
           :icon="DollarSign"
           :trend="overview?.trends.costTrend"
@@ -60,6 +64,8 @@
         <KpiCard
           title="Conversations"
           :value="overview ? overview.conversationCount.toString() : '--'"
+          :raw-value="overview?.conversationCount"
+          :formatter="(n: number) => Math.round(n).toLocaleString()"
           :description="dateRangeLabel"
           :icon="MessageSquare"
           :trend="overview?.trends.conversationsTrend"
@@ -68,6 +74,8 @@
         <KpiCard
           title="Active Days"
           :value="overview ? overview.activeDays.toString() : '--'"
+          :raw-value="overview?.activeDays"
+          :formatter="(n: number) => Math.round(n).toString()"
           :description="dateRangeLabel"
           :icon="CalendarDays"
           :trend="overview?.trends.activeDaysTrend"

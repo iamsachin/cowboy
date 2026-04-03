@@ -222,6 +222,19 @@ fn derive_title(parse_result: &ParseResult) -> Option<String> {
         None => &parse_result.user_messages[..],
     };
 
+    // Pass 0: command-args-first — prefer slash command args as title
+    for user in user_slice {
+        if let Some(ref content) = user.content {
+            if let Some(args) = extract_slash_command_args(content) {
+                let cleaned = strip_image_refs(&args);
+                let candidate = if cleaned.is_empty() { &args } else { &cleaned };
+                if !candidate.is_empty() && candidate.len() > 10 && !should_skip_for_title(candidate) {
+                    return Some(truncate(candidate, 100));
+                }
+            }
+        }
+    }
+
     // First pass: skip any user message matching skip patterns
     for user in user_slice {
         if let Some(ref content) = user.content {

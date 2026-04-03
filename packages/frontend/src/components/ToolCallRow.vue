@@ -34,7 +34,7 @@
         <span v-if="toolCall.duration != null" class="text-base-content/50">
           {{ toolCall.duration }}ms
         </span>
-        <span v-if="tokenInfo" class="text-base-content/40">
+        <span v-if="tokenInfo" class="text-base-content/60">
           {{ tokenInfo }}
         </span>
       </span>

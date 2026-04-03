@@ -118,7 +118,7 @@ import { useAnalytics } from '../composables/useAnalytics';
 const { preset, isCustom, customFrom, customTo } = useDateRange();
 const { overview, timeseries, modelDistribution, loading, error } = useAnalytics();
 
-const numberFormatter = new Intl.NumberFormat('en-US');
+const numberFormatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',

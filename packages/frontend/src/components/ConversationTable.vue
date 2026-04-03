@@ -189,7 +189,7 @@ const columns = [
   { field: 'cost', label: 'Cost' },
 ];
 
-const tokenFormatter = new Intl.NumberFormat('en-US');
+const tokenFormatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);

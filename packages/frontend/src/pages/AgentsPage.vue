@@ -93,7 +93,7 @@ const {
 } = useAgentAnalytics(agentRef);
 
 // Formatters
-const numberFormatter = new Intl.NumberFormat('en-US');
+const numberFormatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',

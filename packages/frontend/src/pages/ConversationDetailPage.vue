@@ -1,5 +1,5 @@
 <template>
-  <div class="transition-[padding] duration-200" :class="{ 'pr-[236px]': isOpen && data }">
+  <div class="flex transition-all duration-200">
     <div ref="pageRef" class="flex-1 min-w-0 p-4 max-w-5xl mx-auto">
       <!-- Loading state -->
       <div v-if="loading" class="flex justify-center items-center min-h-[60vh]">
@@ -146,17 +146,16 @@
     </div>
 
     <!-- Timeline panel -->
-    <div
-      v-if="isOpen && data"
-      ref="timelinePanelRef"
-      class="fixed right-2 top-[128px] w-[220px] h-[calc(100vh-128px-8px)] overflow-y-auto border border-base-300 bg-base-100 z-10 rounded-xl shadow-lg"
-    >
-      <ConversationTimeline
-        :events="timelineEvents"
-        :active-key="activeKey"
-        :is-active="data.conversation.isActive ?? false"
-        @navigate="handleTimelineNavigate"
-      />
+    <div v-if="isOpen && data" class="shrink-0 w-[280px] pt-[68px] pr-4">
+      <div ref="timelinePanelRef"
+        class="sticky top-[68px] w-[220px] mx-auto max-h-[calc(100vh-68px-16px)] overflow-y-auto border border-base-300 bg-base-100 z-10 rounded-xl shadow-lg">
+        <ConversationTimeline
+          :events="timelineEvents"
+          :active-key="activeKey"
+          :is-active="data.conversation.isActive ?? false"
+          @navigate="handleTimelineNavigate"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -208,9 +207,6 @@ onMounted(() => {
   }
 });
 
-// Scroll tracker for the main scroll container (used for toggle position preservation)
-const { captureScrollPosition } = useScrollTracker(scrollContainer);
-
 // Scroll tracker for the timeline panel (used for auto-scroll to new events)
 const { isAtBottom: isTimelineAtBottom } = useScrollTracker(timelinePanelRef);
 
@@ -221,13 +217,9 @@ const timelineEvents = computed(() => {
   return extractTimelineEvents(turns);
 });
 
-// --- Toggle handler with scroll position preservation ---
+// --- Toggle handler ---
 async function handleToggle() {
-  const restore = captureScrollPosition();
   toggle();
-  await nextTick();
-  if (restore) restore();
-  // Re-setup observer since layout changed
   await nextTick();
   setupObserver();
 }

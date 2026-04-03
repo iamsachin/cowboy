@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-04-04 - Completed quick task 65: Move tool call cost/token info to right side
+Last activity: 2026-04-04 - Completed quick task 66: Fix conversation detail badges
 
 ## Performance Metrics
 
@@ -119,6 +119,7 @@ None.
 | 63 | Center timeline panel and align top with title card | 2026-04-03 | bb267af | [63-center-timeline-panel-and-align-top-with](./quick/63-center-timeline-panel-and-align-top-with/) |
 | 64 | Fix theme toggle hover background | 2026-04-03 | bf2f34a | [64-fix-the-background-hover-of-the-theme-bu](./quick/64-fix-the-background-hover-of-the-theme-bu/) |
 | 65 | Move tool call cost/token info to right side | 2026-04-04 | c2b0a66 | [65-move-tool-call-cost-token-info-to-right-](./quick/65-move-tool-call-cost-token-info-to-right-/) |
+| 66 | Fix conversation detail badges: remove skill, reorder project first, align icons, fix export | 2026-04-03 | 2318684 | [66-fix-conversation-detail-badges-remove-sk](./quick/66-fix-conversation-detail-badges-remove-sk/) |
 
 ## Session Continuity
 

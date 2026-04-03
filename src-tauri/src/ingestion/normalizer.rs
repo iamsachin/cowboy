@@ -203,7 +203,10 @@ fn strip_xml_tags(text: &str) -> String {
 
 fn truncate(text: &str, max_len: usize) -> String {
     if text.len() > max_len {
-        text[..max_len].to_string()
+        match text.char_indices().nth(max_len) {
+            Some((byte_idx, _)) => text[..byte_idx].to_string(),
+            None => text.to_string(),
+        }
     } else {
         text.to_string()
     }

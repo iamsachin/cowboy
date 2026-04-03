@@ -52,23 +52,25 @@
           <h1 class="text-xl font-bold mb-3 flex items-center gap-2">
             <span class="break-words min-w-0">{{ displayTitle }}</span>
             <span v-if="data.conversation.isActive" class="pulse-dot inline-block"></span>
-            <div class="dropdown dropdown-end">
-              <button tabindex="0" class="btn btn-ghost btn-xs tooltip tooltip-bottom" data-tip="Export conversation">
-                <Download class="w-4 h-4" />
+            <div class="flex items-center gap-1 shrink-0">
+              <div class="dropdown dropdown-end flex">
+                <button tabindex="0" class="btn btn-ghost btn-xs tooltip tooltip-bottom" data-tip="Export conversation">
+                  <Download class="w-4 h-4" />
+                </button>
+                <ul tabindex="0" class="dropdown-content menu bg-base-200 rounded-box z-10 w-40 p-2 shadow">
+                  <li><a @click="handleExportMarkdown(); closeDropdown()">Markdown</a></li>
+                  <li><a @click="handleExportJson(); closeDropdown()">JSON</a></li>
+                  <li><a @click="handleExportPlainText(); closeDropdown()">Plain Text</a></li>
+                </ul>
+              </div>
+              <button
+                class="btn btn-ghost btn-xs tooltip tooltip-bottom"
+                data-tip="Toggle timeline"
+                @click="handleToggle"
+              >
+                <PanelRight class="w-4 h-4" :class="{ 'text-primary': isOpen }" />
               </button>
-              <ul tabindex="0" class="dropdown-content menu bg-base-200 rounded-box z-10 w-40 p-2 shadow">
-                <li><a @click="handleExportMarkdown(); closeDropdown()">Markdown</a></li>
-                <li><a @click="handleExportJson(); closeDropdown()">JSON</a></li>
-                <li><a @click="handleExportPlainText(); closeDropdown()">Plain Text</a></li>
-              </ul>
             </div>
-            <button
-              class="btn btn-ghost btn-xs tooltip tooltip-bottom"
-              data-tip="Toggle timeline"
-              @click="handleToggle"
-            >
-              <PanelRight class="w-4 h-4" :class="{ 'text-primary': isOpen }" />
-            </button>
           </h1>
           <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
             <!-- Project -->

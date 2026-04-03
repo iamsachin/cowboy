@@ -20,6 +20,8 @@ mod websocket;
 
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         .setup(|app| {
             // Get the macOS app data directory: ~/Library/Application Support/cowboy/
             let app_data_dir = app.path().app_data_dir().expect("failed to resolve app data dir");

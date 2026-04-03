@@ -1,3 +1,5 @@
+import { save } from '@tauri-apps/plugin-dialog';
+import { writeTextFile } from '@tauri-apps/plugin-fs';
 import type { ConversationDetailResponse, MessageRow, ToolCallRow } from '../types';
 
 /**
@@ -125,16 +127,16 @@ export function exportAsPlainText(data: ConversationDetailResponse): string {
 }
 
 /**
- * Trigger a file download in the browser.
+ * Show native save dialog and write file.
  */
-export function downloadFile(content: string, filename: string, mimeType: string): void {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+export async function downloadFile(content: string, filename: string, _mimeType: string): Promise<void> {
+  const ext = filename.split('.').pop() || 'txt';
+  const path = await save({
+    defaultPath: filename,
+    filters: [{ name: ext.toUpperCase(), extensions: [ext] }],
+  });
+  if (!path) return; // user cancelled
+  await writeTextFile(path, content);
 }
 
 /**

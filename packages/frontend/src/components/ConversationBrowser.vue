@@ -116,7 +116,7 @@
                   ></span>
                   <BotIcon
                     v-if="row._isChild"
-                    class="w-3.5 h-3.5 text-info shrink-0"
+                    class="w-3.5 h-3.5 text-base-content/30 shrink-0"
                     title="Subagent"
                   />
                   <div class="min-w-0">

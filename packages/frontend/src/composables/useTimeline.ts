@@ -3,7 +3,7 @@ import type { GroupedTurn } from './useGroupedTurns';
 
 export interface TimelineEvent {
   key: string;
-  type: 'user' | 'assistant-group' | 'compaction';
+  type: 'user' | 'assistant-group' | 'compaction' | 'subagent';
   label: string;
   turnIndex: number;
 }
@@ -38,6 +38,28 @@ export function extractTimelineEvents(turns: GroupedTurn[]): TimelineEvent[] {
         label: `${model}${tools > 0 ? ` \u00b7 ${tools} tool${tools === 1 ? '' : 's'}` : ''}`,
         turnIndex: i,
       });
+      // Add subagent entries for Agent/Task tool calls
+      for (const t of turn.turns) {
+        for (const tc of t.toolCalls) {
+          if (tc.name === 'Agent' || tc.name === 'Task') {
+            const input = tc.input as Record<string, unknown> | null;
+            let desc = 'Subagent';
+            if (input?.description && typeof input.description === 'string') {
+              desc = input.description;
+            } else if (input?.prompt && typeof input.prompt === 'string') {
+              desc = input.prompt.slice(0, 40) + (input.prompt.length > 40 ? '...' : '');
+            }
+            const summary = tc.subagentSummary;
+            const toolCount = summary?.totalToolCalls ?? 0;
+            events.push({
+              key: tc.id,
+              type: 'subagent',
+              label: `${desc}${toolCount > 0 ? ` · ${toolCount} tools` : ''}`,
+              turnIndex: i,
+            });
+          }
+        }
+      }
     } else if (turn.type === 'compaction') {
       const before = turn.tokensBefore ?? 0;
       const after = turn.tokensAfter ?? 0;

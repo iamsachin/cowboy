@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { User, Bot, Minimize2 } from 'lucide-vue-next';
+import { User, Bot, Minimize2, Workflow } from 'lucide-vue-next';
 import type { TimelineEvent } from '../composables/useTimeline';
 
 defineProps<{
@@ -55,6 +55,8 @@ function iconConfig(event: TimelineEvent) {
       return { icon: User, colorClass: 'text-primary' };
     case 'assistant-group':
       return { icon: Bot, colorClass: 'text-secondary' };
+    case 'subagent':
+      return { icon: Workflow, colorClass: 'text-info' };
     case 'compaction':
       return { icon: Minimize2, colorClass: 'text-warning' };
   }
@@ -66,6 +68,8 @@ function labelClass(event: TimelineEvent): string {
       return 'text-base-content/80 font-medium';
     case 'assistant-group':
       return 'text-base-content/60';
+    case 'subagent':
+      return 'text-info/70 pl-2';
     case 'compaction':
       return 'text-warning/70 italic';
   }

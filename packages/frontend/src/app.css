@@ -65,40 +65,44 @@
   background-color: oklch(0.90 0.06 230 / 0.3);
 }
 
+/* Markdown content base text color in light mode */
+[data-theme="emerald"] .thinking-content {
+  color: oklch(0.30 0 0);
+}
 /* Markdown code blocks in light mode */
-[data-theme="emerald"] .thinking-content :deep(code) {
+[data-theme="emerald"] .thinking-content code {
   background: oklch(0.92 0.01 250);
   color: oklch(0.40 0.08 250);
 }
-[data-theme="emerald"] .thinking-content :deep(pre) {
+[data-theme="emerald"] .thinking-content pre {
   background: oklch(0.94 0 0);
 }
-[data-theme="emerald"] .thinking-content :deep(pre code) {
+[data-theme="emerald"] .thinking-content pre code {
   color: inherit;
 }
-[data-theme="emerald"] .thinking-content :deep(h1),
-[data-theme="emerald"] .thinking-content :deep(h2),
-[data-theme="emerald"] .thinking-content :deep(h3),
-[data-theme="emerald"] .thinking-content :deep(h4) {
+[data-theme="emerald"] .thinking-content h1,
+[data-theme="emerald"] .thinking-content h2,
+[data-theme="emerald"] .thinking-content h3,
+[data-theme="emerald"] .thinking-content h4 {
   color: oklch(0.35 0.08 250);
 }
-[data-theme="emerald"] .thinking-content :deep(strong) {
+[data-theme="emerald"] .thinking-content strong {
   color: oklch(0.25 0 0);
 }
-[data-theme="emerald"] .thinking-content :deep(a) {
+[data-theme="emerald"] .thinking-content a {
   color: oklch(0.45 0.15 250);
 }
-[data-theme="emerald"] .thinking-content :deep(li)::marker {
+[data-theme="emerald"] .thinking-content li::marker {
   color: oklch(0.50 0.08 250);
 }
-[data-theme="emerald"] .thinking-content :deep(blockquote) {
+[data-theme="emerald"] .thinking-content blockquote {
   border-left-color: oklch(0.70 0 0);
 }
-[data-theme="emerald"] .thinking-content :deep(th),
-[data-theme="emerald"] .thinking-content :deep(td) {
+[data-theme="emerald"] .thinking-content th,
+[data-theme="emerald"] .thinking-content td {
   border-color: oklch(0.75 0 0);
 }
-[data-theme="emerald"] .thinking-content :deep(hr) {
+[data-theme="emerald"] .thinking-content hr {
   border-color: oklch(0.80 0 0);
 }
 

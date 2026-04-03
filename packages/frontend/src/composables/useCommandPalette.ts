@@ -24,7 +24,6 @@ export type PaletteResult =
 const PAGES: PageItem[] = [
   { name: 'Overview', path: '/overview', icon: 'LayoutDashboard' },
   { name: 'Conversations', path: '/conversations', icon: 'MessageSquare' },
-  { name: 'Agents', path: '/agents', icon: 'Bot' },
   { name: 'Analytics', path: '/analytics', icon: 'BarChart3' },
   { name: 'Settings', path: '/settings', icon: 'Settings' },
 ];

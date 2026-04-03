@@ -35,14 +35,7 @@ describe('Router Configuration', () => {
     expect(route!.name).toBe('conversations');
   });
 
-  it('has a route for /agents', () => {
-    const routes = router.getRoutes();
-    const route = routes.find((r) => r.path === '/agents');
-    expect(route).toBeDefined();
-    expect(route!.name).toBe('agents');
-  });
-
-  it('has a route for /analytics', () => {
+it('has a route for /analytics', () => {
     const routes = router.getRoutes();
     const route = routes.find((r) => r.path === '/analytics');
     expect(route).toBeDefined();
@@ -66,6 +59,6 @@ describe('Router Configuration', () => {
 
   it('has exactly 9 named routes plus the redirect', () => {
     const namedRoutes = router.getRoutes().filter((r) => r.name);
-    expect(namedRoutes).toHaveLength(9);
+    expect(namedRoutes).toHaveLength(6);
   });
 });

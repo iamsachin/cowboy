@@ -21,11 +21,6 @@ const routes = [
     component: () => import('../pages/ConversationDetailPage.vue'),
   },
   {
-    path: '/agents',
-    name: 'agents',
-    component: () => import('../pages/AgentsPage.vue'),
-  },
-  {
     path: '/analytics',
     name: 'analytics',
     component: () => import('../pages/AnalyticsPage.vue'),

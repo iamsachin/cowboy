@@ -645,4 +645,24 @@ mod tests {
             Some("Context cleared".to_string())
         );
     }
+
+    #[test]
+    fn title_prefers_command_args_over_later_plain_text() {
+        let lines = vec![
+            // /clear
+            r#"{"type":"user","uuid":"u0","sessionId":"s1","timestamp":"2024-01-01T10:00:00Z","message":{"role":"user","content":"<command-name>/clear</command-name>\n            <command-message>clear</command-message>\n            <command-args></command-args>"}}"#,
+            // command with args
+            r#"{"type":"user","uuid":"u1","sessionId":"s1","timestamp":"2024-01-01T10:00:01Z","message":{"role":"user","content":"<command-message>gsd:quick</command-message>\n<command-name>/gsd:quick</command-name>\n<command-args>[Image #46] In case the first conversation is a command the args should be the title</command-args>"}}"#,
+            // later plain text
+            r#"{"type":"user","uuid":"u2","sessionId":"s1","timestamp":"2024-01-01T10:00:05Z","message":{"role":"user","content":"For our previous fix, now it is constantly updating the title"}}"#,
+        ];
+        let content = lines.join("\n");
+        let parse_result = parse_jsonl_content(&content).unwrap();
+        let normalized = normalize_conversation(&parse_result, "test", None).unwrap();
+
+        assert_eq!(
+            normalized.conversation.title,
+            Some("In case the first conversation is a command the args should be the title".to_string())
+        );
+    }
 }

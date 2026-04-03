@@ -104,6 +104,7 @@
             v-for="tc in turn.toolCalls"
             :key="tc.id"
             :toolCall="tc"
+            :autoExpand="tc.id === autoExpandToolCallId"
           />
         </div>
 
@@ -213,6 +214,16 @@ const groupTokens = computed(() => {
   }
 
   return found ? { inputTokens, outputTokens, cacheReadTokens, cacheCreationTokens, cost, contextTokens } : null;
+});
+
+const autoExpandToolCallId = computed(() => {
+  const turns = props.group.turns;
+  if (turns.length === 0) return null;
+  const lastTurn = turns[turns.length - 1];
+  // Only auto-expand if last turn has no text content
+  if (getTurnContent(lastTurn).length > 0) return null;
+  if (lastTurn.toolCalls.length === 0) return null;
+  return lastTurn.toolCalls[lastTurn.toolCalls.length - 1].id;
 });
 
 function getTurnContent(turn: AssistantTurn) {

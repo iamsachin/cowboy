@@ -33,7 +33,7 @@
     </div>
 
     <!-- Expandable I/O details -->
-    <details class="ml-6 mt-1" @click.stop>
+    <details :open="autoExpand" class="ml-6 mt-1" @click.stop>
       <summary class="text-xs text-info cursor-pointer">Show details</summary>
       <div class="mt-2">
         <DiffViewer v-if="toolCall.name === 'Edit'" :input="toolCall.input" :output="toolCall.output" />
@@ -57,6 +57,7 @@ import SubagentSummaryCard from './SubagentSummaryCard.vue';
 
 const props = defineProps<{
   toolCall: ToolCallRow;
+  autoExpand?: boolean;
 }>();
 
 const toolIcon = computed(() => getToolIcon(props.toolCall.name));

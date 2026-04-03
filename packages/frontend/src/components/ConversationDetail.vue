@@ -289,11 +289,17 @@ register({
   group: 'Navigation',
 });
 
-// Auto-expand when there's only one assistant group
+// Auto-expand last assistant group when new groups arrive (including single-group case)
+const prevGroupCount = ref(0);
+
 watch(groupIds, (ids) => {
-  if (ids.length === 1 && !isExpanded(ids[0])) {
-    toggle(ids[0]);
+  const lastId = ids[ids.length - 1];
+  if (ids.length === 1 && !isExpanded(lastId)) {
+    toggle(lastId);
+  } else if (ids.length > prevGroupCount.value && lastId && !isExpanded(lastId)) {
+    toggle(lastId);
   }
+  prevGroupCount.value = ids.length;
 }, { immediate: true });
 
 // Reset focus when conversation changes

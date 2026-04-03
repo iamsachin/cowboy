@@ -1,70 +1,81 @@
 /**
  * Shared markdown rendering styles for .thinking-content containers.
  * Used by AssistantGroupCard.vue and SystemMessageIndicator.vue.
- * Must be imported in a non-scoped <style> block so :deep() selectors work.
+ * Imported in an unscoped <style> block for global availability.
  */
 
-.thinking-content :deep(h1),
-.thinking-content :deep(h2),
-.thinking-content :deep(h3),
-.thinking-content :deep(h4) {
+.thinking-content h1,
+.thinking-content h2,
+.thinking-content h3,
+.thinking-content h4 {
   font-weight: 600;
   margin-top: 0.75em;
   margin-bottom: 0.25em;
 }
-.thinking-content :deep(h1) { font-size: 1.1em; }
-.thinking-content :deep(h2) { font-size: 1.05em; }
-.thinking-content :deep(h3) { font-size: 1em; }
-.thinking-content :deep(ul),
-.thinking-content :deep(ol) {
+.thinking-content h1 { font-size: 1.1em; }
+.thinking-content h2 { font-size: 1.05em; }
+.thinking-content h3 { font-size: 1em; }
+.thinking-content ul,
+.thinking-content ol {
   padding-left: 1.5em;
   margin: 0.25em 0;
 }
-.thinking-content :deep(ul) { list-style-type: disc; }
-.thinking-content :deep(ol) { list-style-type: decimal; }
-.thinking-content :deep(li) { margin: 0.1em 0; }
-.thinking-content :deep(code) {
+.thinking-content ul { list-style-type: disc; }
+.thinking-content ol { list-style-type: decimal; }
+.thinking-content ul ul { list-style-type: circle; }
+.thinking-content ul ul ul { list-style-type: square; }
+.thinking-content li { margin: 0.1em 0; }
+.thinking-content code {
   background: oklch(0.25 0 0 / 0.5);
   padding: 0.1em 0.3em;
   border-radius: 0.25em;
   font-size: 0.9em;
 }
-.thinking-content :deep(pre) {
+.thinking-content pre {
   background: oklch(0.2 0 0 / 0.5);
   padding: 0.75em;
   border-radius: 0.375em;
   overflow-x: auto;
   margin: 0.5em 0;
 }
-.thinking-content :deep(pre code) {
+.thinking-content pre code {
   background: none;
   padding: 0;
 }
-.thinking-content :deep(p) {
+.thinking-content p {
   margin: 0.25em 0;
 }
-.thinking-content :deep(strong) { font-weight: 600; }
-.thinking-content :deep(blockquote) {
+.thinking-content strong { font-weight: 600; }
+.thinking-content blockquote {
   border-left: 3px solid oklch(0.5 0 0);
   padding-left: 0.75em;
   margin: 0.5em 0;
   opacity: 0.8;
 }
-.thinking-content :deep(a) {
+.thinking-content a {
   text-decoration: underline;
   opacity: 0.9;
 }
-.thinking-content :deep(hr) {
+.thinking-content hr {
   border-color: oklch(0.4 0 0);
   margin: 0.5em 0;
 }
-.thinking-content :deep(table) {
+.thinking-content table {
   border-collapse: collapse;
   margin: 0.5em 0;
   font-size: 0.9em;
+  width: 100%;
 }
-.thinking-content :deep(th),
-.thinking-content :deep(td) {
+.thinking-content th,
+.thinking-content td {
   border: 1px solid oklch(0.4 0 0);
   padding: 0.25em 0.5em;
+}
+.thinking-content th {
+  font-weight: 600;
+  text-align: left;
+  background: oklch(0.3 0 0 / 0.3);
+}
+.thinking-content tr:nth-child(even) {
+  background: oklch(0.3 0 0 / 0.2);
 }

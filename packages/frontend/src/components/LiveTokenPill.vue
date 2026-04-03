@@ -5,7 +5,7 @@
   >
     <template v-if="!collapsed">
       <!-- Chart -->
-      <div class="h-28">
+      <div class="h-44">
         <LiveTokenChart :data="filledTokenRate" />
       </div>
       <!-- Speed indicators -->

@@ -68,12 +68,8 @@
     <!-- Spacer -->
     <div class="flex-1"></div>
 
-    <!-- Rotating Tip -->
-    <div v-if="!collapsed" class="px-4 py-3 border-t border-base-300">
-      <div class="text-xs text-base-content/40 leading-relaxed">
-        <span class="text-base-content/50 font-medium">Tip:</span> {{ tips[currentTipIndex] }}
-      </div>
-    </div>
+    <!-- Active Conversations -->
+    <ActiveConversations :collapsed="collapsed" />
 
     <!-- Live Token Rate -->
     <div class="border-t border-base-300">
@@ -89,10 +85,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onUnmounted } from 'vue';
+import { ref, watch } from 'vue';
 import ConnectionStatus from './ConnectionStatus.vue';
 import LiveTokenPill from './LiveTokenPill.vue';
 import ThemeToggle from './ThemeToggle.vue';
+import ActiveConversations from './ActiveConversations.vue';
 import { useAnalytics } from '../composables/useAnalytics';
 import {
   LayoutDashboard,
@@ -127,26 +124,4 @@ function formatTokens(n: number): string {
   return n.toString();
 }
 
-// Rotating Tips
-const tips = [
-  'Use date range presets to quickly compare time periods',
-  'Click any conversation row to see the full message thread',
-  'Filter by agent to isolate performance patterns',
-  'The Analytics page shows token usage trends over time',
-  'Check model distribution to optimize API costs',
-  'Sort conversations by cost to find expensive sessions',
-  'Active days shows how many days had agent activity',
-  'Cache read tokens reduce your effective API costs',
-  'Compare agent performance side by side on the Agents page',
-];
-
-const currentTipIndex = ref(Math.floor(Math.random() * tips.length));
-
-const tipInterval = setInterval(() => {
-  currentTipIndex.value = (currentTipIndex.value + 1) % tips.length;
-}, 30_000);
-
-onUnmounted(() => {
-  clearInterval(tipInterval);
-});
 </script>

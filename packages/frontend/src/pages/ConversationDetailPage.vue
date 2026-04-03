@@ -269,7 +269,7 @@ async function handleToggle() {
 const navigating = ref(false);
 let navigatingTimeout: ReturnType<typeof setTimeout> | null = null;
 
-async function handleTimelineNavigate(key: string, turnIndex: number) {
+async function handleTimelineNavigate(key: string, turnIndex: number, parentKey?: string) {
   // Set navigating flag to prevent observer from interfering
   navigating.value = true;
   if (navigatingTimeout) clearTimeout(navigatingTimeout);
@@ -282,11 +282,20 @@ async function handleTimelineNavigate(key: string, turnIndex: number) {
   await nextTick();
 
   // 2. Auto-expand if collapsed assistant group
-  detailRef.value?.expandGroup(key);
+  //    For subagents, expand the parent group first
+  const groupKey = parentKey || key;
+  detailRef.value?.expandGroup(groupKey);
   await nextTick();
 
   // 3. Smooth scroll to element
-  const el = scrollContainer.value?.querySelector(`[data-turn-key="${key}"]`);
+  //    For subagents, scroll to the specific tool call within the group
+  let el: Element | null = null;
+  if (parentKey) {
+    el = scrollContainer.value?.querySelector(`[data-tool-call-id="${key}"]`) ?? null;
+  }
+  if (!el) {
+    el = scrollContainer.value?.querySelector(`[data-turn-key="${groupKey}"]`) ?? null;
+  }
   el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   // Clear navigating flag after scroll settles

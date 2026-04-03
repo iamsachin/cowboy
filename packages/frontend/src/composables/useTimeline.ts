@@ -6,6 +6,8 @@ export interface TimelineEvent {
   type: 'user' | 'assistant-group' | 'compaction' | 'subagent';
   label: string;
   turnIndex: number;
+  /** For subagent events: the key of the parent assistant-group */
+  parentKey?: string;
 }
 
 /**
@@ -32,8 +34,9 @@ export function extractTimelineEvents(turns: GroupedTurn[]): TimelineEvent[] {
     } else if (turn.type === 'assistant-group') {
       const model = turn.model || 'Assistant';
       const tools = turn.toolCallCount;
+      const groupKey = turn.turns[0].message.id;
       events.push({
-        key: turn.turns[0].message.id,
+        key: groupKey,
         type: 'assistant-group',
         label: `${model}${tools > 0 ? ` \u00b7 ${tools} tool${tools === 1 ? '' : 's'}` : ''}`,
         turnIndex: i,
@@ -56,6 +59,7 @@ export function extractTimelineEvents(turns: GroupedTurn[]): TimelineEvent[] {
               type: 'subagent',
               label: `${desc}${toolCount > 0 ? ` · ${toolCount} tools` : ''}`,
               turnIndex: i,
+              parentKey: groupKey,
             });
           }
         }

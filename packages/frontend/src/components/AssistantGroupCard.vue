@@ -100,13 +100,17 @@
 
         <!-- Tool calls for this turn -->
         <div v-if="turn.toolCalls.length > 0" class="mt-1 space-y-1">
-          <ToolCallRowComponent
+          <div
             v-for="(tc, tcIdx) in turn.toolCalls"
             :key="tc.id"
-            :toolCall="tc"
-            :autoExpand="tc.id === autoExpandToolCallId"
-            :tokenInfo="tcIdx === turn.toolCalls.length - 1 ? formatTurnTokenInfo(turn) : undefined"
-          />
+            :data-tool-call-id="tc.id"
+          >
+            <ToolCallRowComponent
+              :toolCall="tc"
+              :autoExpand="tc.id === autoExpandToolCallId"
+              :tokenInfo="tcIdx === turn.toolCalls.length - 1 ? formatTurnTokenInfo(turn) : undefined"
+            />
+          </div>
         </div>
 
         <!-- Per-turn token info (only for turns without tool calls) -->

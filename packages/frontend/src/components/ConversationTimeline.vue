@@ -10,7 +10,7 @@
         :data-timeline-key="event.key"
         class="relative flex items-start gap-2 py-1.5 px-1 rounded cursor-pointer hover:bg-base-200 transition-colors"
         :class="{ 'bg-primary/10': event.key === activeKey }"
-        @click="$emit('navigate', event.key, event.turnIndex)"
+        @click="$emit('navigate', event.key, event.turnIndex, event.parentKey)"
       >
         <!-- Icon -->
         <div class="relative z-10 mt-0.5 w-[20px] h-[20px] shrink-0 flex items-center justify-center bg-base-100 rounded-full">
@@ -46,7 +46,7 @@ defineProps<{
 }>();
 
 defineEmits<{
-  navigate: [key: string, turnIndex: number];
+  navigate: [key: string, turnIndex: number, parentKey?: string];
 }>();
 
 function iconConfig(event: TimelineEvent) {

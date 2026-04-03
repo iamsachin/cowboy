@@ -50,7 +50,7 @@
               }"
               @click="router.push({ name: 'conversation-detail', params: { id: row.id } })"
             >
-              <td class="pl-4">
+              <td :class="row._isChild ? 'pl-8' : 'pl-4'">
                 <div class="max-w-[16rem] flex items-center gap-1.5">
                   <span
                     v-if="('isActive' in row) && row.isActive"
@@ -72,8 +72,8 @@
                   </div>
                 </div>
               </td>
-              <td class="whitespace-nowrap" :class="{ 'pl-8': row._isChild }">
-                <BotIcon v-if="row._isChild" class="w-3 h-3 text-base-content/30 mr-1 inline" title="Subagent" />{{ formatDate(row.date) }}
+              <td class="whitespace-nowrap">
+                {{ formatDate(row.date) }}
               </td>
               <td><AgentBadge v-if="!row._isChild" :agent="row.agent" /></td>
               <td><span v-if="!row._isChild">{{ row.project ?? '--' }}</span></td>

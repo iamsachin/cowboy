@@ -13,7 +13,7 @@
         :to="`/conversations/${conv.id}`"
         class="block text-xs py-1 px-2 rounded hover:bg-base-300 truncate text-base-content/70 hover:text-base-content transition-colors"
       >
-        {{ conv.title || conv.agent || 'Untitled' }}
+        {{ cleanTitle(conv.title ?? '') }}
       </router-link>
       <div
         v-if="activeConversations.length > 5"
@@ -30,6 +30,7 @@ import { ref, computed, onScopeDispose } from 'vue';
 import { useWebSocket } from '../composables/useWebSocket';
 import { API_BASE } from '../utils/api-base';
 import type { ConversationRow } from '../types/api';
+import { cleanTitle } from '../utils/content-sanitizer';
 
 defineProps<{
   collapsed: boolean;

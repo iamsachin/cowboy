@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.2.1
+
+- Animate new messages with smooth slide-up TransitionGroup instead of abrupt shift
+- Fix timeline to be full-height with scroll position indicator
+- Fix light theme markdown legibility by removing no-op :deep() selectors from global CSS
+- Fix timeline connector line artifact in light mode
+
 ## v3.2.0
 
 - Remove Plans feature from navigation, router, command palette, and all frontend code

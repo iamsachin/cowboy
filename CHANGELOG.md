@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.1.14
+
+- Fix markdown rendering in conversation view (lists, tables, headings, blockquotes, HR all broken)
+- Remove invalid `:deep()` pseudo-class from unscoped CSS — Tailwind v4 preflight resets were winning
+- Improve table styling with full width, header backgrounds, and alternating row colors
+- Add nested list style variants (circle, square)
+- Auto-expand last assistant group when new groups arrive during streaming
+
 ## v3.1.13
 
 - Emit WebSocket events per-file instead of batching until ingestion completes

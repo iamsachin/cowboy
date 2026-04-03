@@ -90,7 +90,7 @@ fi
 log "Checking prerequisites..."
 
 MISSING=()
-for cmd in pnpm gh cargo jq; do
+for cmd in pnpm gh cargo jq codesign xcrun; do
   if ! command -v "$cmd" &>/dev/null; then
     MISSING+=("$cmd")
   fi
@@ -107,6 +107,17 @@ if ! gh auth status &>/dev/null; then
 fi
 
 log "All prerequisites satisfied."
+
+# Validate signing/notarization environment
+if [[ -z "${APPLE_SIGN_IDENTITY:-}" ]]; then
+  err "APPLE_SIGN_IDENTITY not set. Add to ~/.zshrc: export APPLE_SIGN_IDENTITY=\"Developer ID Application: Name (TEAMID)\""
+  exit 1
+fi
+if [[ -z "${COWBOY_NOTARIZE_PROFILE:-}" ]]; then
+  err "COWBOY_NOTARIZE_PROFILE not set. Add to ~/.zshrc: export COWBOY_NOTARIZE_PROFILE=\"cowboy-notarize\""
+  exit 1
+fi
+log "Signing identity: $APPLE_SIGN_IDENTITY"
 
 # --- Step 2: Detect architecture ---
 ARCH=$(uname -m)
@@ -126,6 +137,16 @@ DMG_PATH="$REPO_ROOT/src-tauri/target/release/bundle/dmg/$DMG_NAME"
 log "Building Cowboy v${VERSION}..."
 cd "$REPO_ROOT"
 npx tauri build --bundles app,dmg
+
+# --- Step 3b: Sign the app bundle ---
+APP_PATH="$REPO_ROOT/src-tauri/target/release/bundle/macos/Cowboy.app"
+if [[ ! -d "$APP_PATH" ]]; then
+  err "App bundle not found at: $APP_PATH"
+  exit 1
+fi
+log "Signing Cowboy.app with hardened runtime..."
+codesign --force --options runtime --sign "$APPLE_SIGN_IDENTITY" --deep "$APP_PATH"
+log "App bundle signed successfully."
 
 # --- Step 4: Verify build output ---
 if [[ ! -f "$DMG_PATH" ]]; then
@@ -151,6 +172,18 @@ fi
 
 DMG_SIZE=$(du -h "$DMG_PATH" | cut -f1)
 log "Build successful: $DMG_PATH ($DMG_SIZE)"
+
+# --- Step 4b: Notarize and staple the DMG ---
+log "Submitting DMG for notarization (this may take a few minutes)..."
+if ! xcrun notarytool submit "$DMG_PATH" --keychain-profile "$COWBOY_NOTARIZE_PROFILE" --wait; then
+  err "Notarization failed. Check Apple Developer account and keychain profile."
+  exit 1
+fi
+log "Notarization successful."
+
+log "Stapling notarization ticket to DMG..."
+xcrun stapler staple "$DMG_PATH"
+log "DMG stapled successfully."
 
 # --- Step 5: Build-only exit ---
 if [[ "$BUILD_ONLY" == true ]]; then

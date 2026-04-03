@@ -124,11 +124,13 @@ fn truncate(text: &str, max_len: usize) -> String {
 
 /// Derive a conversation title from user messages with optional assistant-text fallback.
 ///
-/// Fallback chain:
+/// Fallback chain (5 passes):
+/// 0. Command args from slash commands (prefer command arguments as title)
 /// 1. First non-skippable user message content (truncated to 100 chars)
 /// 2. First XML-stripped user message with >10 chars of cleaned text
-/// 3. First non-null assistant text snippet (truncated to 100 chars)
-/// 4. None
+/// 3. First slash command as literal title
+/// 4. First non-null assistant text snippet (truncated to 100 chars)
+/// 5. None
 pub fn derive_conversation_title(
     user_messages: &[Option<&str>],
     assistant_text_snippets: Option<&[Option<&str>]>,
@@ -141,6 +143,19 @@ pub fn derive_conversation_title(
         Some(idx) => &user_messages[(idx + 1)..],
         None => &user_messages[..],
     };
+
+    // Pass 0: command args — prefer slash-command arguments as title
+    for content in user_slice {
+        if let Some(text) = content {
+            if let Some(args) = extract_slash_command_args(text) {
+                let cleaned = strip_image_refs(&args);
+                if cleaned.len() > 10 {
+                    return Some(truncate(&cleaned, 100));
+                }
+                // Args existed but were too short after stripping — continue to next message
+            }
+        }
+    }
 
     // First pass: find first non-skippable user message
     for content in user_slice {

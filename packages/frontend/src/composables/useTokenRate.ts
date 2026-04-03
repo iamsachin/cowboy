@@ -76,6 +76,9 @@ export function useTokenRate() {
     fetchTokenRate().finally(() => {
       loading.value = false;
     });
+
+    // Poll every 20s for a more "live" speed feel
+    setInterval(fetchTokenRate, 20_000);
   }
 
   return {

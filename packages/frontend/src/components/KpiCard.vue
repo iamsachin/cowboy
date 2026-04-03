@@ -32,10 +32,11 @@ const props = defineProps<{
   trendLabel?: string;
   rawValue?: number;
   formatter?: (n: number) => string;
+  roundAnimation?: boolean;
 }>();
 
 const numericSource = toRef(() => props.rawValue ?? 0);
-const animatedNumber = useAnimatedNumber(numericSource);
+const animatedNumber = useAnimatedNumber(numericSource, 600, props.roundAnimation ?? true);
 
 const displayValue = computed(() => {
   if (props.rawValue !== undefined && props.formatter) {

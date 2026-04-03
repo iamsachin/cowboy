@@ -56,6 +56,7 @@
           :value="overview ? formatCurrency(overview.estimatedCost) : '$--'"
           :raw-value="overview?.estimatedCost"
           :formatter="formatCurrency"
+          :round-animation="false"
           :description="dateRangeLabel"
           :icon="DollarSign"
           :trend="overview?.trends.costTrend"

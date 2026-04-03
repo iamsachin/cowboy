@@ -1,6 +1,6 @@
 import { ref, watch, type Ref } from 'vue';
 
-export function useAnimatedNumber(source: Ref<number>, duration = 600): Ref<number> {
+export function useAnimatedNumber(source: Ref<number>, duration = 600, round = true): Ref<number> {
   const output = ref(source.value);
   let animationFrame: number | null = null;
 
@@ -21,7 +21,8 @@ export function useAnimatedNumber(source: Ref<number>, duration = 600): Ref<numb
       const progress = Math.min(elapsed / duration, 1);
       const easedProgress = easeOutCubic(progress);
 
-      output.value = startVal + (newVal - startVal) * easedProgress;
+      const raw = startVal + (newVal - startVal) * easedProgress;
+      output.value = round ? Math.round(raw) : raw;
 
       if (progress < 1) {
         animationFrame = requestAnimationFrame(animate);

@@ -9,11 +9,11 @@
         :key="event.key"
         :data-timeline-key="event.key"
         class="relative flex items-start gap-2 py-1.5 px-1 rounded cursor-pointer hover:bg-base-200 transition-colors"
-        :class="{ 'bg-primary/10 border-l-2 border-l-primary': event.key === activeKey }"
+        :class="{ 'bg-primary/10': event.key === activeKey }"
         @click="$emit('navigate', event.key, event.turnIndex)"
       >
         <!-- Icon -->
-        <div class="relative z-10 mt-0.5 w-[20px] shrink-0 flex justify-center">
+        <div class="relative z-10 mt-0.5 w-[20px] h-[20px] shrink-0 flex items-center justify-center bg-base-100 rounded-full">
           <component
             :is="iconConfig(event).icon"
             :size="14"

@@ -31,16 +31,6 @@ const routes = [
     component: () => import('../pages/AnalyticsPage.vue'),
   },
   {
-    path: '/plans',
-    name: 'plans',
-    component: () => import('../pages/PlansPage.vue'),
-  },
-  {
-    path: '/plans/:id',
-    name: 'plan-detail',
-    component: () => import('../pages/PlanDetailPage.vue'),
-  },
-  {
     path: '/settings',
     name: 'settings',
     component: () => import('../pages/SettingsPage.vue'),

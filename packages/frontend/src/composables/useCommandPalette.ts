@@ -26,7 +26,6 @@ const PAGES: PageItem[] = [
   { name: 'Conversations', path: '/conversations', icon: 'MessageSquare' },
   { name: 'Agents', path: '/agents', icon: 'Bot' },
   { name: 'Analytics', path: '/analytics', icon: 'BarChart3' },
-  { name: 'Plans', path: '/plans', icon: 'ClipboardList' },
   { name: 'Settings', path: '/settings', icon: 'Settings' },
 ];
 

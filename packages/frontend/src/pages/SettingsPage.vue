@@ -133,10 +133,6 @@
               <div class="stat-title text-xs">Token Usage Records</div>
               <div class="stat-value text-lg">{{ dbStats.total.tokenUsage }}</div>
             </div>
-            <div class="stat bg-base-300 rounded-lg p-3">
-              <div class="stat-title text-xs">Plans</div>
-              <div class="stat-value text-lg">{{ dbStats.total.plans }}</div>
-            </div>
           </div>
 
           <div v-if="dbStats && Object.keys(dbStats.byAgent).length > 0" class="flex flex-wrap gap-3 text-sm opacity-70 mt-1">
@@ -575,7 +571,6 @@ const allCategories = [
   { value: 'messages', label: 'Messages' },
   { value: 'toolCalls', label: 'Tool Calls' },
   { value: 'tokenUsage', label: 'Token Usage' },
-  { value: 'plans', label: 'Plans' },
 ];
 
 // Populate form when settings are loaded

@@ -117,7 +117,6 @@ import {
   MessageSquare,
   Bot,
   BarChart3,
-  ClipboardList,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -135,7 +134,6 @@ const navItems = [
   { path: '/conversations', label: 'Conversations', icon: MessageSquare, disabled: false },
   { path: '/agents', label: 'Agents', icon: Bot, disabled: false },
   { path: '/analytics', label: 'Analytics', icon: BarChart3, disabled: false },
-  { path: '/plans', label: 'Plans', icon: ClipboardList, disabled: false },
   { path: '/settings', label: 'Settings', icon: Settings, disabled: false },
 ];
 
@@ -161,7 +159,6 @@ const tips = [
   'Sort conversations by cost to find expensive sessions',
   'Active days shows how many days had agent activity',
   'Cache read tokens reduce your effective API costs',
-  'Use the Plans view to track agent task completion',
   'Compare agent performance side by side on the Agents page',
 ];
 

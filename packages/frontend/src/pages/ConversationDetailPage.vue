@@ -131,21 +131,6 @@
           </div>
         </div>
 
-        <!-- Inline plans section (collapsible) -->
-        <div v-if="conversationPlans.length > 0" class="collapse collapse-arrow bg-base-200 rounded-lg mb-6">
-          <input type="checkbox" checked />
-          <div class="collapse-title text-sm font-semibold flex items-center gap-2">
-            <ClipboardList class="w-4 h-4" />
-            Extracted Plans ({{ conversationPlans.length }})
-          </div>
-          <div class="collapse-content">
-            <div v-for="plan in conversationPlans" :key="plan.plan.id" class="mb-4">
-              <h4 class="font-medium text-sm mb-2">{{ plan.plan.title }}</h4>
-              <PlanStepList :steps="plan.steps" compact />
-            </div>
-          </div>
-        </div>
-
         <!-- Conversation timeline -->
         <ConversationDetail
           ref="detailRef"
@@ -179,15 +164,13 @@
 <script setup lang="ts">
 import { computed, ref, watch, watchEffect, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, ArrowUpLeft, AlertTriangle, ClipboardList, PanelRight, Download } from 'lucide-vue-next';
-import type { ConversationPlanEntry } from '../types';
+import { ArrowLeft, ArrowUpLeft, AlertTriangle, PanelRight, Download } from 'lucide-vue-next';
 import { useConversationDetail } from '../composables/useConversationDetail';
 import { useTimeline, extractTimelineEvents } from '../composables/useTimeline';
 import { useScrollTracker } from '../composables/useScrollTracker';
 import ConversationDetail from '../components/ConversationDetail.vue';
 import ConversationTimeline from '../components/ConversationTimeline.vue';
-import PlanStepList from '../components/PlanStepList.vue';
-import { cleanTitle } from '../utils/content-sanitizer';
+import { cleanTitle} from '../utils/content-sanitizer';
 import { formatCost } from '../utils/format-tokens';
 import { exportAsMarkdown, exportAsJson, exportAsPlainText, downloadFile, sanitizeFilename } from '../utils/conversation-exporter';
 import { API_BASE } from '../utils/api-base';
@@ -360,22 +343,6 @@ if (import.meta.env.DEV) {
     }
   });
 }
-
-// Fetch inline plans for this conversation
-const conversationPlans = ref<ConversationPlanEntry[]>([]);
-
-async function fetchConversationPlans(): Promise<void> {
-  try {
-    const res = await fetch(`${API_BASE}/api/plans/by-conversation/${encodeURIComponent(id)}`);
-    if (res.ok) {
-      conversationPlans.value = await res.json();
-    }
-  } catch {
-    // Silently ignore -- plans are supplementary
-  }
-}
-
-fetchConversationPlans();
 
 const totalTokens = computed(() => {
   if (!data.value) return 0;

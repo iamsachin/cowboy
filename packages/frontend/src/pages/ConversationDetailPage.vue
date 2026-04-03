@@ -173,7 +173,6 @@ import ConversationTimeline from '../components/ConversationTimeline.vue';
 import { cleanTitle} from '../utils/content-sanitizer';
 import { formatCost } from '../utils/format-tokens';
 import { exportAsMarkdown, exportAsJson, exportAsPlainText, downloadFile, sanitizeFilename } from '../utils/conversation-exporter';
-import { API_BASE } from '../utils/api-base';
 
 const route = useRoute();
 const router = useRouter();

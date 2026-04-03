@@ -7,7 +7,6 @@ export type ChangeType =
   | 'messages-added'
   | 'tool-calls-added'
   | 'tokens-updated'
-  | 'plan-updated'
   | 'status-changed'
   | 'metadata-changed';
 

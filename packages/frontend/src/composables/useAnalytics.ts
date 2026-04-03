@@ -95,7 +95,7 @@ export function useAnalytics() {
   // Change types that only affect overview stats (messages, tokens, tool calls, status)
   const OVERVIEW_ONLY_CHANGES: Set<ChangeType> = new Set([
     'messages-added', 'tool-calls-added', 'tokens-updated',
-    'status-changed', 'plan-updated', 'metadata-changed',
+    'status-changed', 'metadata-changed',
   ]);
 
   const { on } = useWebSocket();

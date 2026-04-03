@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.2.0
+
+- Remove Plans feature from navigation, router, command palette, and all frontend code
+- Auto-expand last tool call in assistant group when no text follows it
+- Colorize markdown content: headings, bold, inline code, links, and list markers get distinct colors
+- Reduce markdown font size and tighten spacing for better density
+
 ## v3.1.14
 
 - Fix markdown rendering in conversation view (lists, tables, headings, blockquotes, HR all broken)

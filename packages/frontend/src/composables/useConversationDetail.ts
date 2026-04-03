@@ -28,7 +28,7 @@ function turnKey(turn: GroupedTurn): string {
   return turn.message.id;
 }
 
-const DEBOUNCE_MS = 500;
+const DEBOUNCE_MS = 150;
 
 export function useConversationDetail(conversationId: string) {
   const data = ref<ConversationDetailResponse | null>(null);

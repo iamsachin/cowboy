@@ -22,7 +22,7 @@ use tokio_rusqlite::rusqlite;
 use crate::server::AppState;
 use crate::websocket::broadcast_event;
 
-use self::claude_code_parser::parse_jsonl_file;
+use self::claude_code_parser::{parse_jsonl_file, parse_jsonl_file_incremental};
 use self::file_discovery::discover_jsonl_files;
 use self::id_generator::generate_id;
 use self::migration::run_data_quality_migration;
@@ -131,7 +131,7 @@ pub async fn run_ingestion(
         duration: 0.0,
     };
 
-    // Ensure ingested_files table exists
+    // Ensure ingested_files table exists (with last_offset for incremental parsing)
     state
         .db
         .call(|conn| {
@@ -143,6 +143,15 @@ pub async fn run_ingestion(
                     ingested_at TEXT NOT NULL
                 )",
             )?;
+            // Add last_offset column if missing (migration for existing DBs)
+            let has_offset: bool = conn
+                .prepare("SELECT last_offset FROM ingested_files LIMIT 0")
+                .is_ok();
+            if !has_offset {
+                conn.execute_batch(
+                    "ALTER TABLE ingested_files ADD COLUMN last_offset INTEGER NOT NULL DEFAULT 0"
+                )?;
+            }
             Ok::<_, tokio_rusqlite::Error>(())
         })
         .await?;
@@ -169,7 +178,7 @@ pub async fn run_ingestion(
         Err(e) => eprintln!("Data quality migration failed (non-fatal): {}", e),
     }
 
-    let mut all_events: Vec<Value> = Vec::new();
+    let mut total_events: usize = 0;
 
     // ── Claude Code ingestion ───────────────────────────────────────────
     let files = discover_jsonl_files(None).await;
@@ -184,7 +193,15 @@ pub async fn run_ingestion(
 
     for file in &files {
         match process_claude_code_file(state, file, &mut stats).await {
-            Ok(events) => all_events.extend(events),
+            Ok(events) => {
+                // Emit events immediately per-file for lower latency
+                for event in &events {
+                    if let Some(event_type) = event.get("type").and_then(|t| t.as_str()) {
+                        broadcast_event(state, event_type, Some(event.clone()));
+                    }
+                }
+                total_events += events.len();
+            }
             Err(e) => eprintln!("Error processing {}: {}", file.file_path, e),
         }
 
@@ -197,29 +214,6 @@ pub async fn run_ingestion(
     // ── Subagent linking ────────────────────────────────────────────────
     if let Err(e) = link_subagents_post_processing(state, &files).await {
         eprintln!("Subagent linking error (non-fatal): {}", e);
-    }
-
-    // ── Mark stale active conversations as completed ────────────────────
-    state
-        .db
-        .call(|conn| {
-            let five_min_ago = chrono::Utc::now()
-                .checked_sub_signed(chrono::Duration::minutes(5))
-                .unwrap()
-                .to_rfc3339();
-            conn.execute(
-                "UPDATE conversations SET status = 'completed' WHERE status = 'active' AND updated_at <= ?1",
-                rusqlite::params![five_min_ago],
-            )?;
-            Ok::<_, tokio_rusqlite::Error>(())
-        })
-        .await?;
-
-    // ── Emit collected WebSocket events ─────────────────────────────────
-    for event in &all_events {
-        if let Some(event_type) = event.get("type").and_then(|t| t.as_str()) {
-            broadcast_event(state, event_type, Some(event.clone()));
-        }
     }
 
     stats.duration = start_time.elapsed().as_secs_f64() * 1000.0;
@@ -238,10 +232,45 @@ pub async fn run_ingestion(
 
     println!(
         "Ingestion complete: {} files, {} conversations, {} events, {:.0}ms",
-        stats.files_scanned, stats.conversations_found, all_events.len(), stats.duration
+        stats.files_scanned, stats.conversations_found, total_events, stats.duration
     );
 
     Ok(stats)
+}
+
+// ── Periodic stale conversation cleanup ────────────────────────────────
+
+/// Spawns a background task that marks active conversations as completed
+/// if they haven't been updated in 5 minutes. Runs every 60 seconds,
+/// decoupled from the ingestion trigger so stale indicators clear promptly.
+pub fn spawn_stale_conversation_timer(state: AppState) {
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(std::time::Duration::from_secs(60));
+        loop {
+            interval.tick().await;
+            let result = state
+                .db
+                .call(|conn| {
+                    let five_min_ago = chrono::Utc::now()
+                        .checked_sub_signed(chrono::Duration::minutes(5))
+                        .unwrap()
+                        .to_rfc3339();
+                    let updated = conn.execute(
+                        "UPDATE conversations SET status = 'completed' WHERE status = 'active' AND updated_at <= ?1",
+                        rusqlite::params![five_min_ago],
+                    )?;
+                    Ok::<_, tokio_rusqlite::Error>(updated)
+                })
+                .await;
+            if let Ok(count) = result {
+                if count > 0 {
+                    println!("Marked {} stale conversation(s) as completed", count);
+                    // Broadcast a refresh so the UI updates active indicators
+                    crate::websocket::broadcast_event(&state, "system:full-refresh", None);
+                }
+            }
+        }
+    });
 }
 
 // ── Process a single Claude Code JSONL file ─────────────────────────────
@@ -261,30 +290,39 @@ async fn process_claude_code_file(
         .unwrap_or(0);
     let file_size = file_meta.len() as i64;
 
+    // Check cache: if unchanged skip; if changed, get stored offset for incremental parse
     let file_path_clone = file.file_path.clone();
-    let is_cached = state
+    let cache_result = state
         .db
         .call(move |conn| {
             let result = conn.query_row(
-                "SELECT mtime_ms, size FROM ingested_files WHERE file_path = ?1",
+                "SELECT mtime_ms, size, COALESCE(last_offset, 0) FROM ingested_files WHERE file_path = ?1",
                 rusqlite::params![file_path_clone],
-                |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)),
+                |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?, row.get::<_, i64>(2)?)),
             );
             match result {
-                Ok((cached_mtime, cached_size)) => {
-                    Ok::<_, tokio_rusqlite::Error>(cached_mtime == mtime_ms && cached_size == file_size)
+                Ok((cached_mtime, cached_size, offset)) => {
+                    if cached_mtime == mtime_ms && cached_size == file_size {
+                        Ok::<_, tokio_rusqlite::Error>(Some((true, offset as u64))) // unchanged
+                    } else {
+                        Ok(Some((false, offset as u64))) // changed, return stored offset
+                    }
                 }
-                Err(_) => Ok::<_, tokio_rusqlite::Error>(false),
+                Err(_) => Ok::<_, tokio_rusqlite::Error>(None), // not in cache
             }
         })
         .await?;
 
-    if is_cached {
-        stats.files_skipped += 1;
-        return Ok(vec![]);
-    }
+    let from_offset = match cache_result {
+        Some((true, _)) => {
+            stats.files_skipped += 1;
+            return Ok(vec![]);
+        }
+        Some((false, offset)) => offset, // incremental: parse from stored offset
+        None => 0, // new file: parse from beginning
+    };
 
-    let parse_result = parse_jsonl_file(&file.file_path).await?;
+    let (parse_result, new_offset) = parse_jsonl_file_incremental(&file.file_path, from_offset).await?;
     stats.skipped_lines += parse_result.skipped_lines;
 
     let normalized = normalize_conversation(
@@ -320,17 +358,17 @@ async fn process_claude_code_file(
         })
         .await?;
 
-    // Record file as ingested
+    // Record file as ingested with byte offset for incremental parsing
     let file_path_clone = file.file_path.clone();
     let now = chrono::Utc::now().to_rfc3339();
     state
         .db
         .call(move |conn| {
             conn.execute(
-                "INSERT INTO ingested_files (file_path, mtime_ms, size, ingested_at) \
-                 VALUES (?1, ?2, ?3, ?4) \
-                 ON CONFLICT(file_path) DO UPDATE SET mtime_ms = ?2, size = ?3, ingested_at = ?4",
-                rusqlite::params![file_path_clone, mtime_ms, file_size, now],
+                "INSERT INTO ingested_files (file_path, mtime_ms, size, ingested_at, last_offset) \
+                 VALUES (?1, ?2, ?3, ?4, ?5) \
+                 ON CONFLICT(file_path) DO UPDATE SET mtime_ms = ?2, size = ?3, ingested_at = ?4, last_offset = ?5",
+                rusqlite::params![file_path_clone, mtime_ms, file_size, now, new_offset as i64],
             )?;
             Ok::<_, tokio_rusqlite::Error>(())
         })

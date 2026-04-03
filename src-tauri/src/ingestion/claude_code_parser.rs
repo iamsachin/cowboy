@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use tokio::fs::File;
-use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::io::{AsyncBufReadExt, AsyncSeekExt, BufReader};
 
 use super::types::{
     AssistantMessageData, CompactionEventData, ContentBlock, ParseResult, TokenUsageRaw,
@@ -25,9 +25,24 @@ struct ChunkAccumulator {
 /// Parse a Claude Code JSONL file line-by-line using streaming I/O.
 /// Reconstructs multi-chunk assistant messages into single messages,
 /// extracting token usage from the final chunk only.
+///
+/// When `from_offset > 0`, seeks to that byte position before reading,
+/// enabling incremental parsing of append-only JSONL files.
+/// Returns the parse result and the byte offset at end of file.
 pub async fn parse_jsonl_file(
     file_path: &str,
 ) -> Result<ParseResult, Box<dyn std::error::Error + Send + Sync>> {
+    let (result, _offset) = parse_jsonl_file_incremental(file_path, 0).await?;
+    Ok(result)
+}
+
+/// Incremental variant: parses from `from_offset` bytes into the file.
+/// Returns `(ParseResult, new_offset)` where `new_offset` is the byte position
+/// at end of file, suitable for passing as `from_offset` on the next call.
+pub async fn parse_jsonl_file_incremental(
+    file_path: &str,
+    from_offset: u64,
+) -> Result<(ParseResult, u64), Box<dyn std::error::Error + Send + Sync>> {
     let mut result = ParseResult {
         session_id: None,
         user_messages: Vec::new(),
@@ -37,7 +52,13 @@ pub async fn parse_jsonl_file(
         timestamps: Vec::new(),
     };
 
-    let file = File::open(file_path).await?;
+    let mut file = File::open(file_path).await?;
+
+    // Seek to the stored offset for incremental parsing
+    if from_offset > 0 {
+        file.seek(std::io::SeekFrom::Start(from_offset)).await?;
+    }
+
     let reader = BufReader::new(file);
     let mut lines = reader.lines();
 
@@ -129,7 +150,10 @@ pub async fn parse_jsonl_file(
     // Reconstruct assistant messages from accumulated chunks
     reconstruct_assistant_messages(&mut result, chunk_map);
 
-    Ok(result)
+    // Get final file position for next incremental call
+    let end_offset = tokio::fs::metadata(file_path).await?.len();
+
+    Ok((result, end_offset))
 }
 
 /// Parse JSONL content from a string (for testing).

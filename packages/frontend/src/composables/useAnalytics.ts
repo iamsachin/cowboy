@@ -1,6 +1,6 @@
 import { ref, watch, onScopeDispose } from 'vue';
 import { autoGranularity } from '../types';
-import type { OverviewStats, TimeSeriesPoint, ModelDistributionEntry } from '../types';
+import type { OverviewStats, TimeSeriesPoint, ModelDistributionEntry, ChangeType } from '../types';
 import { useDateRange } from './useDateRange';
 import { useWebSocket } from './useWebSocket';
 import { API_BASE } from '../utils/api-base';
@@ -65,20 +65,47 @@ export function useAnalytics() {
     { deep: true, immediate: true }
   );
 
-  // Debounced WS refetch — coalesces rapid events into one fetch
+  // Debounced WS refetch — coalesces rapid events, selective by change type
   let wsDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-  function debouncedWsRefetch(): void {
+  let pendingFetchAll = false; // true = fetch all 3 endpoints; false = overview only
+
+  function scheduleFetch(fetchAllEndpoints: boolean): void {
+    if (fetchAllEndpoints) pendingFetchAll = true;
     if (wsDebounceTimer) clearTimeout(wsDebounceTimer);
-    wsDebounceTimer = setTimeout(() => {
+    wsDebounceTimer = setTimeout(async () => {
       wsDebounceTimer = null;
-      fetchAll(true);
+      const needAll = pendingFetchAll;
+      pendingFetchAll = false;
+      refreshing.value = true;
+      error.value = null;
+      try {
+        if (needAll) {
+          await Promise.all([fetchOverview(), fetchTimeSeries(), fetchModelDistribution()]);
+        } else {
+          await fetchOverview();
+        }
+      } catch (e) {
+        error.value = e instanceof Error ? e.message : String(e);
+      } finally {
+        refreshing.value = false;
+      }
     }, 500);
   }
 
+  // Change types that only affect overview stats (messages, tokens, tool calls, status)
+  const OVERVIEW_ONLY_CHANGES: Set<ChangeType> = new Set([
+    'messages-added', 'tool-calls-added', 'tokens-updated',
+    'status-changed', 'plan-updated', 'metadata-changed',
+  ]);
+
   const { on } = useWebSocket();
-  on('conversation:changed', debouncedWsRefetch);
-  on('conversation:created', debouncedWsRefetch);
-  on('system:full-refresh', debouncedWsRefetch);
+  on('conversation:changed', (evt) => {
+    // If all changes are overview-only, skip timeseries/distribution refetch
+    const allOverviewOnly = evt.changes.every((c) => OVERVIEW_ONLY_CHANGES.has(c));
+    scheduleFetch(!allOverviewOnly);
+  });
+  on('conversation:created', () => scheduleFetch(true)); // New conversation affects all endpoints
+  on('system:full-refresh', () => scheduleFetch(true));
 
   onScopeDispose(() => {
     if (wsDebounceTimer) {

@@ -128,7 +128,10 @@ pub async fn start(db: Connection) {
     }
 
     // Also run initial ingestion
-    ingestion::spawn_auto_ingest(shared_state);
+    ingestion::spawn_auto_ingest(shared_state.clone());
+
+    // Periodic timer to mark stale active conversations as completed (every 60s)
+    ingestion::spawn_stale_conversation_timer(shared_state);
 
     axum::serve(listener, app)
         .await

@@ -1,8 +1,8 @@
 <template>
-  <div class="px-3 py-2">
+  <div class="px-4 py-2">
     <div class="relative">
       <!-- Vertical line connector -->
-      <div class="timeline-connector absolute left-[7px] top-2 bottom-2 w-px bg-base-content/20"></div>
+      <div class="timeline-connector absolute left-[14px] top-2 bottom-2 w-px bg-base-content/20"></div>
       <!-- Event items -->
       <div
         v-for="(event, idx) in events"
@@ -13,7 +13,7 @@
         @click="$emit('navigate', event.key, event.turnIndex)"
       >
         <!-- Icon -->
-        <div class="relative z-10 mt-0.5 w-[15px] shrink-0 flex justify-center">
+        <div class="relative z-10 mt-0.5 w-[20px] shrink-0 flex justify-center">
           <component
             :is="iconConfig(event).icon"
             :size="14"

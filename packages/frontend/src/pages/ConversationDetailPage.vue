@@ -149,7 +149,7 @@
     <div
       v-if="isOpen && data"
       ref="timelinePanelRef"
-      class="fixed right-2 top-[72px] w-[220px] h-[calc(100vh-72px-8px)] overflow-y-auto border border-base-300 bg-base-100 z-10 rounded-xl shadow-lg"
+      class="fixed right-2 top-[128px] w-[220px] h-[calc(100vh-128px-8px)] overflow-y-auto border border-base-300 bg-base-100 z-10 rounded-xl shadow-lg"
     >
       <ConversationTimeline
         :events="timelineEvents"

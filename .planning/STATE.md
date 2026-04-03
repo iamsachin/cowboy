@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-04-03 - Completed quick task 62: Improve usage chart visibility in dark/light themes
+Last activity: 2026-04-03 - Completed quick task 63: Center timeline panel and align top with title card
 
 ## Performance Metrics
 
@@ -116,6 +116,7 @@ None.
 | 60 | Timeline positioning, skill tool call titles, and status badges | 2026-04-03 | 00b850d | [60-timeline-positioning-skill-tool-call-tit](./quick/60-timeline-positioning-skill-tool-call-tit/) |
 | 61 | Convert token rate chart to always-visible sidebar card | 2026-04-03 | f048633 | [61-convert-token-rate-chart-and-speed-into-](./quick/61-convert-token-rate-chart-and-speed-into-/) |
 | 62 | Improve usage chart visibility in dark/light themes | 2026-04-03 | 1468c94 | [62-improve-usage-chart-visibility-dark-ligh](./quick/62-improve-usage-chart-visibility-dark-ligh/) |
+| 63 | Center timeline panel and align top with title card | 2026-04-03 | bb267af | [63-center-timeline-panel-and-align-top-with](./quick/63-center-timeline-panel-and-align-top-with/) |
 
 ## Session Continuity
 

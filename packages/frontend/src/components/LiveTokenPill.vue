@@ -1,6 +1,6 @@
 <template>
   <div
-    class="mx-2 mb-2 rounded-lg bg-base-300/50 overflow-hidden"
+    class="mx-2 mb-2 overflow-hidden"
     :class="isIdle ? 'opacity-50' : ''"
   >
     <template v-if="!collapsed">

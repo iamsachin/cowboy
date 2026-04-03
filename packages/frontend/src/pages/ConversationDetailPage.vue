@@ -1,5 +1,5 @@
 <template>
-  <div class="flex transition-all duration-200">
+  <div class="transition-[padding] duration-200" :class="{ 'pr-[236px]': isOpen && data }">
     <div ref="pageRef" class="flex-1 min-w-0 p-4 max-w-5xl mx-auto">
       <!-- Loading state -->
       <div v-if="loading" class="flex justify-center items-center min-h-[60vh]">
@@ -146,16 +146,18 @@
     </div>
 
     <!-- Timeline panel -->
-    <div v-if="isOpen && data" class="shrink-0 w-[280px] pt-[68px] pr-4">
-      <div ref="timelinePanelRef"
-        class="sticky top-[68px] w-[220px] mx-auto max-h-[calc(100vh-68px-16px)] overflow-y-auto border border-base-300 bg-base-100 z-10 rounded-xl shadow-lg">
+    <div
+      v-if="isOpen && data"
+      ref="timelinePanelRef"
+      :style="{ left: timelineLeft + 'px' }"
+      class="fixed top-[62px] w-[260px] h-[calc(100vh-62px-16px)] overflow-y-auto hide-scrollbar border border-base-300 bg-base-100 z-10 rounded-xl shadow-lg transition-[left,opacity] duration-200 ease-out"
+      :class="timelineReady ? 'opacity-100' : 'opacity-0'">
         <ConversationTimeline
           :events="timelineEvents"
           :active-key="activeKey"
           :is-active="data.conversation.isActive ?? false"
           @navigate="handleTimelineNavigate"
         />
-      </div>
     </div>
   </div>
 </template>
@@ -200,11 +202,51 @@ const detailRef = ref<InstanceType<typeof ConversationDetail> | null>(null);
 // Timeline panel ref for auto-scroll tracking
 const timelinePanelRef = ref<HTMLElement | null>(null);
 
+// Dynamically center timeline in the space right of the content
+const timelineLeft = ref(0);
+const timelineReady = ref(false);
+
+function updateTimelineLeft() {
+  if (!pageRef.value) return;
+  const rect = pageRef.value.getBoundingClientRect();
+  const contentRight = rect.right;
+  const viewportWidth = window.innerWidth;
+  const spaceRight = viewportWidth - contentRight;
+  timelineLeft.value = contentRight + (spaceRight - 260) / 2 - 8;
+}
+
 onMounted(() => {
   if (pageRef.value) {
     const main = pageRef.value.closest('main');
     scrollContainer.value = main as HTMLElement | null;
+    if (main) main.scrollTop = 0;
   }
+  // Start off-screen right, then slide + fade in after layout settles
+  timelineLeft.value = window.innerWidth;
+  setTimeout(() => {
+    updateTimelineLeft();
+    nextTick(() => { timelineReady.value = true; });
+  }, 250);
+  window.addEventListener('resize', updateTimelineLeft);
+});
+
+// Recalculate when timeline visibility changes (padding transition)
+watch(isOpen, (open) => {
+  if (open) {
+    timelineReady.value = false;
+    // Start off-screen to the right
+    timelineLeft.value = window.innerWidth;
+    setTimeout(() => {
+      updateTimelineLeft();
+      nextTick(() => { timelineReady.value = true; });
+    }, 50);
+  } else {
+    timelineReady.value = false;
+  }
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateTimelineLeft);
 });
 
 // Scroll tracker for the timeline panel (used for auto-scroll to new events)
@@ -221,6 +263,9 @@ const timelineEvents = computed(() => {
 async function handleToggle() {
   toggle();
   await nextTick();
+  updateTimelineLeft();
+  // Update again after padding transition completes
+  setTimeout(updateTimelineLeft, 220);
   setupObserver();
 }
 
@@ -437,6 +482,14 @@ function handleExportPlainText(): void {
 </script>
 
 <style scoped>
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .pulse-dot {
   width: 8px;
   height: 8px;

@@ -101,15 +101,16 @@
         <!-- Tool calls for this turn -->
         <div v-if="turn.toolCalls.length > 0" class="mt-1 space-y-1">
           <ToolCallRowComponent
-            v-for="tc in turn.toolCalls"
+            v-for="(tc, tcIdx) in turn.toolCalls"
             :key="tc.id"
             :toolCall="tc"
             :autoExpand="tc.id === autoExpandToolCallId"
+            :tokenInfo="tcIdx === turn.toolCalls.length - 1 ? formatTurnTokenInfo(turn) : undefined"
           />
         </div>
 
-        <!-- Per-turn token info -->
-        <div v-if="getTurnTokens(turn)" class="text-xs text-base-content/40 mt-1">
+        <!-- Per-turn token info (only for turns without tool calls) -->
+        <div v-if="getTurnTokens(turn) && turn.toolCalls.length === 0" class="text-xs text-base-content/40 mt-1">
           {{ formatTokenCount(getTurnTokens(turn)!.inputTokens + getTurnTokens(turn)!.cacheReadTokens) }} in / {{ formatTokenCount(getTurnTokens(turn)!.outputTokens) }} out
           <span v-if="getTurnTokens(turn)!.cost != null"> &middot; {{ formatCost(getTurnTokens(turn)!.cost!) }}</span>
         </div>
@@ -178,6 +179,16 @@ const duration = computed(() => {
 
 function getTurnTokens(turn: AssistantTurn): MessageTokenUsage | null {
   return props.tokenUsageByMessage?.[turn.message.id] ?? null;
+}
+
+function formatTurnTokenInfo(turn: AssistantTurn): string | undefined {
+  const tokens = getTurnTokens(turn);
+  if (!tokens) return undefined;
+  let info = `${formatTokenCount(tokens.inputTokens + tokens.cacheReadTokens)} in / ${formatTokenCount(tokens.outputTokens)} out`;
+  if (tokens.cost != null) {
+    info += ` \u00b7 ${formatCost(tokens.cost)}`;
+  }
+  return info;
 }
 
 const groupTokens = computed(() => {

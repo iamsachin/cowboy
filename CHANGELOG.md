@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.1.13
+
+- Emit WebSocket events per-file instead of batching until ingestion completes
+- Selective analytics fetch: conversation:changed only refetches overview stats (~67% fewer API calls)
+- Reduce conversation detail debounce from 500ms to 150ms for faster live updates
+- Incremental JSONL parsing via byte offset tracking (O(new) vs O(all))
+- Decouple stale conversation marking to 60s periodic timer
+- Net best-case latency improvement from ~1.5s to ~1.15s
+
 ## v3.1.12
 
 - Add macOS code signing with hardened runtime to release process

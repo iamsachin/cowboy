@@ -21,6 +21,8 @@ export function extractTimelineEvents(turns: GroupedTurn[]): TimelineEvent[] {
 
     if (turn.type === 'user') {
       const text = turn.message.content || '';
+      // Skip entries that only contain image source paths (e.g. "[Image: source: /path/to/file.png]")
+      if (/^\s*(\[Image: source: [^\]]+\]\s*)+$/.test(text)) continue;
       events.push({
         key: turn.message.id,
         type: 'user',

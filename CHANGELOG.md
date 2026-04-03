@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.3.0
+
+- Convert token rate chart into always-visible card pinned at bottom of nav sidebar
+- Include token usage speed (input/output per min) in the nav card
+- Remove "Show live usage" toggle from navigation
+- Show skill name in tool call title (e.g., "Skill: clara-knowledge") and display only args
+- Fix "unknown" status badges on tool calls — properly detect success/pending/error
+- Center timeline connector line and align timeline panel top with title card
+
 ## v3.2.2
 
 - Add rounded corners and right margin to timeline panel for floating card appearance

@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-04-03 - Completed quick task 53: Trace real-time data flow pipeline
+Last activity: 2026-04-03 - Completed quick task 54: Fix markdown rendering and auto-expand last assistant group
 
 ## Performance Metrics
 
@@ -107,6 +107,7 @@ None.
 | 51 | Fix conversation title to use first user message after /clear | 2026-03-31 | 702743d | [51-fix-conversation-title-to-use-first-user](./quick/51-fix-conversation-title-to-use-first-user/) |
 | 52 | Add signing and notarization to release script | 2026-04-03 | b713290 | [52-add-signing-and-notarization-to-release-](./quick/52-add-signing-and-notarization-to-release-/) |
 | 53 | Trace real-time data flow pipeline end-to-end | 2026-04-03 | 42fa51d | [53-understand-the-flow-which-adds-new-data-](./quick/53-understand-the-flow-which-adds-new-data-/) |
+| 54 | Fix markdown rendering and auto-expand last assistant group | 2026-04-03 | 910eaff | [54-fix-markdown-rendering-numbered-lists-an](./quick/54-fix-markdown-rendering-numbered-lists-an/) |
 
 ## Session Continuity
 

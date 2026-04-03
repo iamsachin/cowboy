@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.2.2
+
+- Add rounded corners and right margin to timeline panel for floating card appearance
+- Fix white connector line in timeline on light theme
+
 ## v3.2.1
 
 - Animate new messages with smooth slide-up TransitionGroup instead of abrupt shift

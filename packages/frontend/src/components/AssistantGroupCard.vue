@@ -104,6 +104,7 @@
             v-for="(tc, tcIdx) in turn.toolCalls"
             :key="tc.id"
             :data-tool-call-id="tc.id"
+            style="scroll-margin-top: 3rem"
           >
             <ToolCallRowComponent
               :toolCall="tc"

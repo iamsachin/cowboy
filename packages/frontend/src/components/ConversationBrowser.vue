@@ -111,9 +111,9 @@
                 <BotIcon v-if="row._isChild" class="w-3 h-3 text-base-content/30 mr-1 inline" />{{ formatDate(row.date) }}
               </td>
               <td>
-                <AgentBadge :agent="row.agent" />
+                <AgentBadge v-if="!row._isChild" :agent="row.agent" />
               </td>
-              <td>{{ row.project ?? '--' }}</td>
+              <td><span v-if="!row._isChild">{{ row.project ?? '--' }}</span></td>
               <td>
                 <div class="max-w-[12rem] truncate" :title="row.model ?? ''">
                   {{ row.model ?? '--' }}

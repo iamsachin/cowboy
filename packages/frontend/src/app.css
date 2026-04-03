@@ -67,11 +67,29 @@
 
 /* Markdown code blocks in light mode */
 [data-theme="emerald"] .thinking-content :deep(code) {
-  background: oklch(0.92 0 0);
-  color: oklch(0.30 0 0);
+  background: oklch(0.92 0.01 250);
+  color: oklch(0.40 0.08 250);
 }
 [data-theme="emerald"] .thinking-content :deep(pre) {
   background: oklch(0.94 0 0);
+}
+[data-theme="emerald"] .thinking-content :deep(pre code) {
+  color: inherit;
+}
+[data-theme="emerald"] .thinking-content :deep(h1),
+[data-theme="emerald"] .thinking-content :deep(h2),
+[data-theme="emerald"] .thinking-content :deep(h3),
+[data-theme="emerald"] .thinking-content :deep(h4) {
+  color: oklch(0.35 0.08 250);
+}
+[data-theme="emerald"] .thinking-content :deep(strong) {
+  color: oklch(0.25 0 0);
+}
+[data-theme="emerald"] .thinking-content :deep(a) {
+  color: oklch(0.45 0.15 250);
+}
+[data-theme="emerald"] .thinking-content :deep(li)::marker {
+  color: oklch(0.50 0.08 250);
 }
 [data-theme="emerald"] .thinking-content :deep(blockquote) {
   border-left-color: oklch(0.70 0 0);

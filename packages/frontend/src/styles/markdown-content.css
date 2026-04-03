@@ -4,13 +4,18 @@
  * Imported in an unscoped <style> block for global availability.
  */
 
+.thinking-content {
+  font-size: 0.8125rem;
+}
+
 .thinking-content h1,
 .thinking-content h2,
 .thinking-content h3,
 .thinking-content h4 {
   font-weight: 600;
-  margin-top: 0.75em;
+  margin-top: 0.5em;
   margin-bottom: 0.25em;
+  color: oklch(0.85 0.05 250);
 }
 .thinking-content h1 { font-size: 1.1em; }
 .thinking-content h2 { font-size: 1.05em; }
@@ -18,15 +23,19 @@
 .thinking-content ul,
 .thinking-content ol {
   padding-left: 1.5em;
-  margin: 0.25em 0;
+  margin: 0.15em 0;
 }
 .thinking-content ul { list-style-type: disc; }
 .thinking-content ol { list-style-type: decimal; }
 .thinking-content ul ul { list-style-type: circle; }
 .thinking-content ul ul ul { list-style-type: square; }
 .thinking-content li { margin: 0.1em 0; }
+.thinking-content li::marker {
+  color: oklch(0.55 0.05 250);
+}
 .thinking-content code {
-  background: oklch(0.25 0 0 / 0.5);
+  background: oklch(0.25 0.02 260 / 0.6);
+  color: oklch(0.78 0.06 200);
   padding: 0.1em 0.3em;
   border-radius: 0.25em;
   font-size: 0.9em;
@@ -40,12 +49,16 @@
 }
 .thinking-content pre code {
   background: none;
+  color: inherit;
   padding: 0;
 }
 .thinking-content p {
-  margin: 0.25em 0;
+  margin: 0.2em 0;
 }
-.thinking-content strong { font-weight: 600; }
+.thinking-content strong {
+  font-weight: 600;
+  color: oklch(0.82 0 0);
+}
 .thinking-content blockquote {
   border-left: 3px solid oklch(0.5 0 0);
   padding-left: 0.75em;
@@ -53,8 +66,8 @@
   opacity: 0.8;
 }
 .thinking-content a {
+  color: oklch(0.7 0.12 230);
   text-decoration: underline;
-  opacity: 0.9;
 }
 .thinking-content hr {
   border-color: oklch(0.4 0 0);

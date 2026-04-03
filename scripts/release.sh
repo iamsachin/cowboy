@@ -133,8 +133,8 @@ fi
 DMG_NAME="Cowboy_${VERSION}_${DMG_ARCH}.dmg"
 DMG_PATH="$REPO_ROOT/src-tauri/target/release/bundle/dmg/$DMG_NAME"
 
-# --- Step 3: Build the app bundle ---
-log "Building Cowboy v${VERSION} (app bundle)..."
+# --- Step 3: Build the app ---
+log "Building Cowboy v${VERSION}..."
 cd "$REPO_ROOT"
 npx tauri build --bundles app
 
@@ -146,11 +146,14 @@ if [[ ! -d "$APP_PATH" ]]; then
 fi
 log "Signing Cowboy.app with hardened runtime..."
 codesign --force --options runtime --timestamp --sign "$APPLE_SIGN_IDENTITY" --deep "$APP_PATH"
+codesign --verify --verbose "$APP_PATH"
 log "App bundle signed successfully."
 
 # --- Step 3c: Create DMG from signed app ---
 log "Creating DMG from signed app..."
-npx tauri build --bundles dmg
+mkdir -p "$REPO_ROOT/src-tauri/target/release/bundle/dmg"
+rm -f "$DMG_PATH"
+hdiutil create -volname "Cowboy" -srcfolder "$APP_PATH" -ov -format UDZO "$DMG_PATH"
 
 # --- Step 4: Verify build output ---
 if [[ ! -f "$DMG_PATH" ]]; then

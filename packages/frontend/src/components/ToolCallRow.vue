@@ -7,10 +7,10 @@
     <!-- Compact row: always visible -->
     <div
       class="flex items-center gap-2 py-1 px-2 rounded border-l-2"
-      :class="isSuccess ? 'bg-success/5 border-success' : 'bg-amber-500/5 border-amber-400'"
+      :class="isSuccess ? 'bg-success/5 border-success' : isError ? 'bg-error/5 border-error' : 'bg-amber-500/5 border-amber-400'"
     >
       <component :is="toolIcon.icon" class="w-3.5 h-3.5 shrink-0" :class="toolIcon.colorClass" />
-      <span class="truncate">{{ toolCall.name }}</span>
+      <span class="truncate">{{ displayName }}</span>
       <span
         v-if="isSuccess"
         class="badge badge-xs badge-success"
@@ -18,12 +18,18 @@
         success
       </span>
       <span
+        v-else-if="isError"
+        class="badge badge-xs badge-error"
+      >
+        error
+      </span>
+      <span
         v-else-if="toolCall.status"
         class="badge badge-xs badge-warning"
       >
         {{ toolCall.status }}
       </span>
-      <span v-else class="badge badge-xs badge-ghost">unknown</span>
+      <span v-else class="badge badge-xs badge-ghost">pending</span>
       <span
         v-if="toolCall.duration != null"
         class="text-base-content/50 ml-auto"
@@ -39,7 +45,7 @@
         <DiffViewer v-if="toolCall.name === 'Edit'" :input="toolCall.input" :output="toolCall.output" />
         <CodeViewer v-else-if="toolCall.name === 'Read' || toolCall.name === 'Write'" :input="toolCall.input" :output="toolCall.output" :toolName="toolCall.name" />
         <BashViewer v-else-if="toolCall.name === 'Bash'" :input="toolCall.input" :output="toolCall.output" />
-        <JsonFallbackViewer v-else :input="toolCall.input" :output="toolCall.output" />
+        <JsonFallbackViewer v-else :input="displayInput" :output="toolCall.output" />
       </div>
     </details>
   </div>
@@ -62,9 +68,28 @@ const props = defineProps<{
 
 const toolIcon = computed(() => getToolIcon(props.toolCall.name));
 const isSuccess = computed(() =>
-  props.toolCall.status === 'completed' || props.toolCall.status === 'success'
+  props.toolCall.status === 'completed' ||
+  props.toolCall.status === 'success' ||
+  (!props.toolCall.status && props.toolCall.output != null)
 );
+const isError = computed(() => props.toolCall.status === 'error');
 const isSubagentCall = computed(() =>
   props.toolCall.name === 'Task' || props.toolCall.name === 'Agent'
 );
+
+const displayName = computed(() => {
+  if (props.toolCall.name === 'Skill' && props.toolCall.input && typeof props.toolCall.input === 'object') {
+    const inp = props.toolCall.input as Record<string, unknown>;
+    if (inp.skill) return `Skill: ${inp.skill}`;
+  }
+  return props.toolCall.name;
+});
+
+const displayInput = computed(() => {
+  if (props.toolCall.name === 'Skill' && props.toolCall.input && typeof props.toolCall.input === 'object') {
+    const inp = props.toolCall.input as Record<string, unknown>;
+    if (inp.args) return inp.args;
+  }
+  return props.toolCall.input;
+});
 </script>

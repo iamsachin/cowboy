@@ -6,17 +6,15 @@
   <div v-else class="text-xs">
     <!-- Compact row: always visible -->
     <div
-      class="flex items-center gap-2 py-1 px-2 rounded border-l-2"
+      class="flex items-center gap-2 py-1.5 px-2 rounded border-l-2"
       :class="isSuccess ? 'bg-success/5 border-success' : isError ? 'bg-error/5 border-error' : 'bg-amber-500/5 border-amber-400'"
     >
       <component :is="toolIcon.icon" class="w-3.5 h-3.5 shrink-0" :class="toolIcon.colorClass" />
       <span class="truncate">{{ displayName }}</span>
-      <span
+      <Check
         v-if="isSuccess"
-        class="badge badge-xs badge-success"
-      >
-        success
-      </span>
+        class="w-3.5 h-3.5 text-success shrink-0"
+      />
       <span
         v-else-if="isError"
         class="badge badge-xs badge-error"
@@ -55,6 +53,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { Check } from 'lucide-vue-next';
 import type { ToolCallRow } from '../types';
 import { getToolIcon } from '../utils/tool-icons';
 import DiffViewer from './tool-viewers/DiffViewer.vue';
@@ -73,7 +72,7 @@ const toolIcon = computed(() => getToolIcon(props.toolCall.name));
 const isSuccess = computed(() =>
   props.toolCall.status === 'completed' ||
   props.toolCall.status === 'success' ||
-  (!props.toolCall.status && props.toolCall.output != null)
+  !props.toolCall.status
 );
 const isError = computed(() => props.toolCall.status === 'error');
 const isSubagentCall = computed(() =>

@@ -30,35 +30,38 @@ const props = defineProps<{
   data: TokenRatePoint[];
 }>();
 
-const chartData = computed(() => ({
-  labels: props.data.map((p) => {
-    // Convert UTC minute string to local HH:MM for display
-    const d = new Date(p.minute + ':00Z');
-    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  }),
-  datasets: [
-    {
-      label: 'Input',
-      data: props.data.map((p) => p.inputTokens),
-      borderColor: 'rgba(56, 189, 248, 0.8)',
-      backgroundColor: 'rgba(56, 189, 248, 0.15)',
-      borderWidth: 1,
-      fill: true,
-      tension: 0.3,
-      pointRadius: 0,
-    },
-    {
-      label: 'Output',
-      data: props.data.map((p) => p.outputTokens),
-      borderColor: 'rgba(192, 132, 252, 0.8)',
-      backgroundColor: 'rgba(192, 132, 252, 0.15)',
-      borderWidth: 1,
-      fill: true,
-      tension: 0.3,
-      pointRadius: 0,
-    },
-  ],
-}));
+const chartData = computed(() => {
+  const themeColors = getChartThemeColors();
+  return {
+    labels: props.data.map((p) => {
+      // Convert UTC minute string to local HH:MM for display
+      const d = new Date(p.minute + ':00Z');
+      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }),
+    datasets: [
+      {
+        label: 'Input',
+        data: props.data.map((p) => p.inputTokens),
+        borderColor: themeColors.inputBorder,
+        backgroundColor: themeColors.inputFill,
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 0,
+      },
+      {
+        label: 'Output',
+        data: props.data.map((p) => p.outputTokens),
+        borderColor: themeColors.outputBorder,
+        backgroundColor: themeColors.outputFill,
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 0,
+      },
+    ],
+  };
+});
 
 const chartOptions = computed(() => {
   const themeColors = getChartThemeColors();

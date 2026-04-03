@@ -660,7 +660,7 @@ fn insert_conversation_data(
         "INSERT INTO conversations (id, agent, project, title, created_at, updated_at, model, status) \
          VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8) \
          ON CONFLICT(id) DO UPDATE SET updated_at = ?6, status = ?8, \
-         title = COALESCE(?4, conversations.title)",
+         title = CASE WHEN conversations.title IS NULL THEN ?4 ELSE conversations.title END",
         rusqlite::params![
             conv.id,
             conv.agent,

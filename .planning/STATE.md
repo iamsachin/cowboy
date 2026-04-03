@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-04-04 - Completed quick task 71: Use command args as conversation title (pass 0)
+Last activity: 2026-04-04 - Completed quick task 72: Remove Agents nav item and everything related
 
 ## Performance Metrics
 
@@ -125,9 +125,10 @@ None.
 | 69 | Hide agent and project columns for subagent rows | 2026-04-04 | 7dde086 | [69-hide-agent-and-project-columns-for-subag](./quick/69-hide-agent-and-project-columns-for-subag/) |
 | 70 | Move title to first column in overview and browser tables | 2026-04-04 | f3fe16b | [70-move-title-to-first-column-in-overview-a](./quick/70-move-title-to-first-column-in-overview-a/) |
 | 71 | Use command args as conversation title (pass 0) | 2026-04-04 | 8e21dfa | [71-use-command-args-as-conversation-title-f](./quick/71-use-command-args-as-conversation-title-f/) |
+| 72 | Remove Agents nav item and everything related | 2026-04-04 | f92c2bf | [72-remove-the-agents-nav-item-and-everythin](./quick/72-remove-the-agents-nav-item-and-everythin/) |
 
 ## Session Continuity
 
 Last session: 2026-04-04
-Stopped at: Completed quick task 71
+Stopped at: Completed quick task 72
 Resume file: None

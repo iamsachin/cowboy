@@ -1,5 +1,5 @@
 <template>
-  <div class="transition-[padding] duration-200" :class="{ 'pr-[220px]': isOpen && data }">
+  <div class="transition-[padding] duration-200" :class="{ 'pr-[236px]': isOpen && data }">
     <div ref="pageRef" class="flex-1 min-w-0 p-4 max-w-5xl mx-auto">
       <!-- Loading state -->
       <div v-if="loading" class="flex justify-center items-center min-h-[60vh]">
@@ -149,7 +149,7 @@
     <div
       v-if="isOpen && data"
       ref="timelinePanelRef"
-      class="fixed right-0 top-[64px] w-[220px] h-[calc(100vh-64px)] overflow-y-auto border-l border-base-300 bg-base-100 z-10"
+      class="fixed right-2 top-[72px] w-[220px] h-[calc(100vh-72px-8px)] overflow-y-auto border border-base-300 bg-base-100 z-10 rounded-xl shadow-lg"
     >
       <ConversationTimeline
         :events="timelineEvents"

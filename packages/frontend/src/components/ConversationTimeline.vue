@@ -2,7 +2,7 @@
   <div class="px-3 py-2">
     <div class="relative">
       <!-- Vertical line connector -->
-      <div class="timeline-connector absolute left-[7px] top-2 bottom-2 w-px bg-base-300"></div>
+      <div class="timeline-connector absolute left-[7px] top-2 bottom-2 w-px bg-base-content/20"></div>
       <!-- Event items -->
       <div
         v-for="(event, idx) in events"

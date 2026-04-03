@@ -50,20 +50,6 @@
               }"
               @click="router.push({ name: 'conversation-detail', params: { id: row.id } })"
             >
-              <td class="whitespace-nowrap" :class="{ 'pl-8': row._isChild }">
-                <BotIcon v-if="row._isChild" class="w-3 h-3 text-base-content/30 mr-1 inline" />{{ formatDate(row.date) }}
-              </td>
-              <td><AgentBadge v-if="!row._isChild" :agent="row.agent" /></td>
-              <td><span v-if="!row._isChild">{{ row.project ?? '--' }}</span></td>
-              <td>
-                <div
-                  class="max-w-[12rem] truncate"
-                  :class="{ 'tooltip': row.model && row.model.length > 20 }"
-                  :data-tip="row.model"
-                >
-                  {{ row.model ?? '--' }}
-                </div>
-              </td>
               <td>
                 <div class="max-w-[16rem] flex items-center gap-1.5">
                   <span
@@ -79,6 +65,20 @@
                   >
                     <Scissors class="w-3 h-3 text-amber-400" />
                   </div>
+                </div>
+              </td>
+              <td class="whitespace-nowrap" :class="{ 'pl-8': row._isChild }">
+                <BotIcon v-if="row._isChild" class="w-3 h-3 text-base-content/30 mr-1 inline" />{{ formatDate(row.date) }}
+              </td>
+              <td><AgentBadge v-if="!row._isChild" :agent="row.agent" /></td>
+              <td><span v-if="!row._isChild">{{ row.project ?? '--' }}</span></td>
+              <td>
+                <div
+                  class="max-w-[12rem] truncate"
+                  :class="{ 'tooltip': row.model && row.model.length > 20 }"
+                  :data-tip="row.model"
+                >
+                  {{ row.model ?? '--' }}
                 </div>
               </td>
               <td class="text-right font-mono">
@@ -180,11 +180,11 @@ const displayRows = computed(() => {
 });
 
 const columns = [
+  { field: 'title', label: 'Title' },
   { field: 'date', label: 'Date' },
   { field: 'agent', label: 'Agent' },
   { field: 'project', label: 'Project' },
   { field: 'model', label: 'Model' },
-  { field: 'title', label: 'Title' },
   { field: 'inputTokens', label: 'Tokens' },
   { field: 'cost', label: 'Cost' },
 ];

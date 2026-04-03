@@ -1,5 +1,5 @@
 <template>
-  <div ref="turnListRef" class="space-y-3">
+  <div ref="turnListRef">
     <!-- Sticky toolbar -->
     <div
       v-if="totalGroups > 0"
@@ -31,8 +31,13 @@
     </div>
 
     <!-- Turn list -->
-    <template v-for="turn in visibleTurns" :key="turnKey(turn)">
-      <div :data-turn-key="turnKey(turn)" :class="{ 'group-fade-in': newGroupKeys.has(turnKey(turn)) }" style="scroll-margin-top: 2.5rem">
+    <TransitionGroup name="slide-up" tag="div" class="space-y-3">
+      <div
+        v-for="turn in visibleTurns"
+        :key="turnKey(turn)"
+        :data-turn-key="turnKey(turn)"
+        style="scroll-margin-top: 2.5rem"
+      >
         <ChatMessage
           v-if="turn.type === 'user'"
           :message="turn.message"
@@ -71,7 +76,7 @@
           :turn="turn"
         />
       </div>
-    </template>
+    </TransitionGroup>
 
     <!-- Load more button for large conversations -->
     <button
@@ -331,18 +336,23 @@ defineExpose({
 </script>
 
 <style scoped>
-@keyframes group-fade-in-anim {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* TransitionGroup slide-up animation */
+.slide-up-enter-active {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.group-fade-in {
-  animation: group-fade-in-anim 0.2s ease-out;
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* Prevent leave animation from causing layout shifts */
+.slide-up-leave-active {
+  display: none;
+}
+
+/* Smooth reflow when items are added */
+.slide-up-move {
+  transition: transform 0.3s ease;
 }
 </style>

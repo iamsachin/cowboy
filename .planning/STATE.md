@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-04-03 - Completed quick task 56: Auto-expand last tool call and colorize markdown
+Last activity: 2026-04-03 - Completed quick task 57: Fix timeline full height, scroll position, and light theme legibility
 
 ## Performance Metrics
 
@@ -110,9 +110,10 @@ None.
 | 54 | Fix markdown rendering and auto-expand last assistant group | 2026-04-03 | 910eaff | [54-fix-markdown-rendering-numbered-lists-an](./quick/54-fix-markdown-rendering-numbered-lists-an/) |
 | 55 | Remove Plans feature from nav and all references | 2026-04-03 | 779b1ec | [55-remove-plan-feature-from-nav-and-all-exc](./quick/55-remove-plan-feature-from-nav-and-all-exc/) |
 | 56 | Auto-expand last tool call and colorize markdown | 2026-04-03 | d1cdf5d | [56-auto-expand-last-tool-call-in-assistant-](./quick/56-auto-expand-last-tool-call-in-assistant-/) |
+| 57 | Fix timeline full height, scroll position, and light theme legibility | 2026-04-03 | f7c8276 | [57-fix-timeline-full-height-scroll-position](./quick/57-fix-timeline-full-height-scroll-position/) |
 
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed quick task 56
+Stopped at: Completed quick task 57
 Resume file: None

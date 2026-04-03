@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.1.12
+
+- Add macOS code signing with hardened runtime to release process
+- Add Apple notarization and ticket stapling for DMG releases
+- Add signing environment variable validation to release script
+- Document required signing/notarization environment variables in release skill
+- Add security rules to prevent committing sensitive credentials
+
 ## v3.1.11
 
 - Derive conversation titles from slash command arguments instead of raw skill text

@@ -600,4 +600,88 @@ mod tests {
     fn skip_image_numbered_only() {
         assert!(should_skip_for_title("[Image #5]"));
     }
+
+    // ── Pass 0: command-args-first tests ───────────────────────────────
+
+    #[test]
+    fn command_args_preferred_over_later_plain_text() {
+        let msgs: Vec<Option<&str>> = vec![
+            Some("<command-name>/gsd:quick</command-name><command-args>Fix the login flow</command-args>"),
+            Some("Some later plain text"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("Fix the login flow".to_string())
+        );
+    }
+
+    #[test]
+    fn command_no_args_falls_through() {
+        let msgs: Vec<Option<&str>> = vec![
+            Some("<command-name>/gsd:discuss</command-name><command-args></command-args>"),
+            Some("Plain text message"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("Plain text message".to_string())
+        );
+    }
+
+    #[test]
+    fn command_args_with_image_refs_stripped() {
+        let msgs: Vec<Option<&str>> = vec![
+            Some("<command-name>/gsd:quick</command-name><command-args>[Image #38] Fix the title derivation bug</command-args>"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("Fix the title derivation bug".to_string())
+        );
+    }
+
+    #[test]
+    fn plain_conversation_unchanged() {
+        let msgs: Vec<Option<&str>> = vec![
+            Some("Hello world"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("Hello world".to_string())
+        );
+    }
+
+    #[test]
+    fn command_args_first_pass_skips_clear() {
+        let msgs: Vec<Option<&str>> = vec![
+            Some("<command-name>/clear</command-name><command-args>clear</command-args>"),
+            Some("<command-name>/gsd:quick</command-name><command-args>Fix something important</command-args>"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("Fix something important".to_string())
+        );
+    }
+
+    #[test]
+    fn multiple_commands_uses_first_with_args() {
+        let msgs: Vec<Option<&str>> = vec![
+            Some("<command-name>/gsd:discuss</command-name><command-args></command-args>"),
+            Some("<command-name>/gsd:quick</command-name><command-args>Second command description</command-args>"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("Second command description".to_string())
+        );
+    }
+
+    #[test]
+    fn command_args_only_images_falls_through() {
+        let msgs: Vec<Option<&str>> = vec![
+            Some("<command-name>/gsd:quick</command-name><command-args>[Image #5]</command-args>"),
+            Some("Later text"),
+        ];
+        assert_eq!(
+            derive_conversation_title(&msgs, None),
+            Some("Later text".to_string())
+        );
+    }
 }

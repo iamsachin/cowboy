@@ -11,7 +11,7 @@
     >
       <component :is="toolIcon.icon" class="w-3.5 h-3.5 shrink-0" :class="toolIcon.colorClass" />
       <span class="truncate">{{ displayName }}</span>
-      <Check
+      <CircleCheck
         v-if="isSuccess"
         class="w-3.5 h-3.5 text-success shrink-0"
       />
@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Check } from 'lucide-vue-next';
+import { CircleCheck } from 'lucide-vue-next';
 import type { ToolCallRow } from '../types';
 import { getToolIcon } from '../utils/tool-icons';
 import DiffViewer from './tool-viewers/DiffViewer.vue';

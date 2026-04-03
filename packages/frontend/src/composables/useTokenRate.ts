@@ -6,7 +6,6 @@ import { API_BASE } from '../utils/api-base';
 // Module-level singleton state
 const tokenRate = ref<TokenRatePoint[]>([]);
 const loading = ref(false);
-const dismissed = ref(localStorage.getItem('token-widget-dismissed') === 'true');
 let started = false;
 let wsDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -62,16 +61,6 @@ const currentOutput = computed(() => {
   return arr.length > 0 ? arr[arr.length - 1].outputTokens : 0;
 });
 
-function dismiss(): void {
-  dismissed.value = true;
-  localStorage.setItem('token-widget-dismissed', 'true');
-}
-
-function restore(): void {
-  dismissed.value = false;
-  localStorage.removeItem('token-widget-dismissed');
-}
-
 export function useTokenRate() {
   if (!started) {
     started = true;
@@ -95,9 +84,6 @@ export function useTokenRate() {
     currentInput,
     currentOutput,
     filledTokenRate,
-    dismissed,
-    dismiss,
-    restore,
     fetchTokenRate,
   };
 }

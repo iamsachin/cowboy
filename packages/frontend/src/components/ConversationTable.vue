@@ -50,13 +50,18 @@
               }"
               @click="router.push({ name: 'conversation-detail', params: { id: row.id } })"
             >
-              <td>
+              <td class="pl-4">
                 <div class="max-w-[16rem] flex items-center gap-1.5">
                   <span
                     v-if="('isActive' in row) && row.isActive"
                     class="pulse-dot shrink-0"
                     title="Running"
                   ></span>
+                  <BotIcon
+                    v-if="row._isChild"
+                    class="w-3.5 h-3.5 text-info shrink-0"
+                    title="Subagent"
+                  />
                   <div class="truncate">{{ cleanTitle(row.title ?? '') || '--' }}</div>
                   <div
                     v-if="row.hasCompaction"
@@ -68,7 +73,7 @@
                 </div>
               </td>
               <td class="whitespace-nowrap" :class="{ 'pl-8': row._isChild }">
-                <BotIcon v-if="row._isChild" class="w-3 h-3 text-base-content/30 mr-1 inline" />{{ formatDate(row.date) }}
+                <BotIcon v-if="row._isChild" class="w-3 h-3 text-base-content/30 mr-1 inline" title="Subagent" />{{ formatDate(row.date) }}
               </td>
               <td><AgentBadge v-if="!row._isChild" :agent="row.agent" /></td>
               <td><span v-if="!row._isChild">{{ row.project ?? '--' }}</span></td>

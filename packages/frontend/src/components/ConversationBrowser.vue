@@ -107,7 +107,7 @@
               }"
               @click="navigateToDetail(row.id)"
             >
-              <td>
+              <td class="pl-4">
                 <div class="max-w-[16rem] flex items-center gap-1.5">
                   <span
                     v-if="('isActive' in row) && row.isActive"

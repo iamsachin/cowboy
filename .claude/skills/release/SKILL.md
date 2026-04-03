@@ -19,7 +19,7 @@ Build Cowboy locally, create GitHub Release with DMG, and update Homebrew tap.
    ```bash
    ./scripts/release.sh <version>
    ```
-   This does everything: builds the Tauri app, creates DMG, creates GitHub Release with DMG attached, and updates the Homebrew tap (`iamsachin/homebrew-cowboy`).
+   This does everything: builds the Tauri app, **signs the .app bundle with hardened runtime**, creates DMG, **notarizes the DMG with Apple**, **staples the notarization ticket**, creates GitHub Release with DMG attached, and updates the Homebrew tap (`iamsachin/homebrew-cowboy`).
 
 ## After the script completes
 
@@ -35,6 +35,21 @@ Build Cowboy locally, create GitHub Release with DMG, and update Homebrew tap.
 
 Builds DMG locally without creating a release or updating Homebrew.
 
+## Required Environment Variables
+
+These must be set in `~/.zshrc` (the release script validates them before building):
+
+| Variable | Purpose |
+|----------|---------|
+| `APPLE_SIGN_IDENTITY` | Developer ID Application identity for codesigning (e.g., `Developer ID Application: Name (TEAMID)`) |
+| `APPLE_DEVELOPER_TEAM_ID` | 10-character Apple Developer Team ID |
+| `COWBOY_NOTARIZE_PROFILE` | Keychain profile name for `xcrun notarytool` (created via `xcrun notarytool store-credentials`) |
+
+To set up the notarization keychain profile for the first time:
+```bash
+xcrun notarytool store-credentials "cowboy-notarize" --apple-id "your@email.com" --team-id "$APPLE_DEVELOPER_TEAM_ID" --password "app-specific-password"
+```
+
 ## Rules
 
 - Version in `Cargo.toml` and `tauri.conf.json` MUST always match.
@@ -44,3 +59,11 @@ Builds DMG locally without creating a release or updating Homebrew.
   - Delete tag: `git tag -d v<version> && git push origin :refs/tags/v<version>`
 - The build command is `pnpm build` (which runs `cargo tauri build`). Do NOT run cargo directly.
 - DMG output is in `src-tauri/target/release/bundle/dmg/`.
+
+## Security
+
+**NEVER commit API keys, signing identities, passwords, keychain profile names, or any secrets to the repository.**
+
+- All sensitive values MUST come from environment variables set in `~/.zshrc`.
+- Do NOT hardcode `APPLE_SIGN_IDENTITY`, `APPLE_DEVELOPER_TEAM_ID`, `COWBOY_NOTARIZE_PROFILE`, or any Apple credentials in scripts or config files.
+- If a script needs a secret, read it from an environment variable and validate it is set before use.

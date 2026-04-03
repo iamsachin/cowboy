@@ -1,5 +1,24 @@
 # Changelog
 
+## v3.4.0
+
+- Remove Agents nav item, page, route, command palette entry, and composable (redundant with Overview)
+- Show subagent entries in conversation timeline with clickable expand-and-scroll
+- Use command args as conversation title (pass 0 in title derivation)
+- Move title to first column in overview and browser tables
+- Hide agent and project columns for subagent rows
+- Add active conversations widget to overview, remove tips, make chart taller
+- Hide image-only entries from conversation timeline
+- Move tool call cost/token info to right side of each row
+- Fix conversation detail badges: remove skill pill, reorder project first, align icons, fix export
+- Fix scroll-margin-top for tool call elements under sticky header
+- Fix title persistence on re-ingestion (only set when existing title is NULL)
+- Native save dialog for exports, fix icon alignment, fix UTF-8 truncation panic
+- Animated token decimals, thinner chart lines, 20s polling, timeline polish
+- Fix theme toggle hover background
+- Center timeline panel and align top with title card
+- Improve usage chart visibility with theme-aware colors in dark/light modes
+
 ## v3.3.0
 
 - Convert token rate chart into always-visible card pinned at bottom of nav sidebar

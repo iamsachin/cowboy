@@ -1,18 +1,15 @@
 <template>
-  <div class="h-full overflow-y-auto border-l border-base-300 bg-base-100 px-3 py-4">
-    <div class="text-xs font-semibold text-base-content/50 uppercase tracking-wider mb-3 px-1">
-      Timeline
-    </div>
+  <div class="px-3 py-2">
     <div class="relative">
       <!-- Vertical line connector -->
-      <div class="absolute left-[7px] top-2 bottom-2 w-px bg-base-300"></div>
+      <div class="timeline-connector absolute left-[7px] top-2 bottom-2 w-px bg-base-300"></div>
       <!-- Event items -->
       <div
         v-for="(event, idx) in events"
         :key="event.key"
         :data-timeline-key="event.key"
         class="relative flex items-start gap-2 py-1.5 px-1 rounded cursor-pointer hover:bg-base-200 transition-colors"
-        :class="{ 'bg-base-200/70': event.key === activeKey }"
+        :class="{ 'bg-primary/10 border-l-2 border-l-primary': event.key === activeKey }"
         @click="$emit('navigate', event.key, event.turnIndex)"
       >
         <!-- Icon -->

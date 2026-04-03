@@ -102,6 +102,11 @@
   border-color: oklch(0.80 0 0);
 }
 
+/* Timeline connector line — subtle in light mode */
+[data-theme="emerald"] .timeline-connector {
+  background-color: oklch(0.88 0 0);
+}
+
 /* Sticky toolbar in light mode */
 [data-theme="emerald"] .bg-base-200\/95 {
   background-color: oklch(0.94 0 0 / 0.95);

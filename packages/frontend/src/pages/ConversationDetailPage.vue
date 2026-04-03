@@ -49,7 +49,7 @@
 
         <!-- Metadata header bar -->
         <div class="bg-base-200 rounded-lg p-4 mb-6">
-          <h1 class="text-xl font-bold mb-3 flex items-start gap-2">
+          <h1 class="text-xl font-bold mb-3 flex items-center gap-2">
             <span class="break-words min-w-0">{{ displayTitle }}</span>
             <span v-if="data.conversation.isActive" class="pulse-dot inline-block"></span>
             <div class="dropdown dropdown-end">
@@ -57,9 +57,9 @@
                 <Download class="w-4 h-4" />
               </button>
               <ul tabindex="0" class="dropdown-content menu bg-base-200 rounded-box z-10 w-40 p-2 shadow">
-                <li><a @click="handleExportMarkdown">Markdown</a></li>
-                <li><a @click="handleExportJson">JSON</a></li>
-                <li><a @click="handleExportPlainText">Plain Text</a></li>
+                <li><a @click="handleExportMarkdown(); closeDropdown()">Markdown</a></li>
+                <li><a @click="handleExportJson(); closeDropdown()">JSON</a></li>
+                <li><a @click="handleExportPlainText(); closeDropdown()">Plain Text</a></li>
               </ul>
             </div>
             <button
@@ -71,28 +71,22 @@
             </button>
           </h1>
           <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+            <!-- Project -->
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60">Project:</span>
+              <span>{{ data.conversation.project || '--' }}</span>
+            </div>
+
             <!-- Agent badge -->
             <div class="flex items-center gap-1">
               <span class="text-base-content/60">Agent:</span>
               <span class="badge badge-outline badge-sm">{{ data.conversation.agent }}</span>
             </div>
 
-            <!-- Skill -->
-            <div v-if="skillInvocation" class="flex items-center gap-1">
-              <span class="text-base-content/60">Skill:</span>
-              <span>{{ skillInvocation }}</span>
-            </div>
-
             <!-- Model -->
             <div class="flex items-center gap-1">
               <span class="text-base-content/60">Model:</span>
               <span>{{ data.conversation.model || '--' }}</span>
-            </div>
-
-            <!-- Project -->
-            <div class="flex items-center gap-1">
-              <span class="text-base-content/60">Project:</span>
-              <span>{{ data.conversation.project || '--' }}</span>
             </div>
 
             <!-- Date -->
@@ -397,23 +391,6 @@ const messageDuration = computed(() => {
 
 const displayTitle = computed(() => cleanTitle(data.value?.conversation.title || ''));
 
-const skillInvocation = computed(() => {
-  if (!data.value) return null;
-  for (const msg of data.value.messages) {
-    if (msg.role !== 'user' || !msg.content) continue;
-    // Check for "Base directory for this skill:" pattern
-    const skillMatch = msg.content.match(/^Base directory for this skill:\s*\S+\/skills\/([^\/\s#]+)/);
-    if (skillMatch) return skillMatch[1];
-    // Check for structured skill prompts with known patterns
-    if (/<objective>/.test(msg.content) && /<execution_context>/.test(msg.content)) {
-      const refMatch = msg.content.match(/skills\/([^\/\s]+)\//);
-      if (refMatch) return refMatch[1];
-      return 'skill';
-    }
-  }
-  return null;
-});
-
 // Set document title
 watchEffect(() => {
   document.title = `${displayTitle.value} - Cowboy`;
@@ -453,6 +430,10 @@ function formatDuration(start: string, end: string): string {
   } catch {
     return '--';
   }
+}
+
+function closeDropdown(): void {
+  (document.activeElement as HTMLElement)?.blur();
 }
 
 // --- Export handlers ---

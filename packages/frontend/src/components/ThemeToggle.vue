@@ -1,6 +1,6 @@
 <template>
   <button
-    class="btn btn-ghost btn-sm btn-square text-base-content/70 hover:text-base-content"
+    class="btn btn-sm btn-square border-none bg-transparent hover:bg-transparent text-base-content/70 hover:text-base-content"
     @click="toggleTheme"
     :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
   >

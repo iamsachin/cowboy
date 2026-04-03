@@ -30,11 +30,13 @@
         {{ toolCall.status }}
       </span>
       <span v-else class="badge badge-xs badge-ghost">pending</span>
-      <span
-        v-if="toolCall.duration != null"
-        class="text-base-content/50 ml-auto"
-      >
-        {{ toolCall.duration }}ms
+      <span v-if="toolCall.duration != null || tokenInfo" class="ml-auto flex items-center gap-2">
+        <span v-if="toolCall.duration != null" class="text-base-content/50">
+          {{ toolCall.duration }}ms
+        </span>
+        <span v-if="tokenInfo" class="text-base-content/40">
+          {{ tokenInfo }}
+        </span>
       </span>
     </div>
 
@@ -64,6 +66,7 @@ import SubagentSummaryCard from './SubagentSummaryCard.vue';
 const props = defineProps<{
   toolCall: ToolCallRow;
   autoExpand?: boolean;
+  tokenInfo?: string;
 }>();
 
 const toolIcon = computed(() => getToolIcon(props.toolCall.name));

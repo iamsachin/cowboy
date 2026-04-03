@@ -133,10 +133,10 @@ fi
 DMG_NAME="Cowboy_${VERSION}_${DMG_ARCH}.dmg"
 DMG_PATH="$REPO_ROOT/src-tauri/target/release/bundle/dmg/$DMG_NAME"
 
-# --- Step 3: Build the app ---
-log "Building Cowboy v${VERSION}..."
+# --- Step 3: Build the app bundle ---
+log "Building Cowboy v${VERSION} (app bundle)..."
 cd "$REPO_ROOT"
-npx tauri build --bundles app,dmg
+npx tauri build --bundles app
 
 # --- Step 3b: Sign the app bundle ---
 APP_PATH="$REPO_ROOT/src-tauri/target/release/bundle/macos/Cowboy.app"
@@ -145,8 +145,12 @@ if [[ ! -d "$APP_PATH" ]]; then
   exit 1
 fi
 log "Signing Cowboy.app with hardened runtime..."
-codesign --force --options runtime --sign "$APPLE_SIGN_IDENTITY" --deep "$APP_PATH"
+codesign --force --options runtime --timestamp --sign "$APPLE_SIGN_IDENTITY" --deep "$APP_PATH"
 log "App bundle signed successfully."
+
+# --- Step 3c: Create DMG from signed app ---
+log "Creating DMG from signed app..."
+npx tauri build --bundles dmg
 
 # --- Step 4: Verify build output ---
 if [[ ! -f "$DMG_PATH" ]]; then
@@ -175,8 +179,18 @@ log "Build successful: $DMG_PATH ($DMG_SIZE)"
 
 # --- Step 4b: Notarize and staple the DMG ---
 log "Submitting DMG for notarization (this may take a few minutes)..."
-if ! xcrun notarytool submit "$DMG_PATH" --keychain-profile "$COWBOY_NOTARIZE_PROFILE" --wait; then
-  err "Notarization failed. Check Apple Developer account and keychain profile."
+NOTARIZE_OUTPUT=$(xcrun notarytool submit "$DMG_PATH" --keychain-profile "$COWBOY_NOTARIZE_PROFILE" --wait 2>&1)
+NOTARIZE_EXIT=$?
+echo "$NOTARIZE_OUTPUT"
+
+# Check both exit code and status text
+if [[ $NOTARIZE_EXIT -ne 0 ]] || echo "$NOTARIZE_OUTPUT" | grep -qi "invalid"; then
+  SUBMISSION_ID=$(echo "$NOTARIZE_OUTPUT" | grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' | head -1)
+  if [[ -n "$SUBMISSION_ID" ]]; then
+    err "Notarization failed. Fetching log..."
+    xcrun notarytool log "$SUBMISSION_ID" --keychain-profile "$COWBOY_NOTARIZE_PROFILE" 2>&1 || true
+  fi
+  err "Notarization failed. Check Apple Developer account and signing identity."
   exit 1
 fi
 log "Notarization successful."

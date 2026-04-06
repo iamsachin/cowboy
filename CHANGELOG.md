@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.5.0
+
+- Add system tray panel: left-click cowboy icon to see current conversation with tabbed multi-conversation support
+- Fix auto-scroll losing bottom during rapid streaming — intent-based tracking only scrolls when user is at bottom
+- Fix timeline panel overlapping conversation content on narrow viewports with dynamic width adjustment
+
 ## v3.4.2
 
 - Move orphaned skill definition system messages inline next to the skill tool call that used them

@@ -141,7 +141,7 @@ const turns = computed(() => groupTurns(sortedMessages.value, activeToolCalls.va
 
 // Scroll tracking
 const scrollContainerRefLocal = toRef(props, 'scrollContainerRef');
-const { isAtBottom, scrollToBottom, captureScrollPosition } = useScrollTracker(scrollContainerRefLocal);
+const { isAtBottom, userScrolledAway, scrollToBottom, captureScrollPosition } = useScrollTracker(scrollContainerRefLocal);
 
 // Pagination: show first PAGE_SIZE groups, then load more on demand
 const PAGE_SIZE = 50;
@@ -160,24 +160,24 @@ watch(() => props.conversationId, () => {
   visibleCount.value = PAGE_SIZE;
 });
 
-// Auto-expand visible count when at bottom and new messages arrive
+// Auto-expand visible count when following bottom and new messages arrive
 watch(() => props.messages.length, () => {
-  if (isAtBottom.value) {
+  if (!userScrolledAway.value) {
     visibleCount.value = turns.value.length;
   }
 });
 
-// Scroll position management: auto-scroll if at bottom after DOM update
+// Scroll position management: auto-scroll if user is following bottom
 watch(() => props.messages.length, async (newLen, oldLen) => {
   if (newLen === oldLen) return;
-  const restore = captureScrollPosition();
+  if (userScrolledAway.value) return; // User scrolled up, don't touch scroll
   await nextTick();
-  if (restore) restore();
+  scrollToBottom(false); // instant scroll to bottom
 });
 
-// New messages pill: only show when NOT at bottom
+// New messages pill: only show when user has scrolled away
 const newMessageCount = computed(() => {
-  if (isAtBottom.value) return 0;
+  if (!userScrolledAway.value) return 0;
   return props.newGroupKeys.size;
 });
 

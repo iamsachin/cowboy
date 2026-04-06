@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.5.1
+
+- Sort tray panel conversations by last updated time instead of creation time
+- Fix text overflow for long unbroken strings (long URLs, repeated characters) in tray conversation list
+
 ## v3.5.0
 
 - Add system tray panel: left-click cowboy icon to see current conversation with tabbed multi-conversation support

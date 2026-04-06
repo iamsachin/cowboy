@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-04-07 - Completed quick task 78: Fix auto-scroll losing bottom during rapid streaming
+Last activity: 2026-04-07 - Completed quick task 79: Sort tray conversations by update time and fix text overflow
 
 ## Performance Metrics
 
@@ -132,9 +132,10 @@ None.
 | 76 | Show current conversation in system tray panel | 2026-04-07 | 2ed3f3f | [76-show-current-conversation-in-system-tray](./quick/76-show-current-conversation-in-system-tray/) |
 | 77 | Fix timeline overlapping conversation area on narrow viewports | 2026-04-07 | e106bdc | [77-fix-timeline-overlapping-conversation-ar](./quick/77-fix-timeline-overlapping-conversation-ar/) |
 | 78 | Fix auto-scroll losing bottom during rapid streaming | 2026-04-07 | 45bc211 | [78-fix-auto-scroll-losing-bottom-during-rap](./quick/78-fix-auto-scroll-losing-bottom-during-rap/) |
+| 79 | Sort tray conversations by update time and fix text overflow | 2026-04-07 | e88a491 | [79-sort-menu-conversations-by-update-time-a](./quick/79-sort-menu-conversations-by-update-time-a/) |
 
 ## Session Continuity
 
 Last session: 2026-04-07
-Stopped at: Completed quick task 78
+Stopped at: Completed quick task 79
 Resume file: None

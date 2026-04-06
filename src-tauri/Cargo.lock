@@ -443,7 +443,7 @@ dependencies = [
 
 [[package]]
 name = "cowboy"
-version = "3.4.2"
+version = "3.5.1"
 dependencies = [
  "axum",
  "chrono",

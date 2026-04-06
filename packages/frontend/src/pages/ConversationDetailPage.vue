@@ -1,5 +1,5 @@
 <template>
-  <div class="transition-[padding] duration-200" :style="{ paddingRight: (isOpen && data) ? (timelineWidth - 24) + 'px' : '0' }">
+  <div class="transition-[padding] duration-200" :style="{ paddingRight: (isOpen && data) ? (timelineWidth + 16) + 'px' : '0' }">
     <div ref="pageRef" class="flex-1 min-w-0 p-4 max-w-5xl mx-auto">
       <!-- Loading state -->
       <div v-if="loading" class="flex justify-center items-center min-h-[60vh]">
@@ -209,8 +209,24 @@ function updateTimelineLeft() {
   const contentRight = rect.right;
   const viewportWidth = window.innerWidth;
   const spaceRight = viewportWidth - contentRight;
-  timelineWidth.value = Math.min(260, Math.max(180, spaceRight - 32));
-  timelineLeft.value = contentRight + (spaceRight - timelineWidth.value) / 2 - 8;
+
+  // Compute ideal timeline width from available right-side space
+  const idealWidth = Math.min(260, Math.max(180, spaceRight - 32));
+
+  // If natural space is insufficient for even a minimum-width timeline,
+  // force the timeline to a minimum width and position it at the viewport edge
+  const MIN_TIMELINE = 180;
+  const GAP = 16; // breathing space between content and timeline
+
+  if (spaceRight < MIN_TIMELINE + GAP) {
+    // Not enough natural space — timeline will be placed at viewport right edge
+    // The paddingRight on the outer div will push content left to make room
+    timelineWidth.value = MIN_TIMELINE;
+    timelineLeft.value = viewportWidth - MIN_TIMELINE - 8;
+  } else {
+    timelineWidth.value = idealWidth;
+    timelineLeft.value = contentRight + (spaceRight - timelineWidth.value) / 2 - 8;
+  }
 }
 
 onMounted(() => {

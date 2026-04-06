@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-04-04 - Completed quick task 72: Remove Agents nav item and everything related
+Last activity: 2026-04-06 - Completed quick task 73: Make timeline bar width responsive to container space
 
 ## Performance Metrics
 
@@ -126,9 +126,10 @@ None.
 | 70 | Move title to first column in overview and browser tables | 2026-04-04 | f3fe16b | [70-move-title-to-first-column-in-overview-a](./quick/70-move-title-to-first-column-in-overview-a/) |
 | 71 | Use command args as conversation title (pass 0) | 2026-04-04 | 8e21dfa | [71-use-command-args-as-conversation-title-f](./quick/71-use-command-args-as-conversation-title-f/) |
 | 72 | Remove Agents nav item and everything related | 2026-04-04 | f92c2bf | [72-remove-the-agents-nav-item-and-everythin](./quick/72-remove-the-agents-nav-item-and-everythin/) |
+| 73 | Make timeline bar width responsive to container space | 2026-04-06 | 793e30b | [73-make-timeline-bar-width-responsive-to-co](./quick/73-make-timeline-bar-width-responsive-to-co/) |
 
 ## Session Continuity
 
-Last session: 2026-04-04
-Stopped at: Completed quick task 72
+Last session: 2026-04-06
+Stopped at: Completed quick task 73
 Resume file: None

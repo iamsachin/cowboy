@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.4.1
+
+- Make timeline sidebar panel width responsive to container (clamps 180-260px based on available space)
+
 ## v3.4.0
 
 - Remove Agents nav item, page, route, command palette entry, and composable (redundant with Overview)

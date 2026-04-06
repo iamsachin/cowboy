@@ -1,9 +1,14 @@
 use tauri::{
     image::Image,
     menu::{MenuBuilder, MenuItem, Menu, SubmenuBuilder},
-    tray::TrayIconBuilder,
-    Manager, WindowEvent,
+    tray::{TrayIconBuilder, TrayIconEvent},
+    Manager, PhysicalPosition, WindowEvent,
 };
+
+#[tauri::command]
+fn quit_app(app: tauri::AppHandle) {
+    app.exit(0);
+}
 
 mod analytics;
 mod conversations;
@@ -71,6 +76,36 @@ pub fn run() {
                     "quit" => app.exit(0),
                     _ => {}
                 })
+                .on_tray_icon_event(|tray, event| {
+                    if let TrayIconEvent::Click { button, button_state, .. } = &event {
+                        if *button == tauri::tray::MouseButton::Left
+                            && *button_state == tauri::tray::MouseButtonState::Up
+                        {
+                            let app = tray.app_handle();
+                            if let Some(panel) = app.get_webview_window("tray-panel") {
+                                if panel.is_visible().unwrap_or(false) {
+                                    let _ = panel.hide();
+                                } else {
+                                    // Position near top-right of screen (macOS menubar area)
+                                    if let Ok(Some(monitor)) = panel.current_monitor() {
+                                        let screen = monitor.size();
+                                        let scale = monitor.scale_factor();
+                                        let x = (screen.width as f64 / scale) as i32 - 380 - 16;
+                                        let y = 32;
+                                        let _ = panel.set_position(tauri::Position::Physical(
+                                            PhysicalPosition::new(
+                                                (x as f64 * scale) as i32,
+                                                (y as f64 * scale) as i32,
+                                            ),
+                                        ));
+                                    }
+                                    let _ = panel.show();
+                                    let _ = panel.set_focus();
+                                }
+                            }
+                        }
+                    }
+                })
                 .build(app)?;
 
             // Spawn the axum HTTP server on configurable port (default :8123) with database connection
@@ -78,6 +113,7 @@ pub fn run() {
 
             Ok(())
         })
+        .invoke_handler(tauri::generate_handler![quit_app])
         // Close-to-tray: red X hides window instead of quitting
         .on_window_event(|window, event| {
             if let WindowEvent::CloseRequested { api, .. } = event {

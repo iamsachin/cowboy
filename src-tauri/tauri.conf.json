@@ -24,6 +24,19 @@
         "height": 800,
         "center": true,
         "decorations": true
+      },
+      {
+        "label": "tray-panel",
+        "title": "",
+        "url": "/tray-panel",
+        "width": 380,
+        "height": 600,
+        "center": false,
+        "decorations": false,
+        "resizable": false,
+        "visible": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true
       }
     ],
     "security": {

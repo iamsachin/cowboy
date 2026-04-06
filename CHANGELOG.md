@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.4.2
+
+- Move orphaned skill definition system messages inline next to the skill tool call that used them
+- Fix scroll tracker late-binding ref — auto-scroll, scroll position preservation, and new messages pill now work correctly
+
 ## v3.4.1
 
 - Make timeline sidebar panel width responsive to container (clamps 180-260px based on available space)

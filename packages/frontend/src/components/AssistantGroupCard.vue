@@ -120,6 +120,12 @@
           <span v-if="getTurnTokens(turn)!.cost != null"> &middot; {{ formatCost(getTurnTokens(turn)!.cost!) }}</span>
         </div>
       </div>
+
+      <!-- Skill definition system messages (attached to this group) -->
+      <SystemMessageIndicator
+        v-if="skillDefGroup"
+        :group="skillDefGroup"
+      />
     </div>
 
     <!-- Last text output: visible only when collapsed (when expanded, content is shown inline) -->
@@ -133,7 +139,9 @@
 import { computed, reactive, ref } from 'vue';
 import { Brain, ChevronRight, Copy, Check } from 'lucide-vue-next';
 import type { MessageTokenUsage } from '../types';
-import type { AssistantGroup, AssistantTurn } from '../composables/useGroupedTurns';
+import type { AssistantGroup, AssistantTurn, SystemGroup, SystemMessageCategory } from '../composables/useGroupedTurns';
+import { classifySystemMessage } from '../composables/useGroupedTurns';
+import SystemMessageIndicator from './SystemMessageIndicator.vue';
 import { parseContent, formatTime } from '../utils/content-parser';
 import { stripXmlTags } from '../utils/content-sanitizer';
 import { getLastTextContent, extractFilenames, formatMs } from '../utils/turn-helpers';
@@ -240,6 +248,17 @@ const autoExpandToolCallId = computed(() => {
   if (getTurnContent(lastTurn).length > 0) return null;
   if (lastTurn.toolCalls.length === 0) return null;
   return lastTurn.toolCalls[lastTurn.toolCalls.length - 1].id;
+});
+
+const skillDefGroup = computed((): SystemGroup | null => {
+  const defs = props.group.skillDefinitions;
+  if (!defs || defs.length === 0) return null;
+  return {
+    type: 'system-group',
+    messages: defs,
+    categories: defs.map(m => classifySystemMessage(m.content || '')),
+    count: defs.length,
+  };
 });
 
 function getTurnContent(turn: AssistantTurn) {

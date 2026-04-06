@@ -68,6 +68,7 @@ const fullyExpanded = reactive(new Set<string>());
 const categoryLabels: Record<SystemMessageCategory, string> = {
   'system-reminder': 'System reminder',
   'skill-instruction': 'Skill instruction',
+  'skill-definition': 'Skill definition',
   'objective': 'Objective',
   'system-caveat': 'System caveat',
   'task-notification': 'Task notification',

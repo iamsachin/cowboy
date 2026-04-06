@@ -26,12 +26,14 @@ export interface AssistantGroup {
   toolCallCount: number;
   firstTimestamp: string;
   lastTimestamp: string;
+  skillDefinitions?: MessageRow[];
 }
 
 /** Category label for a system-injected message. */
 export type SystemMessageCategory =
   | 'system-reminder'
   | 'skill-instruction'
+  | 'skill-definition'
   | 'objective'
   | 'system-caveat'
   | 'task-notification'
@@ -98,6 +100,7 @@ export type GroupedTurn =
  * 5. Otherwise → 'other'
  */
 export function classifySystemMessage(content: string): SystemMessageCategory {
+  if (/Base directory for this skill:/m.test(content)) return 'skill-definition';
   if (/<system-reminder/.test(content)) return 'system-reminder';
   if (/<objective>/.test(content) || /<execution_context>/.test(content)) return 'objective';
   if (/<context>/.test(content) && (/<files_to_read>/.test(content) || /<process>/.test(content))) {
@@ -208,6 +211,7 @@ export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[], com
   const grouped: GroupedTurn[] = [];
   let pendingAssistant: AssistantTurn[] = [];
   let pendingSystem: MessageRow[] = [];
+  let pendingSkillDefs: MessageRow[] = [];
   let pendingAgentPrompts: { message: MessageRow; description: string | null }[] = [];
 
   function flushAssistant(): void {
@@ -215,7 +219,7 @@ export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[], com
     const turns = pendingAssistant;
     const totalToolCalls = turns.reduce((sum, t) => sum + t.toolCalls.length, 0);
     const model = turns.find(t => t.message.model)?.message.model || null;
-    grouped.push({
+    const groupObj: AssistantGroup = {
       type: 'assistant-group',
       turns,
       model,
@@ -223,7 +227,12 @@ export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[], com
       toolCallCount: totalToolCalls,
       firstTimestamp: turns[0].message.createdAt,
       lastTimestamp: turns[turns.length - 1].message.createdAt,
-    });
+    };
+    if (pendingSkillDefs.length > 0) {
+      groupObj.skillDefinitions = pendingSkillDefs;
+      pendingSkillDefs = [];
+    }
+    grouped.push(groupObj);
     pendingAssistant = [];
   }
 
@@ -295,7 +304,11 @@ export function groupTurns(messages: MessageRow[], toolCalls: ToolCallRow[], com
       // should not break the group (CONV-01). They accumulate in pendingSystem and
       // flush after the assistant group ends (CONV-06).
       if (isSystemInjected(content)) {
-        pendingSystem.push(msg);
+        if (pendingAssistant.length > 0 && classifySystemMessage(content || '') === 'skill-definition') {
+          pendingSkillDefs.push(msg);
+        } else {
+          pendingSystem.push(msg);
+        }
         continue;
       }
 

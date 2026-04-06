@@ -263,6 +263,16 @@ describe('classifySystemMessage', () => {
     const content = '<local-command>some command stuff</local-command>';
     expect(classifySystemMessage(content)).toBe('other');
   });
+
+  it('returns skill-definition for content starting with "Base directory for this skill:"', () => {
+    const content = 'Base directory for this skill: /foo/bar\nSome instructions about the skill...';
+    expect(classifySystemMessage(content)).toBe('skill-definition');
+  });
+
+  it('returns skill-definition for short base directory content', () => {
+    const content = 'Base directory for this skill: /path';
+    expect(classifySystemMessage(content)).toBe('skill-definition');
+  });
 });
 
 // ─── groupTurns — new turn types ─────────────────────────────────────────────
@@ -495,6 +505,77 @@ describe('CONV-01: system messages between assistant turns', () => {
     const result = groupTurns([u1, a1, u2], []);
     expect(result).toHaveLength(3);
     expect(result[0].type).toBe('user');
+    expect(result[1].type).toBe('assistant-group');
+    expect(result[2].type).toBe('user');
+  });
+});
+
+// ─── Skill-definition system messages ────────────────────────────────────────
+
+describe('groupTurns — skill-definition system messages', () => {
+  it('attaches skill-definition system messages to AssistantGroup as skillDefinitions', () => {
+    // Sequence: [assistant, skill-def-system-msg, assistant, user]
+    // Expected: [assistant-group(2 turns, skillDefinitions=[skill-def-msg]), user]
+    const a1 = makeMessage({ id: 'a1', role: 'assistant', createdAt: '2024-01-01T00:01:00Z', content: 'First response' });
+    const skillDef = makeMessage({
+      id: 'sd1',
+      role: 'user',
+      createdAt: '2024-01-01T00:01:30Z',
+      content: '<system-reminder>Base directory for this skill: /foo/bar\nSome instructions...</system-reminder>',
+    });
+    const a2 = makeMessage({ id: 'a2', role: 'assistant', createdAt: '2024-01-01T00:02:00Z', content: 'Second response' });
+    const user = makeMessage({ id: 'u1', role: 'user', createdAt: '2024-01-01T00:03:00Z', content: 'Thanks!' });
+
+    const result = groupTurns([a1, skillDef, a2, user], []);
+    expect(result).toHaveLength(2); // assistant-group + user (no separate system-group)
+    expect(result[0].type).toBe('assistant-group');
+    if (result[0].type === 'assistant-group') {
+      expect(result[0].messageCount).toBe(2);
+      expect(result[0].skillDefinitions).toBeDefined();
+      expect(result[0].skillDefinitions).toHaveLength(1);
+      expect(result[0].skillDefinitions![0].id).toBe('sd1');
+    }
+    expect(result[1].type).toBe('user');
+  });
+
+  it('still produces separate SystemGroup for non-skill system messages between assistant turns', () => {
+    // Sequence: [assistant, regular-system-msg, assistant, user]
+    // Expected: [assistant-group(2 turns), system-group, user] -- no regression
+    const a1 = makeMessage({ id: 'a1', role: 'assistant', createdAt: '2024-01-01T00:01:00Z', content: 'First response' });
+    const sys = makeMessage({
+      id: 's1',
+      role: 'user',
+      createdAt: '2024-01-01T00:01:30Z',
+      content: '<system-reminder>Some regular reminder</system-reminder>',
+    });
+    const a2 = makeMessage({ id: 'a2', role: 'assistant', createdAt: '2024-01-01T00:02:00Z', content: 'Second response' });
+    const user = makeMessage({ id: 'u1', role: 'user', createdAt: '2024-01-01T00:03:00Z', content: 'Thanks!' });
+
+    const result = groupTurns([a1, sys, a2, user], []);
+    expect(result).toHaveLength(3); // assistant-group + system-group + user
+    expect(result[0].type).toBe('assistant-group');
+    if (result[0].type === 'assistant-group') {
+      expect(result[0].skillDefinitions).toBeUndefined();
+    }
+    expect(result[1].type).toBe('system-group');
+    expect(result[2].type).toBe('user');
+  });
+
+  it('produces SystemGroup for skill-definition when no pending assistant group exists', () => {
+    // Sequence: [skill-def-system-msg, assistant, user]
+    // Expected: [system-group, assistant-group, user] -- skill defs only attach when inside an assistant group
+    const skillDef = makeMessage({
+      id: 'sd1',
+      role: 'user',
+      createdAt: '2024-01-01T00:00:00Z',
+      content: '<system-reminder>Base directory for this skill: /path\nInstructions</system-reminder>',
+    });
+    const a1 = makeMessage({ id: 'a1', role: 'assistant', createdAt: '2024-01-01T00:01:00Z', content: 'Response' });
+    const user = makeMessage({ id: 'u1', role: 'user', createdAt: '2024-01-01T00:02:00Z', content: 'Thanks' });
+
+    const result = groupTurns([skillDef, a1, user], []);
+    expect(result).toHaveLength(3);
+    expect(result[0].type).toBe('system-group');
     expect(result[1].type).toBe('assistant-group');
     expect(result[2].type).toBe('user');
   });

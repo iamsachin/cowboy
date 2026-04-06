@@ -1,4 +1,4 @@
-import { ref, type Ref, onMounted, onUnmounted } from 'vue';
+import { ref, watch, type Ref, onUnmounted } from 'vue';
 
 const THRESHOLD = 100;
 
@@ -54,9 +54,11 @@ export function useScrollTracker(containerRef: Ref<HTMLElement | null>) {
     };
   }
 
-  onMounted(() => {
-    containerRef.value?.addEventListener('scroll', onScroll, { passive: true });
-  });
+  watch(containerRef, (newEl, oldEl) => {
+    oldEl?.removeEventListener('scroll', onScroll);
+    newEl?.addEventListener('scroll', onScroll, { passive: true });
+    if (newEl) checkBottom();
+  }, { immediate: true });
 
   onUnmounted(() => {
     containerRef.value?.removeEventListener('scroll', onScroll);

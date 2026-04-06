@@ -1,6 +1,13 @@
 <template>
+  <!-- Tray panel: skip splash and dashboard layout -->
+  <template v-if="isTrayPanel">
+    <div class="bg-base-100 h-screen overflow-hidden">
+      <RouterView />
+    </div>
+  </template>
+
   <!-- Splash screen while backend is starting -->
-  <div v-if="!backendReady" class="flex items-center justify-center h-screen bg-base-100 text-base-content">
+  <div v-else-if="!backendReady" class="flex items-center justify-center h-screen bg-base-100 text-base-content">
     <div class="text-center">
       <img src="/cowboy-icon.png" alt="Cowboy" class="w-24 h-24 mx-auto mb-6 rounded-2xl" />
       <p v-if="!startupError" class="text-base text-base-content/60 animate-pulse">{{ loadingQuip }}</p>
@@ -18,11 +25,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
-import { RouterView } from 'vue-router';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { RouterView, useRoute } from 'vue-router';
 import DashboardLayout from './layouts/DashboardLayout.vue';
 import ToastContainer from './components/ToastContainer.vue';
 import { API_BASE } from './utils/api-base';
+
+const route = useRoute();
+const isTrayPanel = computed(() => route.path === '/tray-panel');
 
 const loadingQuips = [
   'Saddling up the AI agents...',

@@ -31,6 +31,11 @@ const routes = [
     component: () => import('../pages/SettingsPage.vue'),
   },
   {
+    path: '/tray-panel',
+    name: 'tray-panel',
+    component: () => import('../pages/TrayPanelPage.vue'),
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: () => import('../pages/NotFoundPage.vue'),

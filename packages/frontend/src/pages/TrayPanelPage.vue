@@ -26,7 +26,7 @@
           >
             <span v-if="conv.isActive" class="inline-block w-2 h-2 rounded-full bg-success animate-pulse shrink-0"></span>
             <span v-else class="inline-block w-2 h-2 rounded-full bg-base-300 shrink-0"></span>
-            <div class="min-w-0 flex-1">
+            <div class="min-w-0 flex-1 overflow-hidden">
               <div class="text-sm truncate">{{ displayTitle(conv.title) }}</div>
               <div class="text-xs text-base-content/40 truncate">{{ conv.agent }} · {{ formatRelativeDate(conv.date) }}</div>
             </div>
@@ -96,7 +96,7 @@ let fetchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 async function fetchConversations() {
   try {
     const res = await fetch(
-      `${API_BASE}/api/analytics/conversations?from=2020-01-01&to=2099-12-31&limit=10&sort=date&order=desc`
+      `${API_BASE}/api/analytics/conversations?from=2020-01-01&to=2099-12-31&limit=10&sort=updated&order=desc`
     );
     if (!res.ok) return;
     const data = await res.json();

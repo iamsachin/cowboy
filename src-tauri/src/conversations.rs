@@ -317,6 +317,7 @@ async fn conversation_list(
             // Map sort field to SQL expression
             let sort_expr = match sort_c.as_str() {
                 "date" => "c.created_at".to_string(),
+                "updated" => "c.updated_at".to_string(),
                 "agent" => "c.agent".to_string(),
                 "project" => "c.project".to_string(),
                 "model" => "c.model".to_string(),

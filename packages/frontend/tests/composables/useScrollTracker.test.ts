@@ -172,4 +172,148 @@ describe('useScrollTracker', () => {
 
     expect(el.addEventListener).toHaveBeenCalledWith('scroll', expect.any(Function), { passive: true });
   });
+
+  // --- New intent-based tracking tests ---
+
+  it('userScrolledAway defaults to false', async () => {
+    const el = createMockElement({
+      scrollHeight: 1000,
+      scrollTop: 450,
+      clientHeight: 500,
+    });
+    const containerRef = ref<HTMLElement | null>(el);
+
+    const { useScrollTracker } = await getModule();
+    const { userScrolledAway } = useScrollTracker(containerRef);
+
+    expect(userScrolledAway.value).toBe(false);
+  });
+
+  it('user scroll away from bottom sets userScrolledAway to true', async () => {
+    const el = createMockElement({
+      scrollHeight: 1000,
+      scrollTop: 200, // NOT at bottom (300 > 100)
+      clientHeight: 500,
+    });
+    const containerRef = ref<HTMLElement | null>(el);
+
+    const { useScrollTracker } = await getModule();
+    const { userScrolledAway } = useScrollTracker(containerRef);
+
+    // Simulate user scroll: get the onScroll handler and call it
+    const scrollHandler = el.addEventListener.mock.calls.find(
+      (call: unknown[]) => call[0] === 'scroll'
+    )?.[1] as () => void;
+    expect(scrollHandler).toBeDefined();
+
+    scrollHandler();
+    // RAF callback
+    vi.advanceTimersByTime(16);
+
+    expect(userScrolledAway.value).toBe(true);
+  });
+
+  it('user scroll to near bottom sets userScrolledAway to false', async () => {
+    const el = createMockElement({
+      scrollHeight: 1000,
+      scrollTop: 200,
+      clientHeight: 500,
+    });
+    const containerRef = ref<HTMLElement | null>(el);
+
+    const { useScrollTracker } = await getModule();
+    const { userScrolledAway } = useScrollTracker(containerRef);
+
+    // First, simulate scrolling away
+    const scrollHandler = el.addEventListener.mock.calls.find(
+      (call: unknown[]) => call[0] === 'scroll'
+    )?.[1] as () => void;
+
+    scrollHandler();
+    vi.advanceTimersByTime(16);
+    expect(userScrolledAway.value).toBe(true);
+
+    // Now scroll back to bottom
+    Object.defineProperty(el, 'scrollTop', { value: 450, configurable: true });
+    scrollHandler();
+    vi.advanceTimersByTime(16);
+
+    expect(userScrolledAway.value).toBe(false);
+  });
+
+  it('scrollToBottom(true) resets userScrolledAway to false (pill click path)', async () => {
+    const el = createMockElement({
+      scrollHeight: 1000,
+      scrollTop: 200,
+      clientHeight: 500,
+    });
+    const containerRef = ref<HTMLElement | null>(el);
+
+    const { useScrollTracker } = await getModule();
+    const { userScrolledAway, scrollToBottom } = useScrollTracker(containerRef);
+
+    // Simulate user scrolling away
+    const scrollHandler = el.addEventListener.mock.calls.find(
+      (call: unknown[]) => call[0] === 'scroll'
+    )?.[1] as () => void;
+
+    scrollHandler();
+    vi.advanceTimersByTime(16);
+    expect(userScrolledAway.value).toBe(true);
+
+    // Click pill (scrollToBottom with smooth=true)
+    scrollToBottom(true);
+    expect(userScrolledAway.value).toBe(false);
+  });
+
+  it('programmatic scrollToBottom does NOT set userScrolledAway to true', async () => {
+    const el = createMockElement({
+      scrollHeight: 1000,
+      scrollTop: 450, // at bottom
+      clientHeight: 500,
+    });
+    const containerRef = ref<HTMLElement | null>(el);
+
+    const { useScrollTracker } = await getModule();
+    const { userScrolledAway, scrollToBottom } = useScrollTracker(containerRef);
+
+    expect(userScrolledAway.value).toBe(false);
+
+    // Programmatic scroll to bottom
+    scrollToBottom(false);
+
+    // The scroll event fires after scrollTo - simulate it
+    // But because scrollTo is programmatic, the flag should guard against flipping
+    const scrollHandler = el.addEventListener.mock.calls.find(
+      (call: unknown[]) => call[0] === 'scroll'
+    )?.[1] as () => void;
+
+    // Simulate that the element is now NOT at bottom temporarily (content grew)
+    Object.defineProperty(el, 'scrollTop', { value: 200, configurable: true });
+    scrollHandler();
+    vi.advanceTimersByTime(16);
+
+    // userScrolledAway should still be false because the scroll was programmatic
+    expect(userScrolledAway.value).toBe(false);
+  });
+
+  it('captureScrollPosition uses userScrolledAway for auto-scroll decision', async () => {
+    const el = createMockElement({
+      scrollHeight: 1000,
+      scrollTop: 200,
+      clientHeight: 500,
+    });
+    const containerRef = ref<HTMLElement | null>(el);
+
+    const { useScrollTracker } = await getModule();
+    const { userScrolledAway, captureScrollPosition } = useScrollTracker(containerRef);
+
+    // userScrolledAway is false by default, so captureScrollPosition should auto-scroll
+    const restore = captureScrollPosition();
+    Object.defineProperty(el, 'scrollHeight', { value: 1200, configurable: true });
+    restore!();
+
+    // Should auto-scroll to bottom since userScrolledAway is false
+    expect(el.scrollTo).toHaveBeenCalledWith({ top: 1200, behavior: 'instant' });
+  });
 });

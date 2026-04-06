@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-04-07 - Completed quick task 76: Show current conversation in system tray panel
+Last activity: 2026-04-07 - Completed quick task 77: Fix timeline overlapping conversation area on narrow viewports
 
 ## Performance Metrics
 
@@ -130,9 +130,10 @@ None.
 | 74 | Move orphaned skill definition system messages inline | 2026-04-06 | 15830e2 | [74-move-orphaned-skill-definition-system-me](./quick/74-move-orphaned-skill-definition-system-me/) |
 | 75 | Fix useScrollTracker late-binding ref issue | 2026-04-06 | e5061e3 | [75-fix-parallel-agent-display-in-chat-timel](./quick/75-fix-parallel-agent-display-in-chat-timel/) |
 | 76 | Show current conversation in system tray panel | 2026-04-07 | 2ed3f3f | [76-show-current-conversation-in-system-tray](./quick/76-show-current-conversation-in-system-tray/) |
+| 77 | Fix timeline overlapping conversation area on narrow viewports | 2026-04-07 | e106bdc | [77-fix-timeline-overlapping-conversation-ar](./quick/77-fix-timeline-overlapping-conversation-ar/) |
 
 ## Session Continuity
 
 Last session: 2026-04-07
-Stopped at: Completed quick task 76
+Stopped at: Completed quick task 77
 Resume file: None

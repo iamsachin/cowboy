@@ -1,13 +1,22 @@
 use tauri::{
     image::Image,
-    menu::{MenuBuilder, MenuItem, Menu, SubmenuBuilder},
+    menu::{MenuBuilder, SubmenuBuilder},
     tray::{TrayIconBuilder, TrayIconEvent},
     Manager, PhysicalPosition, WindowEvent,
 };
 
+use std::sync::atomic::{AtomicBool, Ordering};
+
+static TRAY_PANEL_PINNED: AtomicBool = AtomicBool::new(false);
+
 #[tauri::command]
 fn quit_app(app: tauri::AppHandle) {
     app.exit(0);
+}
+
+#[tauri::command]
+fn set_tray_pinned(pinned: bool) {
+    TRAY_PANEL_PINNED.store(pinned, Ordering::Relaxed);
 }
 
 mod analytics;
@@ -56,28 +65,13 @@ pub fn run() {
                 .build()?;
             app.set_menu(menu)?;
 
-            // -- System tray --
-            let show_item = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
-            let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-            let tray_menu = Menu::with_items(app, &[&show_item, &quit_item])?;
-
+            // -- System tray (no native menu — panel acts as the dropdown) --
             let tray_icon = Image::from_bytes(include_bytes!("../icons/tray-icon.png"))?;
             TrayIconBuilder::new()
                 .icon(tray_icon)
                 .icon_as_template(true)
-                .menu(&tray_menu)
-                .on_menu_event(|app, event| match event.id.as_ref() {
-                    "show" => {
-                        if let Some(w) = app.get_webview_window("main") {
-                            let _ = w.show();
-                            let _ = w.set_focus();
-                        }
-                    }
-                    "quit" => app.exit(0),
-                    _ => {}
-                })
                 .on_tray_icon_event(|tray, event| {
-                    if let TrayIconEvent::Click { button, button_state, .. } = &event {
+                    if let TrayIconEvent::Click { button, button_state, position, .. } = &event {
                         if *button == tauri::tray::MouseButton::Left
                             && *button_state == tauri::tray::MouseButtonState::Up
                         {
@@ -86,19 +80,18 @@ pub fn run() {
                                 if panel.is_visible().unwrap_or(false) {
                                     let _ = panel.hide();
                                 } else {
-                                    // Position near top-right of screen (macOS menubar area)
-                                    if let Ok(Some(monitor)) = panel.current_monitor() {
-                                        let screen = monitor.size();
-                                        let scale = monitor.scale_factor();
-                                        let x = (screen.width as f64 / scale) as i32 - 380 - 16;
-                                        let y = 32;
-                                        let _ = panel.set_position(tauri::Position::Physical(
-                                            PhysicalPosition::new(
-                                                (x as f64 * scale) as i32,
-                                                (y as f64 * scale) as i32,
-                                            ),
-                                        ));
-                                    }
+                                    // Position panel centered below the tray icon
+                                    // position is in physical pixels; panel_width is logical (420)
+                                    let scale = panel.current_monitor()
+                                        .ok().flatten()
+                                        .map(|m| m.scale_factor())
+                                        .unwrap_or(2.0);
+                                    let physical_panel_width = 420.0 * scale;
+                                    let x = position.x - (physical_panel_width / 2.0);
+                                    let y = position.y + 4.0;
+                                    let _ = panel.set_position(tauri::Position::Physical(
+                                        PhysicalPosition::new(x as i32, y as i32),
+                                    ));
                                     let _ = panel.show();
                                     let _ = panel.set_focus();
                                 }
@@ -113,12 +106,22 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![quit_app])
-        // Close-to-tray: red X hides window instead of quitting
+        .invoke_handler(tauri::generate_handler![quit_app, set_tray_pinned])
+        // Window events: close-to-tray + tray panel auto-hide on blur
         .on_window_event(|window, event| {
-            if let WindowEvent::CloseRequested { api, .. } = event {
-                let _ = window.hide();
-                api.prevent_close();
+            match event {
+                WindowEvent::CloseRequested { api, .. } => {
+                    let _ = window.hide();
+                    api.prevent_close();
+                }
+                WindowEvent::Focused(false) => {
+                    if window.label() == "tray-panel"
+                        && !TRAY_PANEL_PINNED.load(Ordering::Relaxed)
+                    {
+                        let _ = window.hide();
+                    }
+                }
+                _ => {}
             }
         })
         .run(tauri::generate_context!())

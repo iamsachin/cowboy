@@ -16,6 +16,7 @@
     ]
   },
   "app": {
+    "macOSPrivateApi": true,
     "windows": [
       {
         "label": "main",
@@ -29,14 +30,16 @@
         "label": "tray-panel",
         "title": "",
         "url": "/tray-panel",
-        "width": 380,
-        "height": 600,
+        "width": 420,
+        "height": 700,
         "center": false,
         "decorations": false,
         "resizable": false,
         "visible": false,
         "alwaysOnTop": true,
-        "skipTaskbar": true
+        "skipTaskbar": true,
+        "transparent": true,
+        "shadow": false
       }
     ],
     "security": {

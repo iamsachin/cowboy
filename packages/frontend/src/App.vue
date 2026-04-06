@@ -1,9 +1,7 @@
 <template>
   <!-- Tray panel: skip splash and dashboard layout -->
   <template v-if="isTrayPanel">
-    <div class="bg-base-100 h-screen overflow-hidden">
-      <RouterView />
-    </div>
+    <RouterView />
   </template>
 
   <!-- Splash screen while backend is starting -->

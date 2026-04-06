@@ -122,10 +122,14 @@ describe('useScrollTracker', () => {
     const containerRef = ref<HTMLElement | null>(el);
 
     const { useScrollTracker } = await getModule();
-    const { checkBottom, captureScrollPosition } = useScrollTracker(containerRef);
+    const { captureScrollPosition } = useScrollTracker(containerRef);
 
-    // Ensure we're NOT at bottom
-    checkBottom();
+    // Simulate user scrolling away so captureScrollPosition preserves position
+    const scrollHandler = el.addEventListener.mock.calls.find(
+      (call: unknown[]) => call[0] === 'scroll'
+    )?.[1] as () => void;
+    scrollHandler();
+    vi.advanceTimersByTime(16);
 
     const restore = captureScrollPosition();
     expect(restore).not.toBeNull();

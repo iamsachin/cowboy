@@ -1,5 +1,5 @@
 <template>
-  <div class="transition-[padding] duration-200" :class="{ 'pr-[236px]': isOpen && data }">
+  <div class="transition-[padding] duration-200" :style="{ paddingRight: (isOpen && data) ? (timelineWidth - 24) + 'px' : '0' }">
     <div ref="pageRef" class="flex-1 min-w-0 p-4 max-w-5xl mx-auto">
       <!-- Loading state -->
       <div v-if="loading" class="flex justify-center items-center min-h-[60vh]">
@@ -145,8 +145,8 @@
     <div
       v-if="isOpen && data"
       ref="timelinePanelRef"
-      :style="{ left: timelineLeft + 'px' }"
-      class="fixed top-[62px] w-[260px] h-[calc(100vh-62px-16px)] overflow-y-auto hide-scrollbar border border-base-300 bg-base-100 z-10 rounded-xl shadow-lg transition-[left,opacity] duration-200 ease-out"
+      :style="{ left: timelineLeft + 'px', width: timelineWidth + 'px' }"
+      class="fixed top-[62px] h-[calc(100vh-62px-16px)] overflow-y-auto hide-scrollbar border border-base-300 bg-base-100 z-10 rounded-xl shadow-lg transition-[left,opacity] duration-200 ease-out"
       :class="timelineReady ? 'opacity-100' : 'opacity-0'">
         <ConversationTimeline
           :events="timelineEvents"
@@ -200,6 +200,7 @@ const timelinePanelRef = ref<HTMLElement | null>(null);
 
 // Dynamically center timeline in the space right of the content
 const timelineLeft = ref(0);
+const timelineWidth = ref(260);
 const timelineReady = ref(false);
 
 function updateTimelineLeft() {
@@ -208,7 +209,8 @@ function updateTimelineLeft() {
   const contentRight = rect.right;
   const viewportWidth = window.innerWidth;
   const spaceRight = viewportWidth - contentRight;
-  timelineLeft.value = contentRight + (spaceRight - 260) / 2 - 8;
+  timelineWidth.value = Math.min(260, Math.max(180, spaceRight - 32));
+  timelineLeft.value = contentRight + (spaceRight - timelineWidth.value) / 2 - 8;
 }
 
 onMounted(() => {

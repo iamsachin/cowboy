@@ -19,7 +19,8 @@
             :size="14"
             :class="[
               iconConfig(event).colorClass,
-              isActive && idx === events.length - 1 ? 'pulse-icon' : '',
+              (event.type === 'subagent' && event.status === 'running') || (isActive && idx === events.length - 1)
+                ? 'pulse-icon' : '',
             ]"
           />
         </div>
@@ -36,7 +37,10 @@
 </template>
 
 <script setup lang="ts">
-import { User, Bot, Minimize2, Workflow } from 'lucide-vue-next';
+import {
+  User, Bot, Minimize2, Workflow,
+  CheckCircle2, XCircle, AlertTriangle, HelpCircle,
+} from 'lucide-vue-next';
 import type { TimelineEvent } from '../composables/useTimeline';
 
 defineProps<{
@@ -55,10 +59,25 @@ function iconConfig(event: TimelineEvent) {
       return { icon: User, colorClass: 'text-primary' };
     case 'assistant-group':
       return { icon: Bot, colorClass: 'text-secondary' };
-    case 'subagent':
-      return { icon: Workflow, colorClass: 'text-info' };
     case 'compaction':
       return { icon: Minimize2, colorClass: 'text-warning' };
+    case 'subagent':
+      switch (event.status) {
+        case 'success':
+          return { icon: CheckCircle2, colorClass: 'text-success' };
+        case 'error':
+          return { icon: XCircle, colorClass: 'text-error' };
+        case 'interrupted':
+          return { icon: AlertTriangle, colorClass: 'text-warning' };
+        case 'missing':
+          return { icon: AlertTriangle, colorClass: 'text-warning' };
+        case 'unmatched':
+          return { icon: HelpCircle, colorClass: 'text-base-content/60' };
+        case 'running':
+        default:
+          // 'running' OR legacy undefined (defensive: older event shapes)
+          return { icon: Workflow, colorClass: 'text-info' };
+      }
   }
 }
 

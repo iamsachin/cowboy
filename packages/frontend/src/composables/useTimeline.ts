@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import type { GroupedTurn } from './useGroupedTurns';
+import { classifyGhostState } from '../utils/ghost-card-state';
 
 export interface TimelineEvent {
   key: string;
@@ -60,12 +61,33 @@ export function extractTimelineEvents(turns: GroupedTurn[]): TimelineEvent[] {
             }
             const summary = tc.subagentSummary;
             const toolCount = summary?.totalToolCalls ?? 0;
+            // Derive status: summary.status wins when summary exists; otherwise
+            // fall back to classifyGhostState (which returns
+            // 'running' | 'unmatched' | 'missing' -- the 'summary' branch is
+            // unreachable because summary is null in the else path).
+            let status: TimelineEvent['status'];
+            if (summary) {
+              status = summary.status; // 'success' | 'error' | 'interrupted'
+            } else {
+              const ghost = classifyGhostState({
+                subagentSummary: null,
+                subagentLinkAttempted: tc.subagentLinkAttempted,
+                subagentConversationId: tc.subagentConversationId ?? null,
+                isActive: false, // classifier ignores this; render-time decides pulse
+              });
+              // ghost is 'running' | 'unmatched' | 'missing' | 'summary' -- but
+              // 'summary' is unreachable here because we're in the !summary branch.
+              status = ghost === 'summary' ? undefined : ghost;
+            }
             events.push({
               key: tc.id,
               type: 'subagent',
               label: `${desc}${toolCount > 0 ? ` · ${toolCount} tools` : ''}`,
               turnIndex: i,
               parentKey: groupKey,
+              status,
+              subagentConversationId: tc.subagentConversationId ?? null,
+              subagentLinkAttempted: tc.subagentLinkAttempted,
             });
           }
         }

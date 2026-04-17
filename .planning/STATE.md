@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-04-17 - Completed quick task 260417-mg3: Research sub-agent call identification and display discovery
+Last activity: 2026-04-17 - Completed quick task 260417-nwh: IMPR-1 emit tool_call:changed event after subagent linking (verified, human smoke test pending)
 
 ## Performance Metrics
 
@@ -134,9 +134,10 @@ None.
 | 78 | Fix auto-scroll losing bottom during rapid streaming | 2026-04-07 | 45bc211 | [78-fix-auto-scroll-losing-bottom-during-rap](./quick/78-fix-auto-scroll-losing-bottom-during-rap/) |
 | 79 | Sort tray conversations by update time and fix text overflow | 2026-04-07 | e88a491 | [79-sort-menu-conversations-by-update-time-a](./quick/79-sort-menu-conversations-by-update-time-a/) |
 | 260417-mg3 | Research sub-agent call identification and display discovery | 2026-04-17 | c3c5dc5 | [260417-mg3-use-research-skill-and-go-through-deeply](./quick/260417-mg3-use-research-skill-and-go-through-deeply/) |
+| 260417-nwh | IMPR-1: Emit tool_call:changed event after subagent linking (Needs Review) | 2026-04-17 | 39955d2 | [260417-nwh-impr-1-emit-websocket-tool-call-changed-](./quick/260417-nwh-impr-1-emit-websocket-tool-call-changed-/) |
 
 ## Session Continuity
 
 Last session: 2026-04-17
-Stopped at: Completed quick task 260417-mg3
+Stopped at: Completed quick task 260417-nwh (IMPR-1)
 Resume file: None

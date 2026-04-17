@@ -98,22 +98,40 @@
           </template>
         </div>
 
-        <!-- Tool calls for this turn -->
+        <!--
+          Tool calls for this turn.
+          IMPR-8: Contiguous runs of 2+ Task/Agent calls collapse into a single
+          SubagentBatch wrapper (parallel sub-agent visual grouping). Single
+          Task/Agent calls and non-subagent tool calls render via the existing
+          ToolCallRow path unchanged.
+        -->
         <div v-if="turn.toolCalls.length > 0" class="mt-1 space-y-1">
-          <div
-            v-for="(tc, tcIdx) in turn.toolCalls"
-            :key="tc.id"
-            :data-tool-call-id="tc.id"
-            style="scroll-margin-top: 3rem"
+          <template
+            v-for="(slot, slotIdx) in renderSlotsByTurn.get(turn.message.id) ?? []"
+            :key="slotIdx"
           >
-            <ToolCallRowComponent
-              :toolCall="tc"
-              :autoExpand="tc.id === autoExpandToolCallId"
-              :tokenInfo="tcIdx === turn.toolCalls.length - 1 ? formatTurnTokenInfo(turn) : undefined"
+            <!-- Batch slot: wrap 2+ parallel sub-agents in SubagentBatch -->
+            <SubagentBatch
+              v-if="slot.kind === 'batch'"
+              :toolCalls="slot.toolCalls"
               :isActive="isActive"
               :parentModel="group.model"
             />
-          </div>
+            <!-- Single slot: unchanged rendering path -->
+            <div
+              v-else
+              :data-tool-call-id="slot.toolCall.id"
+              style="scroll-margin-top: 3rem"
+            >
+              <ToolCallRowComponent
+                :toolCall="slot.toolCall"
+                :autoExpand="slot.toolCall.id === autoExpandToolCallId"
+                :tokenInfo="slotIdx === (renderSlotsByTurn.get(turn.message.id) ?? []).length - 1 ? formatTurnTokenInfo(turn) : undefined"
+                :isActive="isActive"
+                :parentModel="group.model"
+              />
+            </div>
+          </template>
         </div>
 
         <!-- Per-turn token info (only for turns without tool calls) -->
@@ -140,7 +158,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
 import { Brain, ChevronRight, Copy, Check } from 'lucide-vue-next';
-import type { MessageTokenUsage } from '../types';
+import type { MessageTokenUsage, ToolCallRow } from '../types';
 import type { AssistantGroup, AssistantTurn, SystemGroup, SystemMessageCategory } from '../composables/useGroupedTurns';
 import { classifySystemMessage } from '../composables/useGroupedTurns';
 import SystemMessageIndicator from './SystemMessageIndicator.vue';
@@ -154,6 +172,7 @@ import CodeBlock from './CodeBlock.vue';
 import ToolCallRowComponent from './ToolCallRow.vue';
 import TokenBreakdownPopover from './TokenBreakdownPopover.vue';
 import BaseExpandableItem from './BaseExpandableItem.vue';
+import SubagentBatch from './SubagentBatch.vue';
 
 const props = defineProps<{
   group: AssistantGroup;
@@ -165,6 +184,55 @@ const props = defineProps<{
 defineEmits<{
   toggle: [];
 }>();
+
+// IMPR-8: Render-slot bucketing for parallel sub-agent visual grouping.
+// Contiguous runs of 2+ Task/Agent tool_calls inside one turn collapse into a
+// single `batch` slot; everything else is a `single` slot.
+interface SingleSlot { kind: 'single'; toolCall: ToolCallRow; }
+interface BatchSlot { kind: 'batch'; toolCalls: ToolCallRow[]; }
+type RenderSlot = SingleSlot | BatchSlot;
+
+function isSubagentCall(tc: ToolCallRow): boolean {
+  return tc.name === 'Task' || tc.name === 'Agent';
+}
+
+/**
+ * Bucket a turn's tool_calls into render slots. Contiguous runs of 2+
+ * Task/Agent calls collapse into one BatchSlot; everything else becomes a
+ * SingleSlot. Within one turn, all tool_calls share messageId (groupTurns
+ * invariant, useGroupedTurns.ts:150), so a run of adjacent Task/Agent calls
+ * IS a parallel batch.
+ */
+function buildRenderSlots(toolCalls: ToolCallRow[]): RenderSlot[] {
+  const slots: RenderSlot[] = [];
+  let i = 0;
+  while (i < toolCalls.length) {
+    if (isSubagentCall(toolCalls[i])) {
+      let j = i;
+      while (j < toolCalls.length && isSubagentCall(toolCalls[j])) j++;
+      const run = toolCalls.slice(i, j);
+      if (run.length >= 2) {
+        slots.push({ kind: 'batch', toolCalls: run });
+      } else {
+        slots.push({ kind: 'single', toolCall: run[0] });
+      }
+      i = j;
+    } else {
+      slots.push({ kind: 'single', toolCall: toolCalls[i] });
+      i++;
+    }
+  }
+  return slots;
+}
+
+/** Memoized map keyed by turn.message.id to avoid recomputing per template eval. */
+const renderSlotsByTurn = computed(() => {
+  const map = new Map<string, RenderSlot[]>();
+  for (const t of props.group.turns) {
+    map.set(t.message.id, buildRenderSlots(t.toolCalls));
+  }
+  return map;
+});
 
 const modelBadge = computed(() => getModelBadge(props.group.model));
 

@@ -78,6 +78,8 @@ function iconConfig(event: TimelineEvent) {
           // 'running' OR legacy undefined (defensive: older event shapes)
           return { icon: Workflow, colorClass: 'text-info' };
       }
+    case 'subagent-batch':
+      return { icon: Workflow, colorClass: 'text-info' };
   }
 }
 
@@ -88,6 +90,7 @@ function labelClass(event: TimelineEvent): string {
     case 'assistant-group':
       return 'text-base-content/60';
     case 'subagent':
+    case 'subagent-batch':
       return 'text-info/70 pl-2';
     case 'compaction':
       return 'text-warning/70 italic';

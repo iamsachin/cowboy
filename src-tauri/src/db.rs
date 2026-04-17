@@ -73,6 +73,20 @@ pub async fn init_database(
     })
     .await?;
 
+    // Migration: add subagent_link_attempted to tool_calls if missing (IMPR-7)
+    conn.call(|conn| {
+        let has_column: bool = conn
+            .prepare("SELECT subagent_link_attempted FROM tool_calls LIMIT 0")
+            .is_ok();
+        if !has_column {
+            conn.execute_batch(
+                "ALTER TABLE tool_calls ADD COLUMN subagent_link_attempted INTEGER NOT NULL DEFAULT 0;",
+            )?;
+        }
+        Ok::<(), rusqlite::Error>(())
+    })
+    .await?;
+
     Ok(conn)
 }
 

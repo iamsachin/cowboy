@@ -35,7 +35,8 @@ CREATE TABLE IF NOT EXISTS tool_calls (
     duration INTEGER,
     created_at TEXT NOT NULL,
     subagent_conversation_id TEXT,
-    subagent_summary TEXT
+    subagent_summary TEXT,
+    subagent_link_attempted INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS token_usage (

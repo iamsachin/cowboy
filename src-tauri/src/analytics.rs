@@ -18,6 +18,10 @@ pub fn routes() -> Router<AppState> {
         .route("/api/analytics/project-stats", get(project_stats))
         .route("/api/analytics/token-rate", get(token_rate))
         .route("/api/analytics/filters", get(filters))
+        .route(
+            "/api/analytics/subagents/top-conversations",
+            get(top_subagent_conversations),
+        )
 }
 
 // ── Response Structs ──────────────────────────────────────────────────
@@ -123,6 +127,17 @@ struct FiltersResponse {
     agents: Vec<String>,
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TopSubagentConversationRow {
+    conversation_id: String,
+    title: Option<String>,
+    subagent_count: i64,
+    success_count: i64,
+    error_count: i64,
+    interrupted_count: i64,
+}
+
 // ── Query Param Structs ───────────────────────────────────────────────
 
 #[derive(Deserialize)]
@@ -131,6 +146,30 @@ struct TimeSeriesParams {
     to: Option<String>,
     agent: Option<String>,
     granularity: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct TopSubagentParams {
+    from: Option<String>,
+    to: Option<String>,
+    agent: Option<String>,
+    limit: Option<u32>,
+}
+
+impl TopSubagentParams {
+    fn resolve(&self) -> (String, String, u32) {
+        let to = self
+            .to
+            .clone()
+            .unwrap_or_else(|| chrono::Utc::now().format("%Y-%m-%d").to_string());
+        let from = self.from.clone().unwrap_or_else(|| {
+            (chrono::Utc::now() - chrono::Duration::days(30))
+                .format("%Y-%m-%d")
+                .to_string()
+        });
+        let limit = self.limit.unwrap_or(5).min(50);
+        (from, to, limit)
+    }
 }
 
 // ── Helper Functions ──────────────────────────────────────────────────
@@ -1068,6 +1107,93 @@ async fn token_rate(
                     })
                 })?
                 .collect::<Result<Vec<_>, _>>()?;
+
+            Ok(rows)
+        })
+        .await?;
+
+    Ok(Json(rows))
+}
+
+// ── Top Sub-agent-heavy Conversations (IMPR-9) ────────────────────────
+
+async fn top_subagent_conversations(
+    State(state): State<AppState>,
+    Query(params): Query<TopSubagentParams>,
+) -> Result<Json<Vec<TopSubagentConversationRow>>, AppError> {
+    let (from, to, limit) = params.resolve();
+    let agent = params.agent.clone();
+
+    let rows = state
+        .db
+        .call(move |conn| {
+            let to_inclusive = format!("{}T23:59:59Z", to);
+            let agent_condition = if agent.is_some() {
+                " AND c.agent = ?"
+            } else {
+                ""
+            };
+
+            // Count sub-agent tool_calls per parent conversation, plus status breakdown
+            // from json_extract(subagent_summary, '$.status').
+            // Filter: only Task/Agent tool_calls with a linked subagent_conversation_id
+            // (the link succeeded — this matches the "sub-agents spawned" definition).
+            // Date range is on the parent conversation's created_at.
+            // Placeholders are bare `?` (not numbered) so bind order matches source
+            // position: [from, to_inclusive, agent?, limit] — mirrors tool_stats pattern.
+            let sql = format!(
+                "SELECT
+                    c.id,
+                    c.title,
+                    COUNT(tc.id) AS subagent_count,
+                    SUM(CASE WHEN json_extract(tc.subagent_summary, '$.status') = 'success'     THEN 1 ELSE 0 END) AS success_count,
+                    SUM(CASE WHEN json_extract(tc.subagent_summary, '$.status') = 'error'       THEN 1 ELSE 0 END) AS error_count,
+                    SUM(CASE WHEN json_extract(tc.subagent_summary, '$.status') = 'interrupted' THEN 1 ELSE 0 END) AS interrupted_count
+                FROM conversations c
+                INNER JOIN tool_calls tc ON tc.conversation_id = c.id
+                WHERE c.parent_conversation_id IS NULL
+                    AND tc.name IN ('Task', 'Agent')
+                    AND tc.subagent_conversation_id IS NOT NULL
+                    AND c.created_at >= ?
+                    AND c.created_at <= ?{}
+                GROUP BY c.id
+                HAVING subagent_count > 0
+                ORDER BY subagent_count DESC, c.created_at DESC
+                LIMIT ?",
+                agent_condition
+            );
+
+            let rows: Vec<TopSubagentConversationRow> = if let Some(ref agent_val) = agent {
+                let mut stmt = conn.prepare(&sql)?;
+                let mapped = stmt.query_map(
+                    params![from, to_inclusive, agent_val, limit as i64],
+                    |row| {
+                        Ok(TopSubagentConversationRow {
+                            conversation_id: row.get(0)?,
+                            title: row.get(1)?,
+                            subagent_count: row.get(2)?,
+                            success_count: row.get(3)?,
+                            error_count: row.get(4)?,
+                            interrupted_count: row.get(5)?,
+                        })
+                    },
+                )?;
+                mapped.collect::<Result<Vec<_>, _>>()?
+            } else {
+                let mut stmt = conn.prepare(&sql)?;
+                let mapped =
+                    stmt.query_map(params![from, to_inclusive, limit as i64], |row| {
+                        Ok(TopSubagentConversationRow {
+                            conversation_id: row.get(0)?,
+                            title: row.get(1)?,
+                            subagent_count: row.get(2)?,
+                            success_count: row.get(3)?,
+                            error_count: row.get(4)?,
+                            interrupted_count: row.get(5)?,
+                        })
+                    })?;
+                mapped.collect::<Result<Vec<_>, _>>()?
+            };
 
             Ok(rows)
         })

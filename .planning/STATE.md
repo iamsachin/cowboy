@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-04-07 - Completed quick task 79: Sort tray conversations by update time and fix text overflow
+Last activity: 2026-04-17 - Completed quick task 260417-mg3: Research sub-agent call identification and display discovery
 
 ## Performance Metrics
 
@@ -133,9 +133,10 @@ None.
 | 77 | Fix timeline overlapping conversation area on narrow viewports | 2026-04-07 | e106bdc | [77-fix-timeline-overlapping-conversation-ar](./quick/77-fix-timeline-overlapping-conversation-ar/) |
 | 78 | Fix auto-scroll losing bottom during rapid streaming | 2026-04-07 | 45bc211 | [78-fix-auto-scroll-losing-bottom-during-rap](./quick/78-fix-auto-scroll-losing-bottom-during-rap/) |
 | 79 | Sort tray conversations by update time and fix text overflow | 2026-04-07 | e88a491 | [79-sort-menu-conversations-by-update-time-a](./quick/79-sort-menu-conversations-by-update-time-a/) |
+| 260417-mg3 | Research sub-agent call identification and display discovery | 2026-04-17 | c3c5dc5 | [260417-mg3-use-research-skill-and-go-through-deeply](./quick/260417-mg3-use-research-skill-and-go-through-deeply/) |
 
 ## Session Continuity
 
-Last session: 2026-04-07
-Stopped at: Completed quick task 79
+Last session: 2026-04-17
+Stopped at: Completed quick task 260417-mg3
 Resume file: None

@@ -93,6 +93,7 @@ export interface ToolCallRow {
   createdAt: string;
   subagentConversationId?: string | null;
   subagentSummary?: SubagentSummary | null;
+  subagentLinkAttempted: boolean;
 }
 
 export interface MessageTokenUsage {

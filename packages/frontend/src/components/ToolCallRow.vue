@@ -1,6 +1,6 @@
 <template>
   <!-- Subagent card for Task/Agent tool calls -->
-  <SubagentSummaryCard v-if="isSubagentCall" :toolCall="toolCall" :isActive="isActive" />
+  <SubagentSummaryCard v-if="isSubagentCall" :toolCall="toolCall" :isActive="isActive" :parentModel="parentModel" />
 
   <!-- Standard tool call display -->
   <div v-else class="text-xs">
@@ -67,6 +67,7 @@ const props = defineProps<{
   autoExpand?: boolean;
   tokenInfo?: string;
   isActive: boolean;
+  parentModel?: string | null;
 }>();
 
 const toolIcon = computed(() => getToolIcon(props.toolCall.name));

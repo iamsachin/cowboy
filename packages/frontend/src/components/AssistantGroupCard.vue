@@ -111,6 +111,7 @@
               :autoExpand="tc.id === autoExpandToolCallId"
               :tokenInfo="tcIdx === turn.toolCalls.length - 1 ? formatTurnTokenInfo(turn) : undefined"
               :isActive="isActive"
+              :parentModel="group.model"
             />
           </div>
         </div>

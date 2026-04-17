@@ -304,16 +304,27 @@ async fn conversation_list(
                 bind_values.push(Box::new(project_val.clone()));
             }
 
-            // Search filter
+            // Search filter — LIKE on title/project/model/messages plus FTS on subagent_fts (IMPR-6).
             if let Some(ref search_val) = search_c {
                 let pattern = format!("%{}%", search_val);
+                // FTS5 prefix-match query: lowercase + escape double-quotes by stripping them.
+                // (FTS5 phrase syntax: "term"* matches term-prefixed tokens.)
+                let fts_query = format!(
+                    "\"{}\"*",
+                    search_val.to_lowercase().replace('"', "")
+                );
                 conditions.push(format!(
-                    "(c.title LIKE ? OR c.project LIKE ? OR c.model LIKE ? OR c.id IN (SELECT DISTINCT conversation_id FROM messages WHERE content LIKE ?))"
+                    "(c.title LIKE ? OR c.project LIKE ? OR c.model LIKE ? \
+                      OR c.id IN (SELECT DISTINCT conversation_id FROM messages WHERE content LIKE ?) \
+                      OR c.id IN (SELECT DISTINCT tc.conversation_id FROM tool_calls tc \
+                                  JOIN subagent_fts s ON s.tool_call_id = tc.id \
+                                  WHERE s.content MATCH ?))"
                 ));
                 bind_values.push(Box::new(pattern.clone()));
                 bind_values.push(Box::new(pattern.clone()));
                 bind_values.push(Box::new(pattern.clone()));
                 bind_values.push(Box::new(pattern));
+                bind_values.push(Box::new(fts_query));
             }
 
             // Filter by kind: primary (default, back-compat) / subagent / all.

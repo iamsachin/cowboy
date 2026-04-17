@@ -95,6 +95,9 @@
       <!-- Top Conversations Widget -->
       <TopConversationsWidget />
 
+      <!-- Top Sub-agent-heavy Conversations Widget -->
+      <TopSubagentConversationsWidget />
+
       <!-- Conversation Table -->
       <ConversationTable />
     </template>
@@ -112,6 +115,7 @@ import ConversationsChart from '../components/ConversationsChart.vue';
 import ModelDistributionChart from '../components/ModelDistributionChart.vue';
 import ConversationTable from '../components/ConversationTable.vue';
 import TopConversationsWidget from '../components/TopConversationsWidget.vue';
+import TopSubagentConversationsWidget from '../components/TopSubagentConversationsWidget.vue';
 import { useDateRange } from '../composables/useDateRange';
 import { useAnalytics } from '../composables/useAnalytics';
 

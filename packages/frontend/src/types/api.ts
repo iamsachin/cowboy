@@ -73,6 +73,15 @@ export interface ConversationListResponse {
   limit: number;
 }
 
+export interface TopSubagentConversationRow {
+  conversationId: string;
+  title: string | null;
+  subagentCount: number;
+  successCount: number;
+  errorCount: number;
+  interruptedCount: number;
+}
+
 export interface MessageRow {
   id: string;
   role: string;

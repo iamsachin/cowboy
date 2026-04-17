@@ -4,5 +4,5 @@ export type { ModelPricing } from './pricing';
 export { MODEL_PRICING, calculateCost } from './pricing';
 export type { Granularity } from './analytics';
 export { autoGranularity } from './analytics';
-export type { ChangeType, ConversationChangedEvent, ConversationCreatedEvent, SystemFullRefreshEvent, SettingsChangedEvent, WebSocketEvent, WebSocketEventType, WebSocketEventPayload } from './websocket-events';
-export { isConversationChanged, isConversationCreated, isSystemFullRefresh, isSettingsChanged } from './websocket-events';
+export type { ChangeType, ConversationChangedEvent, ConversationCreatedEvent, SystemFullRefreshEvent, SettingsChangedEvent, ToolCallChangedEvent, WebSocketEvent, WebSocketEventType, WebSocketEventPayload } from './websocket-events';
+export { isConversationChanged, isConversationCreated, isSystemFullRefresh, isSettingsChanged, isToolCallChanged } from './websocket-events';

@@ -43,11 +43,20 @@ export interface SettingsChangedEvent {
   timestamp: string;
 }
 
+export interface ToolCallChangedEvent {
+  type: 'tool_call:changed';
+  seq: number;
+  conversationId: string;
+  toolCallId: string;
+  timestamp: string;
+}
+
 export type WebSocketEvent =
   | ConversationChangedEvent
   | ConversationCreatedEvent
   | SystemFullRefreshEvent
-  | SettingsChangedEvent;
+  | SettingsChangedEvent
+  | ToolCallChangedEvent;
 
 export type WebSocketEventType = WebSocketEvent['type'];
 
@@ -56,7 +65,8 @@ export type WebSocketEventPayload =
   | Omit<ConversationChangedEvent, 'seq'>
   | Omit<ConversationCreatedEvent, 'seq'>
   | Omit<SystemFullRefreshEvent, 'seq'>
-  | Omit<SettingsChangedEvent, 'seq'>;
+  | Omit<SettingsChangedEvent, 'seq'>
+  | Omit<ToolCallChangedEvent, 'seq'>;
 
 // Type guards
 export function isConversationChanged(e: WebSocketEvent): e is ConversationChangedEvent {
@@ -73,4 +83,8 @@ export function isSystemFullRefresh(e: WebSocketEvent): e is SystemFullRefreshEv
 
 export function isSettingsChanged(e: WebSocketEvent): e is SettingsChangedEvent {
   return e.type === 'settings:changed';
+}
+
+export function isToolCallChanged(e: WebSocketEvent): e is ToolCallChangedEvent {
+  return e.type === 'tool_call:changed';
 }

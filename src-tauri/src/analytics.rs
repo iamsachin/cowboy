@@ -22,6 +22,10 @@ pub fn routes() -> Router<AppState> {
             "/api/analytics/subagents/top-conversations",
             get(top_subagent_conversations),
         )
+        .route(
+            "/api/analytics/subagents/recent",
+            get(recent_subagents),
+        )
 }
 
 // ── Response Structs ──────────────────────────────────────────────────
@@ -1196,6 +1200,62 @@ async fn top_subagent_conversations(
             };
 
             Ok(rows)
+        })
+        .await?;
+
+    Ok(Json(rows))
+}
+
+// ── IMPR-10: Recent sub-agents (for command palette) ─────────────────────
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RecentSubagentRow {
+    conversation_id: String,
+    tool_call_id: String,
+    description: String,
+    status: Option<String>,
+    timestamp: String,
+}
+
+#[derive(Deserialize)]
+struct RecentSubagentParams {
+    limit: Option<u32>,
+}
+
+async fn recent_subagents(
+    State(state): State<AppState>,
+    Query(params): Query<RecentSubagentParams>,
+) -> Result<Json<Vec<RecentSubagentRow>>, AppError> {
+    let limit = params.limit.unwrap_or(100).min(500) as i64;
+
+    let rows: Vec<RecentSubagentRow> = state
+        .db
+        .call(move |conn| {
+            let mut stmt = conn.prepare(
+                "SELECT tc.conversation_id,
+                        tc.id,
+                        COALESCE(json_extract(tc.input, '$.description'),
+                                 substr(COALESCE(json_extract(tc.input, '$.prompt'), ''), 1, 80),
+                                 'Subagent') AS description,
+                        json_extract(tc.subagent_summary, '$.status') AS status,
+                        tc.created_at
+                 FROM tool_calls tc
+                 WHERE tc.name IN ('Task', 'Agent')
+                   AND tc.subagent_conversation_id IS NOT NULL
+                 ORDER BY tc.created_at DESC
+                 LIMIT ?",
+            )?;
+            let mapped = stmt.query_map(params![limit], |row| {
+                Ok(RecentSubagentRow {
+                    conversation_id: row.get(0)?,
+                    tool_call_id: row.get(1)?,
+                    description: row.get::<_, Option<String>>(2)?.unwrap_or_else(|| "Subagent".to_string()),
+                    status: row.get::<_, Option<String>>(3)?,
+                    timestamp: row.get(4)?,
+                })
+            })?;
+            mapped.collect::<Result<Vec<_>, _>>()
         })
         .await?;
 

@@ -19,7 +19,7 @@
               v-model="query"
               type="text"
               class="input input-ghost w-full focus:outline-none bg-transparent p-0 h-auto min-h-0"
-              placeholder="Search pages and conversations..."
+              placeholder="Search pages, conversations, sub-agents... (try 'sub 3')"
               @keydown.arrow-up.prevent="navigateUp"
               @keydown.arrow-down.prevent="navigateDown"
               @keydown.enter.prevent="select"
@@ -30,9 +30,35 @@
 
           <!-- Results -->
           <div class="max-h-80 overflow-y-auto py-1">
+            <!-- Current conversation sub-agents -->
+            <template v-if="filteredCurrentSubagents.length > 0">
+              <div class="px-3 py-1 text-xs font-semibold uppercase text-base-content/50">
+                In this conversation
+              </div>
+              <div
+                v-for="(result, idx) in filteredCurrentSubagents"
+                :key="'cur-sub-' + (result.type === 'current-subagent' ? result.item.toolCallId : idx)"
+                class="flex items-center gap-3 px-3 py-2 cursor-pointer"
+                :class="flatIndex('current-subagent', idx) === highlightedIndex ? 'bg-base-200' : 'hover:bg-base-200/50'"
+                @mouseenter="highlightedIndex = flatIndex('current-subagent', idx)"
+                @click="selectAt(flatIndex('current-subagent', idx))"
+              >
+                <Bot class="w-4 h-4 text-info shrink-0" />
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="badge badge-ghost badge-xs">#{{ result.type === 'current-subagent' ? result.index + 1 : '' }}</span>
+                    <span class="text-sm truncate">{{ result.type === 'current-subagent' ? result.item.description : '' }}</span>
+                  </div>
+                  <div class="text-xs text-base-content/50">
+                    {{ result.type === 'current-subagent' ? result.item.status : '' }}
+                  </div>
+                </div>
+              </div>
+            </template>
+
             <!-- Pages section -->
             <template v-if="filteredPages.length > 0">
-              <div class="px-3 py-1 text-xs font-semibold uppercase text-base-content/50">
+              <div class="px-3 py-1 text-xs font-semibold uppercase text-base-content/50 mt-1">
                 Pages
               </div>
               <div
@@ -75,9 +101,32 @@
               </div>
             </template>
 
+            <!-- Recent sub-agents (cross-conversation) -->
+            <template v-if="filteredRecentSubagents.length > 0">
+              <div class="px-3 py-1 text-xs font-semibold uppercase text-base-content/50 mt-1">
+                Recent sub-agents
+              </div>
+              <div
+                v-for="(result, idx) in filteredRecentSubagents"
+                :key="'rec-sub-' + (result.type === 'recent-subagent' ? result.item.toolCallId : idx)"
+                class="flex items-center gap-3 px-3 py-2 cursor-pointer"
+                :class="flatIndex('recent-subagent', idx) === highlightedIndex ? 'bg-base-200' : 'hover:bg-base-200/50'"
+                @mouseenter="highlightedIndex = flatIndex('recent-subagent', idx)"
+                @click="selectAt(flatIndex('recent-subagent', idx))"
+              >
+                <Bot class="w-4 h-4 text-base-content/40 shrink-0" />
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm truncate">{{ result.type === 'recent-subagent' ? result.item.description : '' }}</div>
+                  <div class="text-xs text-base-content/50">
+                    {{ result.type === 'recent-subagent' ? (result.item.status ?? '--') : '' }} · {{ result.type === 'recent-subagent' ? relativeDate(result.item.timestamp) : '' }}
+                  </div>
+                </div>
+              </div>
+            </template>
+
             <!-- Empty state -->
             <div
-              v-if="filteredPages.length === 0 && filteredConversations.length === 0"
+              v-if="filteredPages.length === 0 && filteredConversations.length === 0 && filteredCurrentSubagents.length === 0 && filteredRecentSubagents.length === 0"
               class="px-3 py-6 text-center text-sm text-base-content/40"
             >
               No results found
@@ -117,6 +166,8 @@ const {
   loading,
   filteredPages,
   filteredConversations,
+  filteredCurrentSubagents,
+  filteredRecentSubagents,
   highlightedIndex,
   close,
   navigateUp,
@@ -148,10 +199,19 @@ function pageIcon(name: string): Component {
   return iconMap[name] || Search;
 }
 
-/** Compute flat index for a result given its type and local index */
-function flatIndex(type: 'page' | 'conversation', localIdx: number): number {
-  if (type === 'page') return localIdx;
-  return filteredPages.value.length + localIdx;
+/** Compute flat index for a result given its type and local index.
+ *  Order matches allResults in useCommandPalette: current-subagent → page → conversation → recent-subagent. */
+function flatIndex(
+  type: 'current-subagent' | 'page' | 'conversation' | 'recent-subagent',
+  localIdx: number,
+): number {
+  const cs = filteredCurrentSubagents.value.length;
+  const p = filteredPages.value.length;
+  const c = filteredConversations.value.length;
+  if (type === 'current-subagent') return localIdx;
+  if (type === 'page') return cs + localIdx;
+  if (type === 'conversation') return cs + p + localIdx;
+  return cs + p + c + localIdx; // recent-subagent
 }
 
 function select() {

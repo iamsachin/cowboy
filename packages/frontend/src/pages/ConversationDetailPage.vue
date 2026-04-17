@@ -167,7 +167,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, watchEffect, nextTick, onMounted, onUnmounted } from 'vue';
+import { computed, ref, watch, watchEffect, nextTick, onMounted, onUnmounted, onScopeDispose } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, ArrowUpLeft, AlertTriangle, PanelRight, Download } from 'lucide-vue-next';
 import { useConversationDetail } from '../composables/useConversationDetail';
@@ -177,6 +177,7 @@ import ConversationDetail from '../components/ConversationDetail.vue';
 import ConversationTimeline from '../components/ConversationTimeline.vue';
 import SubagentOverviewStrip from '../components/SubagentOverviewStrip.vue';
 import { useSubagentList } from '../composables/useSubagentList';
+import { useCommandPalette, type CurrentSubagentItem } from '../composables/useCommandPalette';
 import { cleanTitle} from '../utils/content-sanitizer';
 import { formatCost } from '../utils/format-tokens';
 import { exportAsMarkdown, exportAsJson, exportAsPlainText, downloadFile, sanitizeFilename } from '../utils/conversation-exporter';
@@ -202,6 +203,39 @@ const isActiveRef = computed(() => data.value?.conversation.isActive ?? false);
 const { subagents: subagentList, aggregate: subagentAggregate } = useSubagentList(
   toolCallsRef,
   isActiveRef,
+);
+
+// IMPR-10: push current sub-agents to the command palette so `sub N` and
+// in-conversation keyword search work. Cleared on unmount.
+const { setCurrentConversationSubagents } = useCommandPalette(router);
+watch(
+  [subagentList, () => data.value?.conversation.id ?? null],
+  ([list, convId]) => {
+    const items: CurrentSubagentItem[] = list.map((s) => ({
+      toolCallId: s.toolCallId,
+      description: s.description,
+      status: s.ghostState === 'summary' ? (s.summaryStatus ?? 'success') : s.ghostState,
+    }));
+    setCurrentConversationSubagents(items, convId);
+  },
+  { immediate: true },
+);
+onScopeDispose(() => setCurrentConversationSubagents([], null));
+
+// IMPR-10: consume ?jump=<toolCallId> after data loads, then clear the param
+// so the watcher does not re-trigger on subsequent navigations.
+watch(
+  [data, () => route.query.jump],
+  async ([dataVal, jumpVal]) => {
+    if (!dataVal) return;
+    const toolCallId = typeof jumpVal === 'string' ? jumpVal : null;
+    if (!toolCallId) return;
+    // Defer to next tick so timeline events are populated.
+    await nextTick();
+    handleSubagentJump(toolCallId);
+    router.replace({ query: { ...route.query, jump: undefined } });
+  },
+  { immediate: false },
 );
 
 // Timeline state

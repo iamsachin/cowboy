@@ -1,16 +1,54 @@
 <template>
-  <!-- Ghost state: no subagent data -->
+  <!-- IMPR-7: Three-state ghost card for missing/unmatched/running -->
+  <!-- 'missing': link exists but child JSONL/summary is gone -->
   <div
-    v-if="!toolCall.subagentSummary"
-    class="border border-dashed border-base-300 rounded-lg p-3 opacity-50"
+    v-if="ghostState === 'missing'"
+    class="border border-dashed border-warning/60 rounded-lg p-3"
   >
-    <div class="flex items-center gap-2 text-xs text-base-content/50">
-      <Bot class="w-4 h-4 shrink-0" />
-      <span>Subagent data not found</span>
+    <div class="flex items-center gap-2 text-xs text-warning">
+      <AlertTriangle class="w-4 h-4 shrink-0" />
+      <span class="flex-1">Subagent file missing on disk</span>
+    </div>
+    <router-link
+      v-if="toolCall.subagentConversationId"
+      :to="'/conversations/' + toolCall.subagentConversationId"
+      class="flex items-center gap-1 text-xs text-info hover:underline mt-2 pl-6"
+    >
+      Open sub-agent conversation
+      <ExternalLink class="w-3 h-3" />
+    </router-link>
+  </div>
+
+  <!-- 'unmatched': linker ran, found nothing -->
+  <div
+    v-else-if="ghostState === 'unmatched'"
+    class="border border-dashed border-base-300 rounded-lg p-3"
+  >
+    <div class="flex items-center gap-2 text-xs text-base-content/70">
+      <HelpCircle class="w-4 h-4 shrink-0" />
+      <span class="flex-1">Unmatched sub-agent</span>
+    </div>
+    <div class="text-xs text-base-content/50 pl-6 mt-1 italic">
+      No agentId in output and no matching description
     </div>
   </div>
 
-  <!-- Summary card with data -->
+  <!-- 'running': linker has not yet visited this tool_call -->
+  <div
+    v-else-if="ghostState === 'running'"
+    class="border border-dashed border-info/40 rounded-lg p-3"
+  >
+    <div class="flex items-center gap-2 text-xs text-info">
+      <Loader2
+        class="w-4 h-4 shrink-0"
+        :class="{ 'animate-spin': isActive }"
+      />
+      <span class="flex-1">{{ runningLabel }}</span>
+      <span v-if="runningElapsed" class="text-base-content/50">{{ runningElapsed }}</span>
+    </div>
+  </div>
+
+  <!-- 'summary': rich card (existing template unchanged) -->
   <div
     v-else
     class="border rounded-lg overflow-hidden"
@@ -26,7 +64,7 @@
         />
         <Bot class="w-4 h-4 shrink-0 text-info" />
         <span class="font-medium truncate flex-1">{{ cardTitle }}</span>
-        <span class="badge badge-xs" :class="statusBadgeClass">{{ summary.status }}</span>
+        <span class="badge badge-xs" :class="statusBadgeClass">{{ summary?.status }}</span>
         <component
           :is="statusIcon"
           class="w-3.5 h-3.5 shrink-0"
@@ -42,11 +80,11 @@
 
       <!-- Row 3: Error (conditional) -->
       <div
-        v-if="summary.lastError"
+        v-if="summary?.lastError"
         class="text-xs text-error pl-6 truncate"
-        :title="summary.lastError"
+        :title="summary?.lastError ?? ''"
       >
-        {{ summary.lastError }}
+        {{ summary?.lastError }}
       </div>
 
       <!-- Row 4: Confidence hint (conditional) -->
@@ -73,19 +111,19 @@
 
         <span class="text-base-content/50">Status</span>
         <span>
-          <span class="badge badge-xs" :class="statusBadgeClass">{{ summary.status }}</span>
+          <span class="badge badge-xs" :class="statusBadgeClass">{{ summary?.status }}</span>
         </span>
 
         <span class="text-base-content/50">Input tokens</span>
-        <span>{{ formatTokenCount(summary.inputTokens) }}</span>
+        <span>{{ formatTokenCount(summary?.inputTokens ?? 0) }}</span>
 
         <span class="text-base-content/50">Output tokens</span>
-        <span>{{ formatTokenCount(summary.outputTokens) }}</span>
+        <span>{{ formatTokenCount(summary?.outputTokens ?? 0) }}</span>
 
-        <template v-if="summary.filesTouched.length > 0">
+        <template v-if="(summary?.filesTouched.length ?? 0) > 0">
           <span class="text-base-content/50">Files touched</span>
           <span>
-            <span class="badge badge-xs badge-ghost">{{ summary.filesTouched.length }}</span>
+            <span class="badge badge-xs badge-ghost">{{ summary?.filesTouched.length ?? 0 }}</span>
             <span class="ml-1 text-base-content/40">{{ filesTouchedText }}</span>
           </span>
         </template>
@@ -172,15 +210,18 @@ import { ref, computed, watch } from 'vue';
 import {
   Bot, ChevronRight, CheckCircle2, XCircle, AlertCircle, ExternalLink,
   List as ListIcon,
+  AlertTriangle, HelpCircle, Loader2,
 } from 'lucide-vue-next';
 import type { ToolCallRow, SubagentSummary, ConversationDetailResponse } from '../types';
 import { formatTokenCount } from '../utils/format-tokens';
 import { getToolIcon } from '../utils/tool-icons';
+import { classifyGhostState } from '../utils/ghost-card-state';
 import BaseExpandableItem from './BaseExpandableItem.vue';
 import { API_BASE } from '../utils/api-base';
 
 const props = defineProps<{
   toolCall: ToolCallRow;
+  isActive: boolean;
 }>();
 
 const expanded = ref(false);
@@ -189,10 +230,38 @@ const loadingDetail = ref(false);
 const subagentToolCalls = ref<ToolCallRow[]>([]);
 let fetched = false;
 
-const summary = computed(() => props.toolCall.subagentSummary as SubagentSummary);
+const summary = computed(() => (props.toolCall.subagentSummary ?? null) as SubagentSummary | null);
+
+const ghostState = computed(() => classifyGhostState({
+  subagentSummary: props.toolCall.subagentSummary,
+  subagentLinkAttempted: props.toolCall.subagentLinkAttempted,
+  subagentConversationId: props.toolCall.subagentConversationId,
+  isActive: props.isActive,
+}));
+
+const runningLabel = computed(() => {
+  const input = props.toolCall.input as Record<string, unknown> | null;
+  if (input?.description && typeof input.description === 'string') {
+    return input.description;
+  }
+  return 'Subagent running...';
+});
+
+const runningElapsed = computed(() => {
+  if (!props.isActive) return null;
+  const startMs = new Date(props.toolCall.createdAt).getTime();
+  if (!Number.isFinite(startMs)) return null;
+  const elapsedMs = Date.now() - startMs;
+  if (elapsedMs < 1000) return null;
+  const totalSec = Math.floor(elapsedMs / 1000);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  if (min > 0) return `${min}m ${sec}s`;
+  return `${totalSec}s`;
+});
 
 const isError = computed(() =>
-  summary.value.status === 'error' || summary.value.status === 'interrupted'
+  summary.value?.status === 'error' || summary.value?.status === 'interrupted'
 );
 
 const statusIcon = computed(() => isError.value ? AlertCircle : CheckCircle2);
@@ -234,7 +303,8 @@ const cardTitle = computed(() => {
 });
 
 const formattedDuration = computed(() => {
-  const ms = summary.value.durationMs;
+  const ms = summary.value?.durationMs;
+  if (ms == null) return null;
   if (ms < 1000) return `${ms}ms`;
   const totalSec = Math.floor(ms / 1000);
   const min = Math.floor(totalSec / 60);
@@ -244,7 +314,7 @@ const formattedDuration = computed(() => {
 });
 
 const toolBreakdownEntries = computed(() =>
-  Object.entries(summary.value.toolBreakdown).sort((a, b) => b[1] - a[1])
+  Object.entries(summary.value?.toolBreakdown ?? {}).sort((a, b) => b[1] - a[1])
 );
 
 const toolBreakdownText = computed(() => {
@@ -255,13 +325,13 @@ const toolBreakdownText = computed(() => {
 });
 
 const filesTouchedText = computed(() => {
-  const files = summary.value.filesTouched;
+  const files = summary.value?.filesTouched ?? [];
   if (files.length <= 5) return files.join(', ');
   return files.slice(0, 5).join(', ') + ` +${files.length - 5} more`;
 });
 
 const confidenceHint = computed(() => {
-  const c = summary.value.matchConfidence;
+  const c = summary.value?.matchConfidence;
   if (c === 'medium') return 'matched by description';
   if (c === 'low') return 'matched by position -- may be inaccurate';
   return null;

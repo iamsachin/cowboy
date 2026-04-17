@@ -600,17 +600,63 @@ async fn link_subagents_post_processing(
                                 "matchConfidence": link.match_confidence.as_str(),
                             });
 
+                            // Load the tool_call's original input JSON so we can index
+                            // description / prompt-first-line into subagent_fts alongside
+                            // the lastError / files / tool_breakdown fields from the
+                            // summary struct. Missing input is fine -- the helper skips
+                            // empty parts.
+                            let tc_id_for_input = link.tool_call_id.clone();
+                            let tool_input_str: Option<String> = state
+                                .db
+                                .call(move |conn| {
+                                    Ok::<_, tokio_rusqlite::Error>(
+                                        conn.query_row(
+                                            "SELECT input FROM tool_calls WHERE id = ?1",
+                                            rusqlite::params![tc_id_for_input],
+                                            |row| row.get::<_, Option<String>>(0),
+                                        )
+                                        .ok()
+                                        .flatten(),
+                                    )
+                                })
+                                .await
+                                .ok()
+                                .flatten();
+                            let tool_input_value: serde_json::Value = tool_input_str
+                                .as_deref()
+                                .and_then(|s| serde_json::from_str(s).ok())
+                                .unwrap_or(serde_json::Value::Null);
+                            let fts_text = build_subagent_fts_text(&tool_input_value, &summary);
+
                             let tc_id = link.tool_call_id.clone();
+                            let tc_id_fts = link.tool_call_id.clone();
                             let summary_str = summary_json.to_string();
                             let parent_conv_id = link.parent_conversation_id.clone();
                             let tool_call_id_for_event = link.tool_call_id.clone();
                             let update_result = state
                                 .db
                                 .call(move |conn| {
-                                    conn.execute(
+                                    // Transactional: summary column and FTS row commit
+                                    // together, or neither -- prevents drift on crash.
+                                    let tx = conn.transaction()?;
+                                    tx.execute(
                                         "UPDATE tool_calls SET subagent_summary = ?1 WHERE id = ?2",
                                         rusqlite::params![summary_str, tc_id],
                                     )?;
+                                    // Replace existing FTS row (FTS5 has no native UPSERT
+                                    // on a non-rowid key; delete+insert keyed by
+                                    // tool_call_id is the documented idiom).
+                                    tx.execute(
+                                        "DELETE FROM subagent_fts WHERE tool_call_id = ?1",
+                                        rusqlite::params![tc_id_fts],
+                                    )?;
+                                    if !fts_text.is_empty() {
+                                        tx.execute(
+                                            "INSERT INTO subagent_fts (content, tool_call_id, kind) VALUES (?1, ?2, 'subagent')",
+                                            rusqlite::params![fts_text, tc_id_fts],
+                                        )?;
+                                    }
+                                    tx.commit()?;
                                     Ok::<_, tokio_rusqlite::Error>(())
                                 })
                                 .await;
@@ -794,6 +840,60 @@ fn insert_conversation_data(
     Ok(())
 }
 
+// ── Subagent FTS text projection ────────────────────────────────────────
+
+/// Build the FTS text projection for a sub-agent tool_call.
+///
+/// Concatenates (in order, space-separated, lower-cased):
+///   1. tool_call_input.description if present, else first non-empty line of tool_call_input.prompt
+///   2. summary.last_error if Some
+///   3. every filename in summary.files_touched
+///   4. every tool name in summary.tool_breakdown keys
+///
+/// Empty/missing values are skipped. All content is lower-cased so the Porter tokenizer
+/// operates on consistent input (FTS5 with porter+unicode61 is already case-folding, but
+/// lower-casing here keeps the stored content normalized for any future consumers).
+fn build_subagent_fts_text(
+    tool_call_input: &serde_json::Value,
+    summary: &crate::ingestion::subagent_summarizer::SubagentSummary,
+) -> String {
+    let mut parts: Vec<String> = Vec::new();
+
+    if let Some(desc) = tool_call_input.get("description").and_then(|v| v.as_str()) {
+        let d = desc.trim();
+        if !d.is_empty() {
+            parts.push(d.to_lowercase());
+        }
+    } else if let Some(prompt) = tool_call_input.get("prompt").and_then(|v| v.as_str()) {
+        if let Some(first_line) = prompt.lines().find(|l| !l.trim().is_empty()) {
+            parts.push(first_line.trim().to_lowercase());
+        }
+    }
+
+    if let Some(err) = &summary.last_error {
+        let e = err.trim();
+        if !e.is_empty() {
+            parts.push(e.to_lowercase());
+        }
+    }
+
+    for f in &summary.files_touched {
+        let f = f.trim();
+        if !f.is_empty() {
+            parts.push(f.to_lowercase());
+        }
+    }
+
+    for tool_name in summary.tool_breakdown.keys() {
+        let t = tool_name.trim();
+        if !t.is_empty() {
+            parts.push(t.to_lowercase());
+        }
+    }
+
+    parts.join(" ")
+}
+
 /// Extract plans from assistant messages and insert into plans/plan_steps tables.
 fn insert_extracted_plans_sql(
     tx: &rusqlite::Transaction,
@@ -924,4 +1024,86 @@ fn insert_extracted_plans_sql(
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ingestion::subagent_summarizer::{SubagentStatus, SubagentSummary};
+    use std::collections::HashMap;
+
+    #[test]
+    fn build_subagent_fts_text_concatenates_all_fields() {
+        let input = serde_json::json!({
+            "description": "Fix login bug",
+            "prompt": "Please fix the login bug.\nDetails..."
+        });
+        let mut tool_breakdown = HashMap::new();
+        tool_breakdown.insert("Bash".to_string(), 3u32);
+        tool_breakdown.insert("Edit".to_string(), 1u32);
+        let summary = SubagentSummary {
+            tool_breakdown,
+            files_touched: vec!["src/auth/login.rs".to_string()],
+            total_tool_calls: 4,
+            status: SubagentStatus::Error,
+            duration_ms: 5000,
+            input_tokens: 100,
+            output_tokens: 50,
+            last_error: Some("Permission denied".to_string()),
+        };
+        let text = build_subagent_fts_text(&input, &summary);
+        assert!(text.contains("fix login bug"), "text: {}", text);
+        assert!(text.contains("permission denied"), "text: {}", text);
+        assert!(text.contains("src/auth/login.rs"), "text: {}", text);
+        assert!(text.contains("bash"), "text: {}", text);
+        assert!(text.contains("edit"), "text: {}", text);
+        // Description present -> prompt first line should NOT be added on top
+        assert!(
+            !text.contains("please fix the login bug"),
+            "when description is present we skip prompt fallback: {}",
+            text
+        );
+    }
+
+    #[test]
+    fn build_subagent_fts_text_uses_prompt_when_description_missing() {
+        let input = serde_json::json!({
+            "prompt": "Analyse the dashboard layout.\n\nMore context here."
+        });
+        let summary = SubagentSummary {
+            tool_breakdown: HashMap::new(),
+            files_touched: vec![],
+            total_tool_calls: 0,
+            status: SubagentStatus::Success,
+            duration_ms: 0,
+            input_tokens: 0,
+            output_tokens: 0,
+            last_error: None,
+        };
+        let text = build_subagent_fts_text(&input, &summary);
+        assert!(
+            text.contains("analyse the dashboard layout"),
+            "text: {}",
+            text
+        );
+        // Only the first non-empty line, not the trailing paragraphs
+        assert!(!text.contains("more context here"), "text: {}", text);
+    }
+
+    #[test]
+    fn build_subagent_fts_text_empty_for_empty_summary_and_input() {
+        let input = serde_json::Value::Null;
+        let summary = SubagentSummary {
+            tool_breakdown: HashMap::new(),
+            files_touched: vec![],
+            total_tool_calls: 0,
+            status: SubagentStatus::Success,
+            duration_ms: 0,
+            input_tokens: 0,
+            output_tokens: 0,
+            last_error: None,
+        };
+        let text = build_subagent_fts_text(&input, &summary);
+        assert!(text.is_empty(), "expected empty, got: {:?}", text);
+    }
 }

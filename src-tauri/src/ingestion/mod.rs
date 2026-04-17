@@ -171,6 +171,7 @@ pub async fn run_ingestion(
                 || result.models_fixed > 0
                 || result.content_fixed > 0
                 || result.stale_links_cleared > 0
+                || result.subagent_fts_backfilled > 0
             {
                 println!("Data quality migration: {:?}", result);
             }

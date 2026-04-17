@@ -13,6 +13,7 @@ pub struct MigrationResult {
     pub models_fixed: usize,
     pub content_fixed: usize,
     pub stale_links_cleared: usize,
+    pub subagent_fts_backfilled: usize,
 }
 
 /// System-injected XML tag pattern for content cleanup.
@@ -50,6 +51,7 @@ pub fn run_data_quality_migration(conn: &Connection) -> MigrationResult {
     let models_fixed = fix_conversation_models(conn);
     let content_fixed = fix_duplicate_content_blocks(conn);
     let stale_links_cleared = clear_stale_subagent_links(conn);
+    let subagent_fts_backfilled = backfill_subagent_fts(conn);
 
     MigrationResult {
         cursor_data_purged,
@@ -57,6 +59,7 @@ pub fn run_data_quality_migration(conn: &Connection) -> MigrationResult {
         models_fixed,
         content_fixed,
         stale_links_cleared,
+        subagent_fts_backfilled,
     }
 }
 
@@ -364,6 +367,153 @@ fn clear_stale_subagent_links(conn: &Connection) -> usize {
     .unwrap();
 
     parent_cleared
+}
+
+// ── Subagent FTS backfill ───────────────────────────────────────────────
+//
+// Mirrors the text projection performed by `build_subagent_fts_text` in
+// ingestion/mod.rs, but operates on the stored JSON representations (input +
+// summary) rather than live structs -- the backfill reads what's already in
+// the DB. Keep the two in sync: the field list and order must match so search
+// behavior is identical for ingestion-time writes and post-hoc backfill.
+
+fn build_subagent_fts_text_from_json(
+    tool_input_json: Option<&str>,
+    summary_json: &str,
+) -> String {
+    use serde_json::Value;
+    let mut parts: Vec<String> = Vec::new();
+
+    let input: Value = tool_input_json
+        .and_then(|s| serde_json::from_str(s).ok())
+        .unwrap_or(Value::Null);
+    if let Some(desc) = input.get("description").and_then(|v| v.as_str()) {
+        let d = desc.trim();
+        if !d.is_empty() {
+            parts.push(d.to_lowercase());
+        }
+    } else if let Some(prompt) = input.get("prompt").and_then(|v| v.as_str()) {
+        if let Some(first) = prompt.lines().find(|l| !l.trim().is_empty()) {
+            parts.push(first.trim().to_lowercase());
+        }
+    }
+
+    let summary: Value = serde_json::from_str(summary_json).unwrap_or(Value::Null);
+    if let Some(err) = summary.get("lastError").and_then(|v| v.as_str()) {
+        let e = err.trim();
+        if !e.is_empty() {
+            parts.push(e.to_lowercase());
+        }
+    }
+    if let Some(files) = summary.get("filesTouched").and_then(|v| v.as_array()) {
+        for f in files {
+            if let Some(s) = f.as_str() {
+                let s = s.trim();
+                if !s.is_empty() {
+                    parts.push(s.to_lowercase());
+                }
+            }
+        }
+    }
+    if let Some(tb) = summary.get("toolBreakdown").and_then(|v| v.as_object()) {
+        for k in tb.keys() {
+            let k = k.trim();
+            if !k.is_empty() {
+                parts.push(k.to_lowercase());
+            }
+        }
+    }
+
+    parts.join(" ")
+}
+
+/// Populate subagent_fts from existing tool_calls.subagent_summary rows.
+/// Guarded by the `subagent_fts_backfill_v1` marker in migrations_applied so
+/// this runs exactly once per DB. Returns the number of FTS rows inserted
+/// (0 if already applied or there's nothing to backfill).
+fn backfill_subagent_fts(conn: &Connection) -> usize {
+    conn.execute_batch(
+        "CREATE TABLE IF NOT EXISTS migrations_applied (
+            name TEXT PRIMARY KEY,
+            applied_at TEXT NOT NULL
+        )",
+    )
+    .unwrap();
+
+    let already: bool = conn
+        .query_row(
+            "SELECT 1 FROM migrations_applied WHERE name = 'subagent_fts_backfill_v1'",
+            [],
+            |_| Ok(true),
+        )
+        .unwrap_or(false);
+    if already {
+        return 0;
+    }
+
+    // If the FTS table is missing (pre-IMPR-6 schema that somehow escaped the
+    // db.rs migration), there's nothing to insert into; skip and mark applied
+    // anyway so we don't keep probing forever. init_database runs the table
+    // migration before run_data_quality_migration is invoked, so this is a
+    // belt-and-suspenders check.
+    let fts_exists: bool = conn
+        .prepare("SELECT tool_call_id FROM subagent_fts LIMIT 0")
+        .is_ok();
+    if !fts_exists {
+        let now = chrono::Utc::now().to_rfc3339();
+        let _ = conn.execute(
+            "INSERT INTO migrations_applied (name, applied_at) VALUES ('subagent_fts_backfill_v1', ?1)",
+            rusqlite::params![now],
+        );
+        return 0;
+    }
+
+    let rows: Vec<(String, Option<String>, String)> = {
+        let mut stmt = conn
+            .prepare(
+                "SELECT id, input, subagent_summary FROM tool_calls WHERE subagent_summary IS NOT NULL",
+            )
+            .unwrap();
+        stmt.query_map([], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, Option<String>>(1)?,
+                row.get::<_, String>(2)?,
+            ))
+        })
+        .unwrap()
+        .filter_map(|r| r.ok())
+        .collect()
+    };
+
+    let mut inserted = 0usize;
+    for (tc_id, input, summary) in &rows {
+        let text = build_subagent_fts_text_from_json(input.as_deref(), summary);
+        if text.is_empty() {
+            continue;
+        }
+        // Delete-then-insert keeps the backfill idempotent if interrupted mid-run
+        // (re-running produces the same row, not a duplicate).
+        let _ = conn.execute(
+            "DELETE FROM subagent_fts WHERE tool_call_id = ?1",
+            rusqlite::params![tc_id],
+        );
+        conn.execute(
+            "INSERT INTO subagent_fts (content, tool_call_id, kind) VALUES (?1, ?2, 'subagent')",
+            rusqlite::params![text, tc_id],
+        )
+        .unwrap();
+        inserted += 1;
+    }
+
+    let now = chrono::Utc::now().to_rfc3339();
+    conn.execute(
+        "INSERT INTO migrations_applied (name, applied_at) VALUES ('subagent_fts_backfill_v1', ?1)",
+        rusqlite::params![now],
+    )
+    .unwrap();
+
+    inserted
 }
 
 #[cfg(test)]

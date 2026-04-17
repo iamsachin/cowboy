@@ -576,7 +576,9 @@ async fn link_subagents_post_processing(
 
                             let tc_id = link.tool_call_id.clone();
                             let summary_str = summary_json.to_string();
-                            state
+                            let parent_conv_id = link.parent_conversation_id.clone();
+                            let tool_call_id_for_event = link.tool_call_id.clone();
+                            let update_result = state
                                 .db
                                 .call(move |conn| {
                                     conn.execute(
@@ -585,8 +587,25 @@ async fn link_subagents_post_processing(
                                     )?;
                                     Ok::<_, tokio_rusqlite::Error>(())
                                 })
-                                .await
-                                .ok();
+                                .await;
+                            match update_result {
+                                Ok(_) => {
+                                    broadcast_event(
+                                        state,
+                                        "tool_call:changed",
+                                        Some(json!({
+                                            "conversationId": parent_conv_id,
+                                            "toolCallId": tool_call_id_for_event,
+                                        })),
+                                    );
+                                }
+                                Err(e) => {
+                                    eprintln!(
+                                        "Error updating subagent_summary for {}: {}",
+                                        tool_call_id_for_event, e
+                                    );
+                                }
+                            }
                         }
                         Err(e) => {
                             eprintln!(

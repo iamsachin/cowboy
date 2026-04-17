@@ -49,7 +49,7 @@
       v-for="entry in subagents"
       :key="entry.toolCallId"
       type="button"
-      class="badge badge-sm gap-1 cursor-pointer hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+      class="badge badge-sm gap-1 cursor-pointer border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
       :class="chipLook(entry).class"
       :title="entry.description"
       :aria-label="chipAriaLabel(entry)"
@@ -102,19 +102,37 @@ interface ChipLook {
  * the inline card never disagree.
  */
 function chipLook(entry: SubagentListEntry): ChipLook {
+  // Soft palette: low-opacity bg tint + matching border + saturated text.
+  // Avoids DaisyUI's solid badge fills which are too loud on dark backgrounds.
   switch (entry.ghostState) {
     case 'summary':
       if (entry.summaryStatus === 'success') {
-        return { class: 'badge-success', icon: CheckCircle2 };
+        return {
+          class: 'bg-success/10 border-success/30 text-success hover:bg-success/20',
+          icon: CheckCircle2,
+        };
       }
       // error + interrupted merge into the same red bucket
-      return { class: 'badge-error', icon: XCircle };
+      return {
+        class: 'bg-error/10 border-error/30 text-error hover:bg-error/20',
+        icon: XCircle,
+      };
     case 'running':
-      return { class: 'badge-info', icon: Loader2, spin: true };
+      return {
+        class: 'bg-info/10 border-info/30 text-info hover:bg-info/20',
+        icon: Loader2,
+        spin: true,
+      };
     case 'unmatched':
-      return { class: 'badge-ghost', icon: HelpCircle };
+      return {
+        class: 'bg-base-content/5 border-base-content/20 text-base-content/70 hover:bg-base-content/10',
+        icon: HelpCircle,
+      };
     case 'missing':
-      return { class: 'badge-warning', icon: AlertTriangle };
+      return {
+        class: 'bg-warning/10 border-warning/30 text-warning hover:bg-warning/20',
+        icon: AlertTriangle,
+      };
   }
 }
 

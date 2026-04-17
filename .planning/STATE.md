@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-04-17 - Completed quick task 260417-ok0: IMPR-7 three-state ghost sub-agent card + subagent_link_attempted column (verified, human smoke test pending)
+Last activity: 2026-04-17 - Completed Phase A wave 2: IMPR-2 (overview strip) + IMPR-3 (timeline icons) + IMPR-4 (cost badge) in parallel worktrees (all verified, human smoke tests pending)
 
 ## Performance Metrics
 
@@ -136,9 +136,12 @@ None.
 | 260417-mg3 | Research sub-agent call identification and display discovery | 2026-04-17 | c3c5dc5 | [260417-mg3-use-research-skill-and-go-through-deeply](./quick/260417-mg3-use-research-skill-and-go-through-deeply/) |
 | 260417-nwh | IMPR-1: Emit tool_call:changed event after subagent linking (Needs Review) | 2026-04-17 | 39955d2 | [260417-nwh-impr-1-emit-websocket-tool-call-changed-](./quick/260417-nwh-impr-1-emit-websocket-tool-call-changed-/) |
 | 260417-ok0 | IMPR-7: Three-state ghost sub-agent card + subagent_link_attempted column (Needs Review) | 2026-04-17 | 8b362bc | [260417-ok0-impr-7-three-state-ghost-sub-agent-card-](./quick/260417-ok0-impr-7-three-state-ghost-sub-agent-card-/) |
+| 260417-phs | IMPR-4: Inline cost and confidence dot on collapsed sub-agent card (Needs Review) | 2026-04-17 | d963dfb | [260417-phs-impr-4-inline-cost-and-confidence-badges](./quick/260417-phs-impr-4-inline-cost-and-confidence-badges/) |
+| 260417-phr | IMPR-3: Status-aware timeline icons + pulse during running (Needs Review) | 2026-04-17 | 8b96e70 | [260417-phr-impr-3-status-aware-timeline-icons-and-p](./quick/260417-phr-impr-3-status-aware-timeline-icons-and-p/) |
+| 260417-phc | IMPR-2: Sub-agent overview chip strip on ConversationDetailPage (Needs Review) | 2026-04-17 | b32ce7d | [260417-phc-impr-2-sub-agent-overview-chip-strip-at-](./quick/260417-phc-impr-2-sub-agent-overview-chip-strip-at-/) |
 
 ## Session Continuity
 
 Last session: 2026-04-17
-Stopped at: Completed quick task 260417-ok0 (IMPR-7)
+Stopped at: Completed Phase A wave 2 (IMPR-2/3/4 in parallel worktrees)
 Resume file: None

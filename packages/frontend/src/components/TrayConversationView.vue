@@ -12,6 +12,7 @@
         :conversationId="conversationId"
         :newGroupKeys="newGroupKeys"
         :scrollContainerRef="contentRef"
+        :isActive="data.conversation.isActive ?? false"
       />
     </div>
     <div v-else class="flex items-center justify-center h-full text-base-content/40">

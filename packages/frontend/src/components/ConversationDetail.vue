@@ -51,6 +51,7 @@
             :group="turn"
             :expanded="isExpanded(turnKey(turn))"
             :tokenUsageByMessage="tokenUsageByMessage"
+            :isActive="isActive"
             @toggle="toggle(turnKey(turn))"
           />
         </div>
@@ -122,6 +123,7 @@ const props = defineProps<{
   conversationId: string;
   newGroupKeys: Set<string>;
   scrollContainerRef: HTMLElement | null;
+  isActive: boolean;
 }>();
 
 // Sort all messages — groupTurns handles all classification internally

@@ -110,6 +110,7 @@
               :toolCall="tc"
               :autoExpand="tc.id === autoExpandToolCallId"
               :tokenInfo="tcIdx === turn.toolCalls.length - 1 ? formatTurnTokenInfo(turn) : undefined"
+              :isActive="isActive"
             />
           </div>
         </div>
@@ -157,6 +158,7 @@ const props = defineProps<{
   group: AssistantGroup;
   expanded: boolean;
   tokenUsageByMessage?: Record<string, MessageTokenUsage>;
+  isActive: boolean;
 }>();
 
 defineEmits<{

@@ -137,6 +137,7 @@
           :conversationId="id"
           :newGroupKeys="newGroupKeys"
           :scrollContainerRef="scrollContainer"
+          :isActive="data.conversation.isActive ?? false"
         />
       </template>
     </div>

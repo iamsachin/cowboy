@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { GroupedTurn, UserTurn, AssistantGroup, CompactionTurn, SystemGroup, SlashCommandTurn, ClearDividerTurn, AgentPromptTurn } from '../../src/composables/useGroupedTurns';
 import { extractTimelineEvents, useTimeline, _resetTimelineState } from '../../src/composables/useTimeline';
+import type { ToolCallRow, SubagentSummary } from '../../src/types/api';
 
 // Factory helpers
 function makeUserTurn(id: string, content: string): UserTurn {
@@ -90,6 +91,65 @@ function makeAgentPrompt(): AgentPromptTurn {
     type: 'agent-prompt',
     message: { id: 'ap1', role: 'user', content: 'agent prompt', thinking: null, model: null, createdAt: '2024-01-01T00:00:30Z' },
     description: 'test agent',
+  };
+}
+
+function makeAssistantGroupWithSubagent(
+  msgId: string,
+  tcId: string,
+  toolName: 'Task' | 'Agent',
+  overrides: Partial<ToolCallRow> & { description?: string } = {},
+): AssistantGroup {
+  const { description, ...tcOverrides } = overrides;
+  const tc: ToolCallRow = {
+    id: tcId,
+    messageId: msgId,
+    name: toolName,
+    input: { description: description ?? 'Fix login bug' },
+    output: null,
+    status: null,
+    duration: null,
+    createdAt: '2024-01-01T00:01:00Z',
+    subagentConversationId: null,
+    subagentSummary: null,
+    subagentLinkAttempted: false,
+    ...tcOverrides,
+  };
+  return {
+    type: 'assistant-group',
+    turns: [
+      {
+        type: 'assistant',
+        message: {
+          id: msgId,
+          role: 'assistant',
+          content: '',
+          thinking: null,
+          model: 'Opus 4',
+          createdAt: '2024-01-01T00:01:00Z',
+        },
+        toolCalls: [tc],
+      },
+    ],
+    model: 'Opus 4',
+    messageCount: 1,
+    toolCallCount: 1,
+    firstTimestamp: '2024-01-01T00:01:00Z',
+    lastTimestamp: '2024-01-01T00:01:00Z',
+  };
+}
+
+function makeSubagentSummary(status: 'success' | 'error' | 'interrupted'): SubagentSummary {
+  return {
+    toolBreakdown: {},
+    filesTouched: [],
+    totalToolCalls: 0,
+    status,
+    durationMs: 0,
+    inputTokens: 0,
+    outputTokens: 0,
+    lastError: null,
+    matchConfidence: 'high',
   };
 }
 
@@ -194,6 +254,129 @@ describe('extractTimelineEvents', () => {
     expect(events[0].key).toBe('user-id-1');
     expect(events[1].key).toBe('asst-msg-1');
     expect(events[2].key).toBe('compaction-id-1');
+  });
+});
+
+describe('extractTimelineEvents -- subagent status', () => {
+  it("Task tool call with subagentSummary.status === 'success' yields event.status === 'success'", () => {
+    const turns: GroupedTurn[] = [
+      makeAssistantGroupWithSubagent('a1', 'tc1', 'Task', {
+        subagentSummary: makeSubagentSummary('success'),
+        subagentLinkAttempted: true,
+        subagentConversationId: 'conv-ok',
+      }),
+    ];
+    const events = extractTimelineEvents(turns);
+    const subagent = events.find(e => e.type === 'subagent');
+    expect(subagent).toBeDefined();
+    expect(subagent!.status).toBe('success');
+  });
+
+  it("Task tool call with subagentSummary.status === 'error' yields event.status === 'error'", () => {
+    const turns: GroupedTurn[] = [
+      makeAssistantGroupWithSubagent('a1', 'tc1', 'Task', {
+        subagentSummary: makeSubagentSummary('error'),
+        subagentLinkAttempted: true,
+        subagentConversationId: 'conv-err',
+      }),
+    ];
+    const events = extractTimelineEvents(turns);
+    const subagent = events.find(e => e.type === 'subagent');
+    expect(subagent!.status).toBe('error');
+  });
+
+  it("Task tool call with subagentSummary.status === 'interrupted' yields event.status === 'interrupted'", () => {
+    const turns: GroupedTurn[] = [
+      makeAssistantGroupWithSubagent('a1', 'tc1', 'Task', {
+        subagentSummary: makeSubagentSummary('interrupted'),
+        subagentLinkAttempted: true,
+        subagentConversationId: 'conv-int',
+      }),
+    ];
+    const events = extractTimelineEvents(turns);
+    const subagent = events.find(e => e.type === 'subagent');
+    expect(subagent!.status).toBe('interrupted');
+  });
+
+  it("Task tool call with no summary and subagentLinkAttempted === false yields event.status === 'running'", () => {
+    const turns: GroupedTurn[] = [
+      makeAssistantGroupWithSubagent('a1', 'tc1', 'Task', {
+        subagentSummary: null,
+        subagentLinkAttempted: false,
+        subagentConversationId: null,
+      }),
+    ];
+    const events = extractTimelineEvents(turns);
+    const subagent = events.find(e => e.type === 'subagent');
+    expect(subagent!.status).toBe('running');
+  });
+
+  it("Task tool call with no summary and subagentLinkAttempted === true yields event.status === 'unmatched'", () => {
+    const turns: GroupedTurn[] = [
+      makeAssistantGroupWithSubagent('a1', 'tc1', 'Task', {
+        subagentSummary: null,
+        subagentLinkAttempted: true,
+        subagentConversationId: null,
+      }),
+    ];
+    const events = extractTimelineEvents(turns);
+    const subagent = events.find(e => e.type === 'subagent');
+    expect(subagent!.status).toBe('unmatched');
+  });
+
+  it("Task tool call with no summary but subagentConversationId present and subagentLinkAttempted === true yields event.status === 'missing'", () => {
+    const turns: GroupedTurn[] = [
+      makeAssistantGroupWithSubagent('a1', 'tc1', 'Task', {
+        subagentSummary: null,
+        subagentLinkAttempted: true,
+        subagentConversationId: 'conv-x',
+      }),
+    ];
+    const events = extractTimelineEvents(turns);
+    const subagent = events.find(e => e.type === 'subagent');
+    expect(subagent!.status).toBe('missing');
+  });
+
+  it("Task tool call with no summary but subagentConversationId present and subagentLinkAttempted === false still yields event.status === 'missing' (link beats flag)", () => {
+    const turns: GroupedTurn[] = [
+      makeAssistantGroupWithSubagent('a1', 'tc1', 'Task', {
+        subagentSummary: null,
+        subagentLinkAttempted: false,
+        subagentConversationId: 'conv-x',
+      }),
+    ];
+    const events = extractTimelineEvents(turns);
+    const subagent = events.find(e => e.type === 'subagent');
+    expect(subagent!.status).toBe('missing');
+  });
+
+  it('Agent tool name behaves identically to Task (parity check)', () => {
+    const turns: GroupedTurn[] = [
+      makeAssistantGroupWithSubagent('a1', 'tc1', 'Agent', {
+        subagentSummary: makeSubagentSummary('success'),
+        subagentLinkAttempted: true,
+        subagentConversationId: 'conv-ok',
+      }),
+    ];
+    const events = extractTimelineEvents(turns);
+    const subagent = events.find(e => e.type === 'subagent');
+    expect(subagent).toBeDefined();
+    expect(subagent!.status).toBe('success');
+  });
+
+  it('non-subagent events (user / assistant-group / compaction) have status === undefined', () => {
+    const turns: GroupedTurn[] = [
+      makeUserTurn('u1', 'hello'),
+      makeAssistantGroup('a1', 'Opus 4', 0),
+      makeCompactionTurn('c1', 20000, 8000),
+    ];
+    const events = extractTimelineEvents(turns);
+    const user = events.find(e => e.type === 'user');
+    const asst = events.find(e => e.type === 'assistant-group');
+    const comp = events.find(e => e.type === 'compaction');
+    expect(user!.status).toBeUndefined();
+    expect(asst!.status).toBeUndefined();
+    expect(comp!.status).toBeUndefined();
   });
 });
 

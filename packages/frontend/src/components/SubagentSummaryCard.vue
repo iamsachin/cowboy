@@ -71,6 +71,15 @@
           :class="isError ? 'text-error' : 'text-success'"
         />
         <span class="text-base-content/50 whitespace-nowrap">{{ formattedDuration }}</span>
+        <span v-if="formattedCost" class="text-success/70 whitespace-nowrap">
+          · {{ formattedCost }}
+        </span>
+        <span
+          v-if="confidenceDotClass"
+          class="inline-block w-2 h-2 rounded-full shrink-0"
+          :class="confidenceDotClass"
+          :title="`Match confidence: ${summary?.matchConfidence}`"
+        ></span>
       </div>
 
       <!-- Row 2: Tool breakdown -->
@@ -213,7 +222,8 @@ import {
   AlertTriangle, HelpCircle, Loader2,
 } from 'lucide-vue-next';
 import type { ToolCallRow, SubagentSummary, ConversationDetailResponse } from '../types';
-import { formatTokenCount } from '../utils/format-tokens';
+import { formatTokenCount, formatCost } from '../utils/format-tokens';
+import { calculateCost } from '../types/pricing';
 import { getToolIcon } from '../utils/tool-icons';
 import { classifyGhostState } from '../utils/ghost-card-state';
 import BaseExpandableItem from './BaseExpandableItem.vue';
@@ -222,6 +232,7 @@ import { API_BASE } from '../utils/api-base';
 const props = defineProps<{
   toolCall: ToolCallRow;
   isActive: boolean;
+  parentModel?: string | null;
 }>();
 
 const expanded = ref(false);
@@ -313,6 +324,26 @@ const formattedDuration = computed(() => {
   return `${totalSec}s`;
 });
 
+// NOTE: Uses the parent turn's model for pricing. Sub-agents can use a different model
+// (e.g. Haiku dispatched by an Opus parent). Follow-up: extend SubagentSummary with
+// `subagentModel` populated from src-tauri/src/ingestion/subagent_summarizer.rs and prefer
+// it when present. See FINDINGS.md §5 IMPROVEMENT-4 dependency note.
+const formattedCost = computed<string | null>(() => {
+  const s = summary.value;
+  if (!s) return null;                           // ghost states — covered by ghostState branches
+  const model = props.parentModel;
+  if (!model) return null;                       // no parent model → no cost attribution
+  const result = calculateCost(
+    model,
+    s.inputTokens ?? 0,
+    s.outputTokens ?? 0,
+    0,                                           // SubagentSummary has no cache token fields
+    0,
+  );
+  if (!result) return null;                      // model not in MODEL_PRICING (exact or fuzzy) → suppress
+  return formatCost(result.cost);
+});
+
 const toolBreakdownEntries = computed(() =>
   Object.entries(summary.value?.toolBreakdown ?? {}).sort((a, b) => b[1] - a[1])
 );
@@ -335,6 +366,13 @@ const confidenceHint = computed(() => {
   if (c === 'medium') return 'matched by description';
   if (c === 'low') return 'matched by position -- may be inaccurate';
   return null;
+});
+
+const confidenceDotClass = computed<string | null>(() => {
+  const c = summary.value?.matchConfidence;
+  if (c === 'medium') return 'bg-warning';
+  if (c === 'low') return 'bg-error';
+  return null;   // high | null → no dot
 });
 
 // Collapse trace when card collapses

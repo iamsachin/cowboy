@@ -1,5 +1,19 @@
 # Changelog
 
+## v3.5.2
+
+- Add sub-agent overview chip strip to conversation detail page
+- Show parallel sub-agents as visually grouped in the timeline
+- Status-aware timeline icons with pulse for running sub-agents
+- Inline cost and confidence dot on sub-agent cards
+- Three-state (pending / active / ghost) sub-agent summary card
+- Primary / All / Sub-agents facet on the conversation browser
+- Extend conversation search to query sub-agent summaries (FTS5)
+- Top sub-agent conversations widget on the overview page
+- Cmd+K command palette jump to sub-agents
+- Stream sub-agent summary updates via new tool_call:changed websocket event
+- Soften chip colors on the sub-agent overview strip
+
 ## v3.5.1
 
 - Sort tray panel conversations by last updated time instead of creation time

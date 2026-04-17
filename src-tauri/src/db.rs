@@ -87,6 +87,30 @@ pub async fn init_database(
     })
     .await?;
 
+    // Migration: ensure subagent_fts exists on pre-existing DBs (IMPR-6).
+    // schema.sql uses IF NOT EXISTS so new DBs get it from the initial execute_batch;
+    // this block catches pre-existing DBs that predate the schema change. The pre-probe
+    // makes this a no-op on DBs where the virtual table already exists. ALTER TABLE is
+    // not valid on virtual tables, so CREATE VIRTUAL TABLE IF NOT EXISTS is the only
+    // valid path and the IF NOT EXISTS clause itself is the idempotency guarantee.
+    conn.call(|conn| {
+        let exists: bool = conn
+            .prepare("SELECT tool_call_id FROM subagent_fts LIMIT 0")
+            .is_ok();
+        if !exists {
+            conn.execute_batch(
+                "CREATE VIRTUAL TABLE IF NOT EXISTS subagent_fts USING fts5(
+                     content,
+                     tool_call_id UNINDEXED,
+                     kind UNINDEXED,
+                     tokenize = 'porter unicode61'
+                 );",
+            )?;
+        }
+        Ok::<(), rusqlite::Error>(())
+    })
+    .await?;
+
     Ok(conn)
 }
 
@@ -114,11 +138,11 @@ mod tests {
         .await
         .unwrap();
 
-        // Count application tables (exclude sqlite_* internal tables)
+        // Count application tables (exclude sqlite_* internal tables and FTS5 shadow tables)
         let table_count: i64 = conn
             .call(|conn| {
                 let count = conn.query_row(
-                    "SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
+                    "SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '%\\_fts%' ESCAPE '\\' AND name NOT LIKE '%\\_fts\\_%' ESCAPE '\\'",
                     [],
                     |row| row.get(0),
                 )?;
@@ -171,5 +195,52 @@ mod tests {
             .unwrap();
 
         assert_eq!(index_count, 7, "Expected 7 performance indexes");
+    }
+
+    #[tokio::test]
+    async fn subagent_fts_table_created() {
+        let conn = Connection::open_in_memory().await.unwrap();
+        conn.call(|conn| {
+            conn.execute_batch(include_str!("schema.sql"))?;
+            Ok::<(), rusqlite::Error>(())
+        })
+        .await
+        .unwrap();
+
+        let ok: bool = conn
+            .call(|conn| {
+                Ok::<bool, rusqlite::Error>(
+                    conn.prepare("SELECT tool_call_id FROM subagent_fts LIMIT 0")
+                        .is_ok(),
+                )
+            })
+            .await
+            .unwrap();
+        assert!(
+            ok,
+            "subagent_fts virtual table should be created by schema.sql"
+        );
+    }
+
+    #[tokio::test]
+    async fn subagent_fts_migration_idempotent() {
+        let tmp = tempfile::NamedTempFile::new().unwrap();
+        let path: PathBuf = tmp.path().into();
+
+        // First init
+        let c1 = init_database(path.clone()).await.unwrap();
+        drop(c1);
+        // Second init on same file -- must not error
+        let c2 = init_database(path.clone()).await.unwrap();
+        let ok: bool = c2
+            .call(|conn| {
+                Ok::<bool, rusqlite::Error>(
+                    conn.prepare("SELECT tool_call_id FROM subagent_fts LIMIT 0")
+                        .is_ok(),
+                )
+            })
+            .await
+            .unwrap();
+        assert!(ok, "subagent_fts must still exist after re-init");
     }
 }

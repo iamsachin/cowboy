@@ -102,6 +102,17 @@ CREATE TABLE IF NOT EXISTS settings (
     server_port INTEGER NOT NULL DEFAULT 8123
 );
 
+-- FTS5 virtual table for sub-agent content search (IMPR-6).
+-- `content` is tokenized for search; `tool_call_id` is UNINDEXED (projected out only);
+-- `kind` is UNINDEXED and forward-compatible (always 'subagent' today, future: 'compaction', etc.).
+-- Porter+unicode61 tokenizer so stems match ("denies" finds "denied", "login" finds "logins").
+CREATE VIRTUAL TABLE IF NOT EXISTS subagent_fts USING fts5(
+    content,
+    tool_call_id UNINDEXED,
+    kind UNINDEXED,
+    tokenize = 'porter unicode61'
+);
+
 -- Performance indexes
 CREATE INDEX IF NOT EXISTS idx_messages_conversation_id_role ON messages(conversation_id, role);
 CREATE INDEX IF NOT EXISTS idx_token_usage_conversation_id ON token_usage(conversation_id);

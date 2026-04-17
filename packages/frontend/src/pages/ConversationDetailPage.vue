@@ -127,6 +127,13 @@
           </div>
         </div>
 
+        <!-- Sub-agent overview chip strip (IMPR-2) -->
+        <SubagentOverviewStrip
+          :subagents="subagentList"
+          :aggregate="subagentAggregate"
+          @jump-to="handleSubagentJump"
+        />
+
         <!-- Conversation timeline -->
         <ConversationDetail
           ref="detailRef"
@@ -168,6 +175,8 @@ import { useTimeline, extractTimelineEvents } from '../composables/useTimeline';
 import { useScrollTracker } from '../composables/useScrollTracker';
 import ConversationDetail from '../components/ConversationDetail.vue';
 import ConversationTimeline from '../components/ConversationTimeline.vue';
+import SubagentOverviewStrip from '../components/SubagentOverviewStrip.vue';
+import { useSubagentList } from '../composables/useSubagentList';
 import { cleanTitle} from '../utils/content-sanitizer';
 import { formatCost } from '../utils/format-tokens';
 import { exportAsMarkdown, exportAsJson, exportAsPlainText, downloadFile, sanitizeFilename } from '../utils/conversation-exporter';
@@ -185,6 +194,15 @@ function goBack() {
 }
 
 const { data, loading, error, notFound, newGroupKeys, refreshing } = useConversationDetail(id);
+
+// Sub-agent overview strip: derived from data.toolCalls via reactive refs so
+// IMPR-1's tool_call:changed refetch flips chip state without component re-mount.
+const toolCallsRef = computed(() => data.value?.toolCalls);
+const isActiveRef = computed(() => data.value?.conversation.isActive ?? false);
+const { subagents: subagentList, aggregate: subagentAggregate } = useSubagentList(
+  toolCallsRef,
+  isActiveRef,
+);
 
 // Timeline state
 const { isOpen, toggle, activeKey, setActiveKey } = useTimeline();
@@ -319,6 +337,24 @@ async function handleTimelineNavigate(key: string, turnIndex: number, parentKey?
 
   // Clear navigating flag after scroll settles
   navigatingTimeout = setTimeout(() => { navigating.value = false; }, 600);
+}
+
+// --- Chip-strip jump handler (IMPR-2) ---
+// Reuses handleTimelineNavigate so pagination, group expansion, and scroll are
+// identical to the timeline sidebar's behavior. Falls back to a direct
+// querySelector if the timeline event for this id is not yet materialized.
+async function handleSubagentJump(toolCallId: string): Promise<void> {
+  const evt = timelineEvents.value.find(
+    (e) => e.type === 'subagent' && e.key === toolCallId,
+  );
+  if (!evt) {
+    const el = scrollContainer.value?.querySelector(
+      `[data-tool-call-id="${toolCallId}"]`,
+    );
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+  await handleTimelineNavigate(evt.key, evt.turnIndex, evt.parentKey);
 }
 
 // --- IntersectionObserver for active event tracking ---

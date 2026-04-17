@@ -533,6 +533,32 @@ async fn link_subagents_post_processing(
             })
             .await?;
 
+        // IMPR-7: Mark all Task/Agent tool_calls in every parent conversation of this
+        // project as link-attempted. This runs unconditionally after link_subagents(),
+        // regardless of whether any matches were found -- an empty `links` vector means
+        // "linker ran and found nothing", which is exactly the state the frontend needs
+        // to distinguish from "linker has not run yet" (flag = 0).
+        let parent_session_ids: Vec<String> = parent_files
+            .iter()
+            .map(|f| f.session_id.clone())
+            .collect();
+        state
+            .db
+            .call(move |conn| {
+                let tx = conn.transaction()?;
+                for sid in &parent_session_ids {
+                    let parent_conv_id = generate_id(&["claude-code", sid]);
+                    tx.execute(
+                        "UPDATE tool_calls SET subagent_link_attempted = 1 \
+                         WHERE conversation_id = ?1 AND name IN ('Task', 'Agent')",
+                        rusqlite::params![parent_conv_id],
+                    )?;
+                }
+                tx.commit()?;
+                Ok::<_, tokio_rusqlite::Error>(())
+            })
+            .await?;
+
         if !links.is_empty() {
             // Update tool_calls with subagent references
             let links_for_update = links.clone();

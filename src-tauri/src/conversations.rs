@@ -178,6 +178,7 @@ pub struct ToolCallRow {
     pub created_at: String,
     pub subagent_conversation_id: Option<String>,
     pub subagent_summary: Option<serde_json::Value>,
+    pub subagent_link_attempted: bool,
 }
 
 #[derive(Serialize)]
@@ -902,13 +903,14 @@ async fn conversation_detail(
 
             // 3. Fetch tool calls
             let mut tc_stmt = conn.prepare(
-                "SELECT id, message_id, name, input, output, status, duration, created_at, subagent_conversation_id, subagent_summary FROM tool_calls WHERE conversation_id = ? ORDER BY created_at"
+                "SELECT id, message_id, name, input, output, status, duration, created_at, subagent_conversation_id, subagent_summary, subagent_link_attempted FROM tool_calls WHERE conversation_id = ? ORDER BY created_at"
             )?;
             let tool_calls: Vec<ToolCallRow> = tc_stmt
                 .query_map(params![c_id], |row| {
                     let input_str: Option<String> = row.get(3)?;
                     let output_str: Option<String> = row.get(4)?;
                     let subagent_summary_str: Option<String> = row.get(9)?;
+                    let subagent_link_attempted: i64 = row.get(10)?;
 
                     let input = input_str.and_then(|s| serde_json::from_str(&s).ok());
                     let output = output_str.and_then(|s| serde_json::from_str(&s).ok());
@@ -925,6 +927,7 @@ async fn conversation_detail(
                         created_at: row.get(7)?,
                         subagent_conversation_id: row.get(8)?,
                         subagent_summary,
+                        subagent_link_attempted: subagent_link_attempted != 0,
                     })
                 })?
                 .collect::<Result<Vec<_>, _>>()?;

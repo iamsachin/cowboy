@@ -44,12 +44,12 @@ describe('useCommandPalette', () => {
     globalThis.fetch = originalFetch;
   });
 
-  it('returns all 6 pages and conversations when query is empty', async () => {
+  it('returns all 4 pages and conversations when query is empty', async () => {
     const result = await freshPalette();
     await result.open();
     await nextTick();
 
-    expect(result.filteredPages.value.length).toBe(6);
+    expect(result.filteredPages.value.length).toBe(4);
     expect(result.filteredConversations.value.length).toBeLessThanOrEqual(10);
     expect(result.filteredConversations.value.length).toBe(mockConversations.length);
   });
@@ -64,7 +64,7 @@ describe('useCommandPalette', () => {
 
     const pageNames = result.filteredPages.value.map((p) => p.name);
     expect(pageNames).toContain('Overview');
-    expect(pageNames.length).toBeLessThan(6);
+    expect(pageNames.length).toBeLessThan(4);
   });
 
   it('returns empty conversations for nonexistent query', async () => {
@@ -172,8 +172,8 @@ describe('useCommandPalette', () => {
     await result.open();
     await nextTick();
 
-    // Navigate past all 6 pages to first conversation
-    for (let i = 0; i < 6; i++) {
+    // Navigate past all 4 pages to first conversation
+    for (let i = 0; i < 4; i++) {
       result.navigateDown();
     }
     result.select();

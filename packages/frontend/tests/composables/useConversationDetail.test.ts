@@ -90,7 +90,7 @@ describe('useConversationDetail', () => {
     expect(result.loading.value).toBe(false);
   });
 
-  it('debounces conversation:changed events by 500ms', async () => {
+  it('debounces conversation:changed events by 150ms', async () => {
     await getComposable('conv-1');
     await vi.runAllTimersAsync();
 
@@ -108,12 +108,12 @@ describe('useConversationDetail', () => {
       });
     }
 
-    // Before 500ms, no fetch should have fired
-    await vi.advanceTimersByTimeAsync(400);
+    // Before 150ms, no fetch should have fired
+    await vi.advanceTimersByTimeAsync(100);
     expect(fetchSpy).not.toHaveBeenCalled();
 
-    // After 500ms debounce completes, exactly 1 fetch
-    await vi.advanceTimersByTimeAsync(200);
+    // After 150ms debounce completes, exactly 1 fetch
+    await vi.advanceTimersByTimeAsync(100);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
   });
 

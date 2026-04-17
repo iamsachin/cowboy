@@ -43,6 +43,8 @@ export function useConversationBrowser() {
   const agent = ref('');
   const project = ref('');
   const searchQuery = ref('');
+  // Default 'primary' = back-compat (param omitted, backend defaults to primary).
+  const kind = ref<'primary' | 'all' | 'subagent'>('primary');
 
   function trackNewRows(rows: { id: string }[]): void {
     const currentIds = new Set(rows.map((r) => r.id));
@@ -92,6 +94,10 @@ export function useConversationBrowser() {
       if (searchQuery.value) {
         params.set('search', searchQuery.value);
       }
+      // Omit 'primary' to preserve back-compat (no param sent → backend defaults to primary).
+      if (kind.value !== 'primary') {
+        params.set('kind', kind.value);
+      }
       const res = await fetch(`${API_BASE}/api/analytics/conversations?${params}`);
       if (!res.ok) throw new Error(`Conversations fetch failed: ${res.status}`);
       const result: BrowserResponse = await res.json();
@@ -129,6 +135,12 @@ export function useConversationBrowser() {
 
   function setProject(p: string): void {
     project.value = p;
+    page.value = 1;
+    fetchConversations();
+  }
+
+  function setKind(k: 'primary' | 'all' | 'subagent'): void {
+    kind.value = k;
     page.value = 1;
     fetchConversations();
   }
@@ -245,11 +257,13 @@ export function useConversationBrowser() {
     agent,
     project,
     searchQuery,
+    kind,
     newIds,
     setSort,
     setPage,
     setAgent,
     setProject,
+    setKind,
     submitSearch,
     clearSearch,
     filterOptions,

@@ -4,6 +4,17 @@
     <div class="flex items-center gap-2 flex-wrap mb-3">
       <select
         class="select select-bordered select-sm"
+        :value="kind"
+        @change="setKind(($event.target as HTMLSelectElement).value as 'primary' | 'all' | 'subagent')"
+        title="Filter by conversation kind"
+      >
+        <option value="primary">Primary</option>
+        <option value="all">All</option>
+        <option value="subagent">Sub-agents</option>
+      </select>
+
+      <select
+        class="select select-bordered select-sm"
         :value="agent"
         @change="setAgent(($event.target as HTMLSelectElement).value)"
       >
@@ -211,10 +222,12 @@ const {
   agent,
   project,
   searchQuery,
+  kind,
   setSort,
   setPage,
   setAgent,
   setProject,
+  setKind,
   submitSearch,
   clearSearch,
   filterOptions,

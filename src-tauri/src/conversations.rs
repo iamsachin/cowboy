@@ -32,6 +32,11 @@ pub struct ConversationListParams {
     pub agent: Option<String>,
     pub project: Option<String>,
     pub search: Option<String>,
+    /// Filter by parent_conversation_id link.
+    /// `Some("primary")` or `None` (default): only top-level conversations (back-compat).
+    /// `Some("subagent")`: only sub-agent conversations.
+    /// `Some("all")`: no filter (both primary and sub-agents, flat).
+    pub kind: Option<String>,
 }
 
 // ── Response Structs ────────────────────────────────────────────────
@@ -260,6 +265,7 @@ async fn conversation_list(
     let agent = params.agent;
     let project = params.project;
     let search = params.search;
+    let kind = params.kind;
 
     let to_with_time = format!("{}T23:59:59Z", to);
     let is_cost_sort = sort == "cost";
@@ -273,6 +279,7 @@ async fn conversation_list(
     let search_c = search.clone();
     let sort_c = sort.clone();
     let order_c = order.clone();
+    let kind_c = kind.clone();
 
     // Main query: conversation rows + total count + per-model tokens
     let (rows, total, per_model_tokens) = state
@@ -309,8 +316,17 @@ async fn conversation_list(
                 bind_values.push(Box::new(pattern));
             }
 
-            // Exclude children + require assistant message
-            conditions.push("c.parent_conversation_id IS NULL".to_string());
+            // Filter by kind: primary (default, back-compat) / subagent / all.
+            // Unknown values fall through to primary-only for safety.
+            match kind_c.as_deref() {
+                Some("all") => {} // no parent filter
+                Some("subagent") => {
+                    conditions.push("c.parent_conversation_id IS NOT NULL".to_string());
+                }
+                Some("primary") | None | Some(_) => {
+                    conditions.push("c.parent_conversation_id IS NULL".to_string());
+                }
+            }
             conditions.push("EXISTS (SELECT 1 FROM messages WHERE messages.conversation_id = c.id AND messages.role = 'assistant')".to_string());
 
             let where_clause = conditions.join(" AND ");

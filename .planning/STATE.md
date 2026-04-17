@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-04-17 - Completed Phase A wave 2: IMPR-2 (overview strip) + IMPR-3 (timeline icons) + IMPR-4 (cost badge) in parallel worktrees (all verified, human smoke tests pending)
+Last activity: 2026-04-18 - Completed Phase B + C: IMPR-5 (browser facet) + IMPR-6 (FTS indexing + search) + IMPR-8 (parallel grouping) + IMPR-9 (top-N widget) + IMPR-10 (Cmd+K palette). All 10 sub-agent discovery improvements shipped (human smoke tests still pending).
 
 ## Performance Metrics
 
@@ -139,9 +139,14 @@ None.
 | 260417-phs | IMPR-4: Inline cost and confidence dot on collapsed sub-agent card (Needs Review) | 2026-04-17 | d963dfb | [260417-phs-impr-4-inline-cost-and-confidence-badges](./quick/260417-phs-impr-4-inline-cost-and-confidence-badges/) |
 | 260417-phr | IMPR-3: Status-aware timeline icons + pulse during running (Needs Review) | 2026-04-17 | 8b96e70 | [260417-phr-impr-3-status-aware-timeline-icons-and-p](./quick/260417-phr-impr-3-status-aware-timeline-icons-and-p/) |
 | 260417-phc | IMPR-2: Sub-agent overview chip strip on ConversationDetailPage (Needs Review) | 2026-04-17 | b32ce7d | [260417-phc-impr-2-sub-agent-overview-chip-strip-at-](./quick/260417-phc-impr-2-sub-agent-overview-chip-strip-at-/) |
+| 260417-r5i | IMPR-9: Top sub-agent-heavy conversations Overview widget (Needs Review) | 2026-04-18 | 348a6c3 | [260417-r5i-impr-9-top-sub-agent-heavy-conversations](./quick/260417-r5i-impr-9-top-sub-agent-heavy-conversations/) |
+| 260417-r4o | IMPR-6: subagent_fts FTS5 table + ingestion + backfill + search handler (Needs Review) | 2026-04-18 | 8c4e841 | [260417-r4o-impr-6-index-subagent-summary-content-in](./quick/260417-r4o-impr-6-index-subagent-summary-content-in/) |
+| 260417-r4p | IMPR-8: Parallel sub-agent visual grouping with shared header (Needs Review) | 2026-04-18 | 3ed26bb | [260417-r4p-impr-8-parallel-sub-agent-visual-groupin](./quick/260417-r4p-impr-8-parallel-sub-agent-visual-groupin/) |
+| 260417-r4n | IMPR-5: kind facet (Primary/All/Sub-agents) on ConversationBrowser (Needs Review) | 2026-04-18 | cdea9ba | [260417-r4n-impr-5-sub-agent-only-facet-in-conversat](./quick/260417-r4n-impr-5-sub-agent-only-facet-in-conversat/) |
+| 260417-r8b | IMPR-10: Cmd+K palette sub-agent jump (sub N + cross-conversation search) (Needs Review) | 2026-04-18 | 7cd8df7 | [260417-r8b-impr-10-command-palette-cmd-k-for-sub-ag](./quick/260417-r8b-impr-10-command-palette-cmd-k-for-sub-ag/) |
 
 ## Session Continuity
 
-Last session: 2026-04-17
-Stopped at: Completed Phase A wave 2 (IMPR-2/3/4 in parallel worktrees)
+Last session: 2026-04-18
+Stopped at: All 10 sub-agent discovery improvements shipped (Phase A + B + C complete)
 Resume file: None

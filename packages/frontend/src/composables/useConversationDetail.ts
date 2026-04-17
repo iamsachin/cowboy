@@ -131,6 +131,14 @@ export function useConversationDetail(conversationId: string) {
     }
   });
 
+  // Sub-agent summaries land on tool_calls via the post-processing linker.
+  // Emitted from src-tauri/src/ingestion/mod.rs after UPDATE of subagent_summary.
+  on('tool_call:changed', (evt) => {
+    if (evt.conversationId === conversationId) {
+      debouncedRefetch();
+    }
+  });
+
   // system:full-refresh bypasses debounce
   on('system:full-refresh', () => {
     if (debounceTimer !== null) {

@@ -345,6 +345,44 @@ describe('useConversationDetail', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  it('refetches on tool_call:changed events for the matching conversation', async () => {
+    await getComposable('conv-1');
+    await vi.runAllTimersAsync();
+    fetchSpy.mockClear();
+
+    fireEvent('tool_call:changed', {
+      type: 'tool_call:changed',
+      seq: 1,
+      conversationId: 'conv-1',
+      toolCallId: 'tc-abc',
+      timestamp: '2026-04-17T00:00:00Z',
+    });
+
+    // Same 150ms debounce path as conversation:changed
+    await vi.advanceTimersByTimeAsync(200);
+    await vi.runAllTimersAsync();
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(fetchSpy).toHaveBeenCalledWith('/api/analytics/conversations/conv-1');
+  });
+
+  it('ignores tool_call:changed events for other conversations', async () => {
+    await getComposable('conv-1');
+    await vi.runAllTimersAsync();
+    fetchSpy.mockClear();
+
+    fireEvent('tool_call:changed', {
+      type: 'tool_call:changed',
+      seq: 1,
+      conversationId: 'conv-OTHER',
+      toolCallId: 'tc-xyz',
+      timestamp: '2026-04-17T00:00:00Z',
+    });
+
+    await vi.advanceTimersByTimeAsync(600);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
   it('loading is only true on initial fetch, refreshing used for live updates', async () => {
     let resolveRefetch!: () => void;
     let callCount = 0;

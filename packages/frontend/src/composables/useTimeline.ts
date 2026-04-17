@@ -8,6 +8,12 @@ export interface TimelineEvent {
   turnIndex: number;
   /** For subagent events: the key of the parent assistant-group */
   parentKey?: string;
+  /** For subagent events only: the derived lifecycle status. Undefined for other event types. */
+  status?: 'success' | 'error' | 'interrupted' | 'running' | 'unmatched' | 'missing';
+  /** For subagent events only: mirrors ToolCallRow.subagentConversationId for downstream consumers. */
+  subagentConversationId?: string | null;
+  /** For subagent events only: mirrors ToolCallRow.subagentLinkAttempted. */
+  subagentLinkAttempted?: boolean;
 }
 
 /**

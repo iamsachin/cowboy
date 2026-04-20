@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.5.4
+
+- Fix UTF-8 boundary panic in conversation search — searches matching text near box-drawing characters (or other multi-byte codepoints) no longer crash the backend, which was cascading into empty search results and `Overview fetch failed: 500`
+- Refresh sub-agent overview chips to DaisyUI `badge-soft` variants for a calmer, theme-tuned palette
+
 ## v3.5.3
 
 - Fix release signing: `.app` bundle is now notarized and stapled before DMG creation, eliminating the `xattr -d com.apple.quarantine` workaround Homebrew users previously needed on first launch

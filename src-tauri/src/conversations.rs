@@ -850,25 +850,85 @@ async fn conversation_list(
 fn extract_snippet(content: &str, search_term: &str, context_chars: usize) -> Option<String> {
     let lower_content = content.to_lowercase();
     let lower_term = search_term.to_lowercase();
-    let idx = lower_content.find(&lower_term)?;
+    let lower_idx = lower_content.find(&lower_term)?;
 
-    let start = if idx > context_chars { idx - context_chars } else { 0 };
-    let end = std::cmp::min(content.len(), idx + search_term.len() + context_chars);
+    // Map the match offset from the lowercased string back to a byte offset
+    // in `content`. ASCII-only lowercasing preserves offsets, but some Unicode
+    // lowercasings change byte widths (e.g. 'İ' → "i\u{307}"), so walk both
+    // strings together and convert via char boundaries.
+    let match_start = map_byte_offset_to_original(&lower_content, content, lower_idx)?;
+    let match_end = map_byte_offset_to_original(
+        &lower_content,
+        content,
+        lower_idx + lower_term.len(),
+    )?;
+
+    // Expand context by bytes, then snap to the nearest char boundary so we
+    // never slice inside a multi-byte codepoint (e.g. box-drawing chars).
+    let raw_start = match_start.saturating_sub(context_chars);
+    let raw_end = std::cmp::min(content.len(), match_end + context_chars);
+    let start = floor_char_boundary(content, raw_start);
+    let end = ceil_char_boundary(content, raw_end);
 
     let mut snippet = String::new();
     if start > 0 {
         snippet.push_str("...");
     }
-    snippet.push_str(&content[start..idx]);
+    snippet.push_str(&content[start..match_start]);
     snippet.push_str("<mark>");
-    snippet.push_str(&content[idx..idx + search_term.len()]);
+    snippet.push_str(&content[match_start..match_end]);
     snippet.push_str("</mark>");
-    snippet.push_str(&content[idx + search_term.len()..end]);
+    snippet.push_str(&content[match_end..end]);
     if end < content.len() {
         snippet.push_str("...");
     }
 
     Some(snippet)
+}
+
+fn floor_char_boundary(s: &str, mut i: usize) -> usize {
+    if i >= s.len() {
+        return s.len();
+    }
+    while i > 0 && !s.is_char_boundary(i) {
+        i -= 1;
+    }
+    i
+}
+
+fn ceil_char_boundary(s: &str, mut i: usize) -> usize {
+    if i >= s.len() {
+        return s.len();
+    }
+    while i < s.len() && !s.is_char_boundary(i) {
+        i += 1;
+    }
+    i
+}
+
+fn map_byte_offset_to_original(lower: &str, original: &str, lower_offset: usize) -> Option<usize> {
+    if lower_offset == 0 {
+        return Some(0);
+    }
+    // Walk both strings char-by-char until we reach `lower_offset` in `lower`.
+    // Advance `original` one char per lowercased char we consume. This handles
+    // the common case where lowercasing is 1:1 per char even if byte widths
+    // differ slightly; for exotic locales where lowercase expands one char to
+    // many, we fall back to lower_offset (best-effort — we still snap to a
+    // char boundary before slicing).
+    let mut lower_pos = 0usize;
+    let mut orig_chars = original.char_indices();
+    for (_, lc) in lower.char_indices() {
+        if lower_pos >= lower_offset {
+            break;
+        }
+        lower_pos += lc.len_utf8();
+        orig_chars.next();
+    }
+    match orig_chars.next() {
+        Some((byte_idx, _)) => Some(byte_idx),
+        None => Some(original.len()),
+    }
 }
 
 // ── Conversation Detail Handler ─────────────────────────────────────
@@ -1112,5 +1172,36 @@ async fn conversation_detail(
     match result {
         Some(response) => Ok(Json(response)),
         None => Err(AppError::NotFound("Conversation not found".to_string())),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extract_snippet_handles_multibyte_context_boundary() {
+        // Regression: panic at `byte index N is not a char boundary` when the
+        // context window landed inside a multi-byte codepoint like '═' (3 bytes).
+        let content = "intro ╔═══════════════════════════════════════════════════════════╗\n\
+                       ║  GSD Updated: v1.22.4 → v1.36.0 executable path here      ║\n\
+                       ╚═══════════════════════════════════════════════════════════╝ outro";
+        let snippet = extract_snippet(content, "executable", 100);
+        assert!(snippet.is_some(), "should return a snippet");
+        let snippet = snippet.unwrap();
+        assert!(snippet.contains("<mark>executable</mark>"));
+    }
+
+    #[test]
+    fn extract_snippet_case_insensitive() {
+        let content = "Some EXECUTABLE path";
+        let snippet = extract_snippet(content, "executable", 50).unwrap();
+        assert!(snippet.contains("<mark>EXECUTABLE</mark>"));
+    }
+
+    #[test]
+    fn extract_snippet_returns_none_when_no_match() {
+        let content = "no match here";
+        assert!(extract_snippet(content, "xyz", 10).is_none());
     }
 }

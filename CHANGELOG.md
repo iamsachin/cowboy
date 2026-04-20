@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.5.3
+
+- Fix release signing: `.app` bundle is now notarized and stapled before DMG creation, eliminating the `xattr -d com.apple.quarantine` workaround Homebrew users previously needed on first launch
+- Fix release signing: DMG is now codesigned (previously unsigned, which caused Gatekeeper `spctl` rejection on download)
+
 ## v3.5.2
 
 - Add sub-agent overview chip strip to conversation detail page

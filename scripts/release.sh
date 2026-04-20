@@ -42,6 +42,41 @@ cleanup_hint() {
   warn "  git push origin :refs/tags/v${version}"
 }
 
+# Submit an artifact to notarytool --wait, fetch log on failure, and staple
+# the ticket onto the given target. `artifact` is the submission payload
+# (.zip or .dmg — notarytool does not accept a bare .app), and
+# `staple_target` is the path that should receive the ticket (.app or .dmg —
+# stapler cannot staple a .zip).
+notarize_and_staple() {
+  local artifact="$1"
+  local staple_target="$2"
+  local output exit_code submission_id
+
+  log "Submitting $(basename "$artifact") for notarization (this may take a few minutes)..."
+  # Temporarily disable errexit so we can capture notarytool's exit code and
+  # dispatch to the failure-log fetch path instead of aborting the script.
+  set +e
+  output=$(xcrun notarytool submit "$artifact" --keychain-profile "$COWBOY_NOTARIZE_PROFILE" --wait 2>&1)
+  exit_code=$?
+  set -e
+  echo "$output"
+
+  if [[ $exit_code -ne 0 ]] || echo "$output" | grep -qi "invalid"; then
+    submission_id=$(echo "$output" | grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' | head -1)
+    if [[ -n "$submission_id" ]]; then
+      err "Notarization failed. Fetching log..."
+      xcrun notarytool log "$submission_id" --keychain-profile "$COWBOY_NOTARIZE_PROFILE" 2>&1 || true
+    fi
+    err "Notarization failed for $(basename "$artifact"). Check Apple Developer account and signing identity."
+    exit 1
+  fi
+  log "Notarization successful for $(basename "$artifact")."
+
+  log "Stapling ticket to $(basename "$staple_target")..."
+  xcrun stapler staple "$staple_target"
+  xcrun stapler validate "$staple_target"
+}
+
 # --- Parse arguments ---
 BUILD_ONLY=false
 VERSION=""
@@ -138,19 +173,34 @@ log "Building Cowboy v${VERSION}..."
 cd "$REPO_ROOT"
 npx tauri build --bundles app
 
-# --- Step 3b: Sign the app bundle ---
+# --- Step 3b: Sign the .app bundle ---
 APP_PATH="$REPO_ROOT/src-tauri/target/release/bundle/macos/Cowboy.app"
 if [[ ! -d "$APP_PATH" ]]; then
   err "App bundle not found at: $APP_PATH"
   exit 1
 fi
 log "Signing Cowboy.app with hardened runtime..."
-codesign --force --options runtime --timestamp --sign "$APPLE_SIGN_IDENTITY" --deep "$APP_PATH"
+# Drop deprecated --deep; notarytool recursively inspects the bundle contents.
+codesign --force --options runtime --timestamp --sign "$APPLE_SIGN_IDENTITY" "$APP_PATH"
 codesign --verify --verbose "$APP_PATH"
 log "App bundle signed successfully."
 
-# --- Step 3c: Create DMG from signed app ---
-log "Creating DMG from signed app..."
+# --- Step 3c: Notarize and staple the .app (so the ticket travels with it into /Applications) ---
+# notarytool accepts .zip/.dmg/.pkg, not a bare .app bundle, so zip first.
+# `ditto -c -k --keepParent` is Apple's recommended packager (preserves xattrs and symlinks).
+APP_ZIP_PATH="$REPO_ROOT/src-tauri/target/release/bundle/macos/Cowboy.zip"
+rm -f "$APP_ZIP_PATH"
+log "Zipping Cowboy.app for notarization submission..."
+ditto -c -k --keepParent "$APP_PATH" "$APP_ZIP_PATH"
+notarize_and_staple "$APP_ZIP_PATH" "$APP_PATH"
+rm -f "$APP_ZIP_PATH"
+
+# --- Step 3d: Create DMG from the now-stapled .app ---
+# Stapling BEFORE DMG creation is the fix for the Homebrew quarantine issue:
+# when `brew install` copies Cowboy.app into /Applications, the ticket baked
+# into Contents/CodeResources travels with it, so Gatekeeper does not need
+# an online check on first launch.
+log "Creating DMG from signed+stapled app..."
 mkdir -p "$REPO_ROOT/src-tauri/target/release/bundle/dmg"
 rm -f "$DMG_PATH"
 hdiutil create -volname "Cowboy" -srcfolder "$APP_PATH" -ov -format UDZO "$DMG_PATH"
@@ -180,27 +230,13 @@ fi
 DMG_SIZE=$(du -h "$DMG_PATH" | cut -f1)
 log "Build successful: $DMG_PATH ($DMG_SIZE)"
 
-# --- Step 4b: Notarize and staple the DMG ---
-log "Submitting DMG for notarization (this may take a few minutes)..."
-NOTARIZE_OUTPUT=$(xcrun notarytool submit "$DMG_PATH" --keychain-profile "$COWBOY_NOTARIZE_PROFILE" --wait 2>&1)
-NOTARIZE_EXIT=$?
-echo "$NOTARIZE_OUTPUT"
-
-# Check both exit code and status text
-if [[ $NOTARIZE_EXIT -ne 0 ]] || echo "$NOTARIZE_OUTPUT" | grep -qi "invalid"; then
-  SUBMISSION_ID=$(echo "$NOTARIZE_OUTPUT" | grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' | head -1)
-  if [[ -n "$SUBMISSION_ID" ]]; then
-    err "Notarization failed. Fetching log..."
-    xcrun notarytool log "$SUBMISSION_ID" --keychain-profile "$COWBOY_NOTARIZE_PROFILE" 2>&1 || true
-  fi
-  err "Notarization failed. Check Apple Developer account and signing identity."
-  exit 1
-fi
-log "Notarization successful."
-
-log "Stapling notarization ticket to DMG..."
-xcrun stapler staple "$DMG_PATH"
-log "DMG stapled successfully."
+# --- Step 4b: Codesign, notarize, and staple the DMG ---
+# Without a DMG-level signature, `spctl -a -t open --context context:primary-signature`
+# rejects the DMG with "source=no usable signature" even though the .app inside is signed.
+log "Signing the DMG wrapper..."
+codesign --force --sign "$APPLE_SIGN_IDENTITY" --timestamp "$DMG_PATH"
+codesign --verify --verbose "$DMG_PATH"
+notarize_and_staple "$DMG_PATH" "$DMG_PATH"
 
 # --- Step 5: Build-only exit ---
 if [[ "$BUILD_ONLY" == true ]]; then

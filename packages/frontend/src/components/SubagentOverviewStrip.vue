@@ -98,41 +98,22 @@ interface ChipLook {
 
 /**
  * Map ghostState (+ summaryStatus) to chip classes + icon.
- * Keep in sync with SubagentSummaryCard.vue's visual palette so the strip and
- * the inline card never disagree.
+ * Returns DaisyUI solid badge variants to mirror the saturated-tag visual language used elsewhere.
  */
 function chipLook(entry: SubagentListEntry): ChipLook {
-  // Soft palette: low-opacity bg tint + matching border + saturated text.
-  // Avoids DaisyUI's solid badge fills which are too loud on dark backgrounds.
   switch (entry.ghostState) {
     case 'summary':
       if (entry.summaryStatus === 'success') {
-        return {
-          class: 'bg-success/10 border-success/30 text-success hover:bg-success/20',
-          icon: CheckCircle2,
-        };
+        return { class: 'badge-success', icon: CheckCircle2 };
       }
       // error + interrupted merge into the same red bucket
-      return {
-        class: 'bg-error/10 border-error/30 text-error hover:bg-error/20',
-        icon: XCircle,
-      };
+      return { class: 'badge-error', icon: XCircle };
     case 'running':
-      return {
-        class: 'bg-info/10 border-info/30 text-info hover:bg-info/20',
-        icon: Loader2,
-        spin: true,
-      };
+      return { class: 'badge-info', icon: Loader2, spin: true };
     case 'unmatched':
-      return {
-        class: 'bg-base-content/5 border-base-content/20 text-base-content/70 hover:bg-base-content/10',
-        icon: HelpCircle,
-      };
+      return { class: 'badge-ghost', icon: HelpCircle };
     case 'missing':
-      return {
-        class: 'bg-warning/10 border-warning/30 text-warning hover:bg-warning/20',
-        icon: AlertTriangle,
-      };
+      return { class: 'badge-warning', icon: AlertTriangle };
   }
 }
 

@@ -19,7 +19,7 @@ Build Cowboy locally, create GitHub Release with DMG, and update Homebrew tap.
    ```bash
    ./scripts/release.sh <version>
    ```
-   This does everything: builds the Tauri app, **signs the .app bundle with hardened runtime**, creates DMG, **notarizes the DMG with Apple**, **staples the notarization ticket**, creates GitHub Release with DMG attached, and updates the Homebrew tap (`iamsachin/homebrew-cowboy`).
+   This does everything: builds the Tauri app, **signs the .app bundle with hardened runtime**, **notarizes and staples the .app** (so the ticket travels with the .app into /Applications), creates the DMG from the stapled .app, **codesigns the DMG**, **notarizes and staples the DMG**, creates GitHub Release with DMG attached, and updates the Homebrew tap (`iamsachin/homebrew-cowboy`).
 
 ## After the script completes
 

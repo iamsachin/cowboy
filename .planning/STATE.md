@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-04-20 - Completed quick task 260420-o2z: Change subagent pills to solid tag style.
+Last activity: 2026-04-20 - Completed quick task 260420-ogq: Fix UTF-8 boundary panic in search snippet extraction (cascaded into empty search results + Overview 500).
 
 ## Performance Metrics
 
@@ -146,9 +146,10 @@ None.
 | 260417-r8b | IMPR-10: Cmd+K palette sub-agent jump (sub N + cross-conversation search) (Needs Review) | 2026-04-18 | 7cd8df7 | [260417-r8b-impr-10-command-palette-cmd-k-for-sub-ag](./quick/260417-r8b-impr-10-command-palette-cmd-k-for-sub-ag/) |
 | 260420-n4g | Fix release.sh: staple .app + codesign DMG (eliminates Homebrew xattr workaround) | 2026-04-20 | 21a79c8 | [260420-n4g-diagnose-and-fix-signing-notarization-fa](./quick/260420-n4g-diagnose-and-fix-signing-notarization-fa/) |
 | 260420-o2z | Change subagent pills to solid tag style | 2026-04-20 | ebac98e | [260420-o2z-change-subagent-pills-to-solid-tag-style](./quick/260420-o2z-change-subagent-pills-to-solid-tag-style/) |
+| 260420-ogq | Fix UTF-8 panic in search snippet extraction (cascaded into empty search + Overview 500) | 2026-04-20 | a48782a | [260420-ogq-fix-search-empty-table-bug-and-overview-](./quick/260420-ogq-fix-search-empty-table-bug-and-overview-/) |
 
 ## Session Continuity
 
 Last session: 2026-04-20
-Stopped at: Swapped subagent overview chips to DaisyUI solid badge variants
+Stopped at: Fixed UTF-8 boundary panic in extract_snippet — search and Overview stable again
 Resume file: None

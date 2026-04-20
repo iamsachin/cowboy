@@ -96,24 +96,19 @@ interface ChipLook {
   spin?: boolean;
 }
 
-/**
- * Map ghostState (+ summaryStatus) to chip classes + icon.
- * Returns DaisyUI solid badge variants to mirror the saturated-tag visual language used elsewhere.
- */
 function chipLook(entry: SubagentListEntry): ChipLook {
   switch (entry.ghostState) {
     case 'summary':
       if (entry.summaryStatus === 'success') {
-        return { class: 'badge-success', icon: CheckCircle2 };
+        return { class: 'badge-soft badge-success', icon: CheckCircle2 };
       }
-      // error + interrupted merge into the same red bucket
-      return { class: 'badge-error', icon: XCircle };
+      return { class: 'badge-soft badge-error', icon: XCircle };
     case 'running':
-      return { class: 'badge-info', icon: Loader2, spin: true };
+      return { class: 'badge-soft badge-info', icon: Loader2, spin: true };
     case 'unmatched':
       return { class: 'badge-ghost', icon: HelpCircle };
     case 'missing':
-      return { class: 'badge-warning', icon: AlertTriangle };
+      return { class: 'badge-soft badge-warning', icon: AlertTriangle };
   }
 }
 

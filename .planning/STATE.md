@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Status: v3.1 milestone shipped. All 8 milestones complete (46 phases, 103 plans).
-Last activity: 2026-04-18 - Completed Phase B + C: IMPR-5 (browser facet) + IMPR-6 (FTS indexing + search) + IMPR-8 (parallel grouping) + IMPR-9 (top-N widget) + IMPR-10 (Cmd+K palette). All 10 sub-agent discovery improvements shipped (human smoke tests still pending).
+Last activity: 2026-04-20 - Completed quick task 260420-o2z: Change subagent pills to solid tag style.
 
 ## Performance Metrics
 
@@ -144,9 +144,11 @@ None.
 | 260417-r4p | IMPR-8: Parallel sub-agent visual grouping with shared header (Needs Review) | 2026-04-18 | 3ed26bb | [260417-r4p-impr-8-parallel-sub-agent-visual-groupin](./quick/260417-r4p-impr-8-parallel-sub-agent-visual-groupin/) |
 | 260417-r4n | IMPR-5: kind facet (Primary/All/Sub-agents) on ConversationBrowser (Needs Review) | 2026-04-18 | cdea9ba | [260417-r4n-impr-5-sub-agent-only-facet-in-conversat](./quick/260417-r4n-impr-5-sub-agent-only-facet-in-conversat/) |
 | 260417-r8b | IMPR-10: Cmd+K palette sub-agent jump (sub N + cross-conversation search) (Needs Review) | 2026-04-18 | 7cd8df7 | [260417-r8b-impr-10-command-palette-cmd-k-for-sub-ag](./quick/260417-r8b-impr-10-command-palette-cmd-k-for-sub-ag/) |
+| 260420-n4g | Fix release.sh: staple .app + codesign DMG (eliminates Homebrew xattr workaround) | 2026-04-20 | 21a79c8 | [260420-n4g-diagnose-and-fix-signing-notarization-fa](./quick/260420-n4g-diagnose-and-fix-signing-notarization-fa/) |
+| 260420-o2z | Change subagent pills to solid tag style | 2026-04-20 | ebac98e | [260420-o2z-change-subagent-pills-to-solid-tag-style](./quick/260420-o2z-change-subagent-pills-to-solid-tag-style/) |
 
 ## Session Continuity
 
-Last session: 2026-04-18
-Stopped at: All 10 sub-agent discovery improvements shipped (Phase A + B + C complete)
+Last session: 2026-04-20
+Stopped at: Swapped subagent overview chips to DaisyUI solid badge variants
 Resume file: None

@@ -1,12 +1,16 @@
 /**
  * Compact token count formatting.
- * >= 1M -> "1.2M", >= 1k -> "12.3k", else raw number as string.
+ * >= 1B -> "1.2B", >= 1M -> "1.2M", >= 1k -> "12.3k", else raw number as string.
  * Drops trailing ".0" (e.g., "12.0k" -> "12k").
  */
 export function formatTokenCount(count: number): string {
   if (count >= 1_000_000) {
     const val = (count / 1_000_000).toFixed(1);
     return val.endsWith('.0') ? val.slice(0, -2) + 'M' : val + 'M';
+  }
+  if (count >= 1_000_000_000) {
+    const val = (count / 1_000_000_000).toFixed(1);
+    return val.endsWith('.0') ? val.slice(0, -2) + 'B' : val + 'B';
   }
   if (count >= 1_000) {
     const val = (count / 1_000).toFixed(1);
@@ -29,4 +33,15 @@ export function formatCost(cost: number): string {
   if (cost >= 0.001) return `$${cost.toFixed(3)}`;
   if (cost >= 0.0001) return `$${cost.toFixed(4)}`;
   return '< $0.0001';
+}
+
+/**
+ * Period-over-period change, e.g. "+12.5%", "-3.0%".
+ * Returns "—" when there is no baseline to compare against.
+ */
+export function formatPercentChange(prev: number, curr: number): string {
+  if (prev === 0) return curr === 0 ? '0%' : '—';
+  const pct = ((curr - prev) / prev) * 100;
+  const sign = pct > 0 ? '+' : '';
+  return `${sign}${pct.toFixed(1)}%`;
 }

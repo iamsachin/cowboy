@@ -26,6 +26,11 @@ const routes = [
     component: () => import('../pages/AnalyticsPage.vue'),
   },
   {
+    path: '/memory',
+    name: 'memory',
+    component: () => import('../pages/MemoryPage.vue'),
+  },
+  {
     path: '/settings',
     name: 'settings',
     component: () => import('../pages/SettingsPage.vue'),

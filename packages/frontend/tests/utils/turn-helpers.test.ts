@@ -8,6 +8,7 @@ import {
   getToolSummary,
   extractFilenames,
   truncateAtWordBoundary,
+  parseAskAnswers,
 } from '../../src/utils/turn-helpers';
 import type { AssistantTurn, AssistantGroup, Turn } from '../../src/composables/useGroupedTurns';
 import type { MessageRow, ToolCallRow } from '../../src/types';
@@ -429,5 +430,18 @@ describe('truncateAtWordBoundary', () => {
   it('handles exact limit length', () => {
     const text = 'A'.repeat(100);
     expect(truncateAtWordBoundary(text, 100)).toBe(text);
+  });
+});
+
+describe('parseAskAnswers', () => {
+  const out = 'Your questions have been answered: "Pick one?"="Raise to $2 (Recommended)", "Which, "quoted"?"="A, B". You can now continue with these answers in mind.';
+  it('extracts each answer, including comma-joined multi-select and quoted questions', () => {
+    expect(parseAskAnswers(out, ['Pick one?', 'Which, "quoted"?', 'Missing?'])).toEqual({
+      'Pick one?': 'Raise to $2 (Recommended)',
+      'Which, "quoted"?': 'A, B',
+    });
+  });
+  it('returns empty for non-string output', () => {
+    expect(parseAskAnswers(null, ['x'])).toEqual({});
   });
 });

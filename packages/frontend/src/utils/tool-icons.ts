@@ -1,6 +1,6 @@
 import {
   FileText, Terminal, Pencil, FilePlus, Search,
-  FolderSearch, Bot, Globe, Wrench,
+  FolderSearch, Bot, Globe, Wrench, Link, MessageCircleQuestion,
 } from 'lucide-vue-next';
 import type { Component } from 'vue';
 
@@ -18,6 +18,8 @@ const TOOL_ICONS: Record<string, ToolIconInfo> = {
   Glob:      { icon: FolderSearch,  colorClass: 'text-rose-400' },
   Agent:     { icon: Bot,           colorClass: 'text-fuchsia-400' },
   WebSearch: { icon: Globe,         colorClass: 'text-cyan-400' },
+  WebFetch:  { icon: Link,          colorClass: 'text-cyan-400' },
+  AskUserQuestion: { icon: MessageCircleQuestion, colorClass: 'text-orange-400' },
 };
 
 const FALLBACK: ToolIconInfo = { icon: Wrench, colorClass: 'text-info' };

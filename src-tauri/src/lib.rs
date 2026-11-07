@@ -28,6 +28,7 @@ mod ingestion;
 mod plans;
 mod pricing;
 mod server;
+mod memory;
 mod settings;
 mod watcher;
 mod websocket;

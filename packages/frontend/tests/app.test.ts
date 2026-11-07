@@ -57,8 +57,8 @@ it('has a route for /analytics', () => {
     expect(rootRoute!.redirect).toBe('/overview');
   });
 
-  it('has exactly 7 named routes plus the redirect', () => {
+  it('has exactly 8 named routes plus the redirect', () => {
     const namedRoutes = router.getRoutes().filter((r) => r.name);
-    expect(namedRoutes).toHaveLength(7);
+    expect(namedRoutes).toHaveLength(8);
   });
 });

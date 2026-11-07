@@ -9,6 +9,7 @@ use tower_http::cors::CorsLayer;
 use crate::analytics;
 use crate::conversations;
 use crate::ingestion;
+use crate::memory;
 use crate::settings;
 use crate::ingestion::SharedStatus;
 use crate::watcher::{self, FileWatcherHandle};
@@ -48,6 +49,7 @@ pub async fn start(db: Connection) {
         .merge(conversations::routes())
         .merge(analytics::routes())
         .merge(settings::routes())
+        .merge(memory::routes())
         .merge(ingestion::routes())
         .route("/api/ws", any(websocket::ws_handler))
         .layer(cors)

@@ -188,3 +188,21 @@ export function truncateAtWordBoundary(text: string, limit: number): string {
   if (cutoff <= limit - 50) cutoff = limit;
   return text.slice(0, cutoff);
 }
+
+/**
+ * Extracts answers from an AskUserQuestion result:
+ * `... "Question?"="Answer". You can now continue ...` → { 'Question?': 'Answer' }.
+ */
+export function parseAskAnswers(output: unknown, questions: string[]): Record<string, string> {
+  if (typeof output !== 'string') return {};
+  const answers: Record<string, string> = {};
+  for (const q of questions) {
+    const start = output.indexOf(`"${q}"="`);
+    if (start < 0) continue;
+    const rest = output.slice(start + q.length + 4);
+    // Answer ends at the closing quote before the next pair (`", "`) or the trailing sentence (`". `)
+    const end = rest.search(/"(?:, "|\. |$)/);
+    answers[q] = end < 0 ? rest : rest.slice(0, end);
+  }
+  return answers;
+}

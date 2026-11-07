@@ -37,7 +37,8 @@ const ALLOWED_TAGS = [
  * Converts markdown text to sanitized HTML.
  * Used for rendering thinking content from Claude conversations.
  */
-export function renderMarkdown(text: string): string {
+export function renderMarkdown(text: string, allowLinks = false): string {
   const html = marked.parse(text, { async: false }) as string;
-  return DOMPurify.sanitize(html, { ALLOWED_TAGS, ALLOWED_ATTR: ['class'] });
+  // Links are off by default: a clicked href would navigate the app webview away.
+  return DOMPurify.sanitize(html, { ALLOWED_TAGS, ALLOWED_ATTR: allowLinks ? ['class', 'href'] : ['class'] });
 }

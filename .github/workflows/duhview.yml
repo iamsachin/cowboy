@@ -13,11 +13,22 @@ permissions:
 
 jobs:
   review:
+    # Start a job only for PR events and for comments duhview may answer: '@duhview ...' or a
+    # reply in a review thread, from the owner, members or collaborators. Other comments start nothing.
+    if: >-
+      github.event_name == 'pull_request' ||
+      ((contains(github.event.comment.body, '@duhview') || github.event.comment.in_reply_to_id) &&
+       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association))
+    # One review per PR at a time; a new push cancels the review of the commit it replaces.
+    concurrency:
+      group: duhview-${{ github.event.pull_request.number || github.event.issue.number }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # Pinned to commit SHAs: a tag or branch can be moved to different code.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           fetch-depth: 0  # duhview diffs against the merge base
-      - uses: iamsachin/duhview@main
+      - uses: iamsachin/duhview@c54a5367ccb57ec6842b1119e5f39bc8d17c570f  # main, 2026-11-07
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

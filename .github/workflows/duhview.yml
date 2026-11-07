@@ -13,15 +13,23 @@ permissions:
 
 jobs:
   review:
-    # Start a job only for PR events and for comments duhview may answer: '@duhview ...' or a
-    # reply in a review thread, from the owner, members or collaborators. Other comments start nothing.
+    # Start a job only when duhview has something to do: a pull request from this repository (fork
+    # PRs get no secrets), or a comment on a pull request that mentions @duhview or replies in a
+    # review thread, from the owner, a member or a collaborator. Other events start nothing.
     if: >-
-      github.event_name == 'pull_request' ||
-      ((contains(github.event.comment.body, '@duhview') || github.event.comment.in_reply_to_id) &&
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name != 'pull_request' &&
+       (github.event_name == 'pull_request_review_comment' || github.event.issue.pull_request) &&
+       (contains(github.event.comment.body, '@duhview') || github.event.comment.in_reply_to_id) &&
        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association))
-    # One review per PR at a time; a new push cancels the review of the commit it replaces.
+    # Reviews: one per PR, and a new push cancels the review of the commit it replaces.
+    # Comments: each gets its own group, so a push or another comment never cancels or drops it.
     concurrency:
-      group: duhview-${{ github.event.pull_request.number || github.event.issue.number }}
+      group: >-
+        ${{ github.event_name == 'pull_request'
+            && format('duhview-pr-{0}', github.event.pull_request.number)
+            || format('duhview-comment-{0}', github.event.comment.id) }}
       cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:

@@ -96,6 +96,7 @@ import {
   MessageSquare,
   BarChart3,
   Settings,
+  Brain,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-vue-next';
@@ -110,6 +111,7 @@ const navItems = [
   { path: '/overview', label: 'Overview', icon: LayoutDashboard, disabled: false },
   { path: '/conversations', label: 'Conversations', icon: MessageSquare, disabled: false },
   { path: '/analytics', label: 'Analytics', icon: BarChart3, disabled: false },
+  { path: '/memory', label: 'Memory', icon: Brain, disabled: false },
   { path: '/settings', label: 'Settings', icon: Settings, disabled: false },
 ];
 

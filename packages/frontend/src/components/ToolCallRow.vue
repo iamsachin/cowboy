@@ -45,6 +45,9 @@
         <DiffViewer v-if="toolCall.name === 'Edit'" :input="toolCall.input" :output="toolCall.output" />
         <CodeViewer v-else-if="toolCall.name === 'Read' || toolCall.name === 'Write'" :input="toolCall.input" :output="toolCall.output" :toolName="toolCall.name" />
         <BashViewer v-else-if="toolCall.name === 'Bash'" :input="toolCall.input" :output="toolCall.output" />
+        <SearchViewer v-else-if="toolCall.name === 'Grep' || toolCall.name === 'Glob'" :input="toolCall.input" :output="toolCall.output" :toolName="toolCall.name" />
+        <WebFetchViewer v-else-if="toolCall.name === 'WebFetch'" :input="toolCall.input" :output="toolCall.output" />
+        <AskUserQuestionViewer v-else-if="toolCall.name === 'AskUserQuestion'" :input="toolCall.input" :output="toolCall.output" />
         <JsonFallbackViewer v-else :input="displayInput" :output="toolCall.output" />
       </div>
     </details>
@@ -59,6 +62,9 @@ import { getToolIcon } from '../utils/tool-icons';
 import DiffViewer from './tool-viewers/DiffViewer.vue';
 import CodeViewer from './tool-viewers/CodeViewer.vue';
 import BashViewer from './tool-viewers/BashViewer.vue';
+import SearchViewer from './tool-viewers/SearchViewer.vue';
+import WebFetchViewer from './tool-viewers/WebFetchViewer.vue';
+import AskUserQuestionViewer from './tool-viewers/AskUserQuestionViewer.vue';
 import JsonFallbackViewer from './tool-viewers/JsonFallbackViewer.vue';
 import SubagentSummaryCard from './SubagentSummaryCard.vue';
 

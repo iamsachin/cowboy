@@ -1,0 +1,48 @@
+name: duhview
+
+on:
+  pull_request:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    # Start a job only when duhview has something to do: a pull request from this repository (fork
+    # PRs get no secrets), or a comment on a pull request that mentions @duhview or replies in a
+    # review thread, from the owner, a member or a collaborator. duhview's own comments carry a
+    # hidden "<!-- duhview" marker and are skipped. Other events start nothing.
+    if: >-
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name != 'pull_request' &&
+       (github.event_name == 'pull_request_review_comment' || github.event.issue.pull_request) &&
+       (contains(github.event.comment.body, '@duhview') || github.event.comment.in_reply_to_id) &&
+       !contains(github.event.comment.body, '<!-- duhview') &&
+       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association))
+    # Reviews: one per PR, and a new push cancels the review of the commit it replaces.
+    # Comments: each gets its own group, so a push or another comment never cancels or drops it.
+    concurrency:
+      group: >-
+        ${{ github.event_name == 'pull_request'
+            && format('duhview-pr-{0}', github.event.pull_request.number)
+            || format('duhview-comment-{0}', github.event.comment.id) }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      # Pinned to commit SHAs: a tag or branch can be moved to different code.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          fetch-depth: 0  # duhview diffs against the merge base
+      - uses: iamsachin/duhview@b60beb12c116cedf68c802aa5dd8e2413fab2fa7  # main, 2026-11-07
+        with:
+          # A fine-grained token (Pull requests: read and write, this repo only) lets duhview resolve
+          # threads it finds fixed; without the secret it falls back to the default token.
+          github-token: ${{ secrets.DUHVIEW_TOKEN || github.token }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

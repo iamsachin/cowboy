@@ -1,0 +1,3 @@
+review:
+  # Generated files, plus planning notes, which are large and not code.
+  exclude: ["*.lock", "*package-lock.json", "*pnpm-lock.yaml", "*.min.js", "*.min.css", "*.map", ".planning/*"]
